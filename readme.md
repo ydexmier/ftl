@@ -5,6 +5,8 @@ Il faut au préalable avoir Docker d'installer (demander à chatgpt pour la proc
 Dans votre dossier de travail:
 
 `npm install` (recommandé pour votre IDE mais n'empeche pas le fonctionnement de l'application normalement)
+
+
 `docker-compose up --build`
 
 et vous pouvez acceder au site `http://localhost:3000`
