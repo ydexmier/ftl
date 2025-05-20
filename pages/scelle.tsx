@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Layout from '../components/Layout';
+
 import { generateBoosters } from "../utils/boosterGenerator";
 import styled from '@emotion/styled';
 import Card from '../components/card';
@@ -96,6 +98,7 @@ export default function Scelle() {
 
 
   return (
+<Layout>
     <div>
       <h1>Multi Set Booster Generator</h1>
 
@@ -164,5 +167,6 @@ export default function Scelle() {
         )}
       </div>
     </div>
+</Layout>
   );
 }
