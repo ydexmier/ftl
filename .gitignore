@@ -1,0 +1,45 @@
+# --- Node ---
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Next.js ---
+.next
+out
+.vercel
+dist
+
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Logs ---
+logs
+*.log
+
+# --- dotenv ---
+.env*
+!.env.example
+
+# --- IDEs ---
+.vscode
+.idea
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Coverage ---
+coverage
+*.lcov
+
+# --- Docker ---
+**/docker-volume/
+**/.docker/
+
+# --- Custom JSON data (optionnel) ---
+# Ignorer les sets si tu ne veux pas les versionner
+json/sets/
+
+# --- Misc ---
+*.local
