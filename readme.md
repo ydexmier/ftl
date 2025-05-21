@@ -1,12 +1,39 @@
 ## Pour installer le projet
 
-Il faut au préalable avoir Docker d'installer (demander à chatgpt pour la procédure windows/mac/linux).
+Installation de Git sous windows:
+Telecharger la version de git correspondant a votre ordinateur https://git-scm.com/downloads/win
+
+Lancer l'installation en laissant les parametres par defaut.
+
+Ensuite, chercher l'application `git bash` dans windows et executer l'application.
+
+Configurez votre profil git:
+`git config --global user.name "mon nom utilisateur"`
+`git config --global user.email "mon adresse mail"`
+`git config --global core.autocrlf false`
+
+
+Aller dans le dossier que vous souhaitez et executez la commande:
+`git clone https://github.com/YoannDexmier/ftl.git`
+
+Installation de NVM:
+
+https://github.com/coreybutler/nvm-windows/releases/download/1.2.2/nvm-setup.exe
+
+et executer l'installation.
+
+Fermer `git bash` et relancer le.
+
+Maintenant vous pouvez installer npm en executant:
+`nvm install 18`
+
+puis utiliser la version 18 en faisant `nvm use 18`
 
 Dans votre dossier de travail:
 
 `npm install` (recommandé pour votre IDE mais n'empeche pas le fonctionnement de l'application normalement)
 
-
+et enfin `npm run dev` pour pouvoir acceder a  `localhost:3000`
 `docker-compose up --build`
 
 et vous pouvez acceder au site `http://localhost:3000`
