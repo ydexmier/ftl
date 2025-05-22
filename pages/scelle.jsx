@@ -1,31 +1,15 @@
 import { useState } from "react";
 import Layout from '../components/Layout';
-
 import { generateBoosters } from "../utils/boosterGenerator";
-import styled from '@emotion/styled';
-import Card from '../components/card';
-
-
-const GridCards = styled.div`
-display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 12px;
-`;
-
-type Entry = {
-  id: number;
-  setNumber: string;
-  boosterCount: number;
-  cards: any[]; // cartes chargées pour ce set
-  loading: boolean;
-  error: string | null;
-};
+import Builder from '../components/builder/Builder';
+import Tabs from '../components/Tabs';
+import BoosterView from "../components/BoosterView";
 
 export default function Scelle() {
-  const [entries, setEntries] = useState<Entry[]>([
+  const [entries, setEntries] = useState([
     { id: 1, setNumber: "", boosterCount: 1, cards: [], loading: false, error: null },
   ]);
-  const [boosters, setBoosters] = useState<any[][]>([]);
+  const [boosters, setBoosters] = useState([]);
 
   const addEntry = () => {
     setEntries((prev) => [
@@ -41,36 +25,18 @@ export default function Scelle() {
     ]);
   };
 
-  const removeEntry = (id: number) => {
+  const removeEntry = (id) => {
     setEntries((prev) => prev.filter((e) => e.id !== id));
   };
 
-  const updateEntry = (id: number, key: keyof Entry, value: any) => {
+  const updateEntry = (id, key, value) => {
     setEntries((prev) =>
       prev.map((e) => (e.id === id ? { ...e, [key]: value } : e))
     );
   };
 
-  const loadSet = async (id: number, setNumber: string) => {
-    if (!setNumber) return;
-    updateEntry(id, "loading", true);
-    updateEntry(id, "error", null);
-    updateEntry(id, "cards", []);
-
-    try {
-      const res = await fetch(`/json/sets/${setNumber}.json`);
-      if (!res.ok) throw new Error("Fichier non trouvé");
-      const data = await res.json();
-      updateEntry(id, "cards", data);
-    } catch (e) {
-      updateEntry(id, "error", "Erreur lors du chargement");
-    } finally {
-      updateEntry(id, "loading", false);
-    }
-  };
-
   const generateAllBoosters = async () => {
-  let allBoosters: any[][] = [];
+  let allBoosters = [];
 
   for (const entry of entries) {
     const { setNumber, boosterCount } = entry;
@@ -150,21 +116,18 @@ export default function Scelle() {
       <button onClick={generateAllBoosters}>Générer tous les boosters</button>
 
       <div style={{ marginTop: 30 }}>
-        {boosters.length > 0 && (
+        <Tabs tabs={[{label: "Ouverture du scellé", disabled:boosters.length < 1, component: (
           <>
-            <h2>Résultats</h2>
-            {boosters.map((booster, i) => (
+            {boosters.length > 0 && boosters.map((booster, i) => (
               <div key={i} style={{ marginBottom: 15 }}>
-                <h3>Booster #{i + 1}</h3>
-                <GridCards>
-                  {booster.map((card) => (
-                      <Card key={`booster${i}-${card.id}`} data={card}/>
-                  ))}
-                </GridCards>
+                <BoosterView title={`Booster #${i + 1}`} booster={booster}/>
               </div>
             ))}
           </>
-        )}
+        )},{label: "Builder du scellé", disabled:boosters.length < 1, component:(
+          boosters.length > 0 && <Builder cards={boosters.flat()}/>
+        )}, {label: "Statistique du scellé", component: <div>On affichera pleins de stats</div>}]} />
+        
       </div>
     </div>
 </Layout>

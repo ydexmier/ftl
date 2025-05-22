@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }) {
   return (
     <>
       <nav>

@@ -16,7 +16,7 @@ const LinkList = styled.div`
   flex-wrap: wrap;
 `;
 
-const LinkButton = styled.button<{ active: boolean }>`
+const LinkButton = styled.button`
   padding: 0.5rem 1rem;
   background-color: ${({ active }) => (active ? '#0070f3' : '#eee')};
   color: ${({ active }) => (active ? 'white' : '#333')};
@@ -38,8 +38,8 @@ const CardGrid = styled.div`
 `;
 
   export default function Sets() {
-  const [selected, setSelected] = useState<number | null>(1);
-  const [items, setItems] = useState<any[]>([]);
+  const [selected, setSelected] = useState(1);
+  const [items, setItems] = useState([]);
 
 
   useEffect(() => {

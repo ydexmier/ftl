@@ -87,26 +87,7 @@ const CloseButton = styled.button`
   }
 `;
 
-type CardProps = {
-  data: {
-    id: string;
-    name: string;
-    version: string;
-    image_uris: {
-      digital: {
-        normal: string;
-      };
-    };
-    cost: number;
-    inkwell: boolean;
-    ink: string;
-    type: string[];
-    text: string;
-    flavor_text?: string;
-  };
-};
-
-export default function Card({ data }: CardProps) {
+export default function Card({ data }) {
   const [loading, setLoading] = useState(true);
 const [isOpen, setIsOpen] = useState(false);
   const {
