@@ -12,7 +12,6 @@ Configurez votre profil git:
 `git config --global user.email "mon adresse mail"`
 `git config --global core.autocrlf false`
 
-
 Aller dans le dossier que vous souhaitez et executez la commande:
 `git clone https://github.com/YoannDexmier/ftl.git`
 
@@ -33,13 +32,12 @@ Dans votre dossier de travail:
 
 `npm install` (recommandé pour votre IDE mais n'empeche pas le fonctionnement de l'application normalement)
 
-et enfin `npm run dev` pour pouvoir acceder a  `localhost:3000`
+et enfin `npm run dev` pour pouvoir acceder a `localhost:3000`
 `docker-compose up --build`
 
 et vous pouvez acceder au site `http://localhost:3000`
 
-Une fois le build éffectuer une première fois, vous pouvez relancer le projet en faisant simplement `docker-compose up` 
-
+Une fois le build éffectuer une première fois, vous pouvez relancer le projet en faisant simplement `docker-compose up`
 
 # 🚀 Commandes utiles - Projet Next.js + Docker + MongoDB
 
@@ -48,20 +46,23 @@ Une fois le build éffectuer une première fois, vous pouvez relancer le projet 
 ```bash
 docker-compose up
 ```
-- Démarre l'application en mode développement
-- Active le live-reload avec Next.js
-- Lance aussi le service MongoDB
+
+-   Démarre l'application en mode développement
+-   Active le live-reload avec Next.js
+-   Lance aussi le service MongoDB
 
 ---
 
 ## ⛔️ Arrêter le projet
 
 ### Depuis le terminal en cours :
+
 ```bash
 Ctrl + C
 ```
 
 ### Ou via une autre fenêtre de terminal :
+
 ```bash
 docker-compose down
 ```
@@ -79,11 +80,13 @@ docker-compose up --build
 ## 🧪 Installer un nouveau package
 
 ### Depuis le conteneur :
+
 ```bash
 docker-compose exec app npm install <nom-du-package>
 ```
 
 ### Ou localement (et rebuild) :
+
 ```bash
 npm install <nom-du-package>
 docker-compose up --build
@@ -131,19 +134,18 @@ http://localhost:3000
 ---
 
 ## Composants externes
+
 On utilise la library material UI https://mui.com/material-ui/api/tab/
+
+Pour consulter les icons disponibles: https://mui.com/material-ui/material-icons/
 
 ## 🛠 Dépannage
 
-- **Changements non pris en compte ?**  
-  Vérifie que les volumes sont bien montés dans `docker-compose.yml`.
+-   **Changements non pris en compte ?**  
+    Vérifie que les volumes sont bien montés dans `docker-compose.yml`.
 
-- **MongoDB inaccessible ?**  
-  Vérifie que la variable `MONGODB_URI` est bien définie dans le fichier `.env` :
-  ```env
-  MONGODB_URI=mongodb://mongo:27017/mydb
-  ```
-
-
-
-
+-   **MongoDB inaccessible ?**  
+    Vérifie que la variable `MONGODB_URI` est bien définie dans le fichier `.env` :
+    ```env
+    MONGODB_URI=mongodb://mongo:27017/mydb
+    ```

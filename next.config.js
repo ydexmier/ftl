@@ -1,6 +1,6 @@
 module.exports = {
-  reactStrictMode: true,
-images: {
-    domains: ['cards.lorcast.io'],
-  },
+    reactStrictMode: true,
+    images: {
+        domains: ['cards.lorcast.io'],
+    },
 };

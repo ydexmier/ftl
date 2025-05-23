@@ -1,15 +1,21 @@
-import * as React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
+import React, { useState, useMemo } from 'react';
+import { ThemeProvider, createTheme, CssBaseline, Button } from '@mui/material';
 
-const theme = createTheme({
-  // ta config perso ici
-});
 
 export default function MyApp({ Component, pageProps }) {
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: 'dark',
+        },
+      }),
+    []
+  );
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
+      <CssBaseline enableColorScheme />
       <Component {...pageProps} />
     </ThemeProvider>
   );
