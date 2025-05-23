@@ -130,6 +130,9 @@ http://localhost:3000
 
 ---
 
+## Composants externes
+On utilise la library material UI https://mui.com/material-ui/api/tab/
+
 ## 🛠 Dépannage
 
 - **Changements non pris en compte ?**  
