@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useMemo, useEffect } from 'react';
 import styled from '@emotion/styled';
 import * as R from 'ramda';
 import Card from '../card';
@@ -9,6 +9,8 @@ import InkCount from '../InkCount';
 import IconButton from '@mui/material/IconButton';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import { useSelectedCardsStore } from '../stores/useSelectedCardsStore';
+
 const CardList = styled.div`
     display: grid;
     gap: 12px;
@@ -63,31 +65,14 @@ const ButtonsContianer = styled.div`
     align-items: center;
 `;
 
-const inkOrder = ['Amber', 'Amethyst', 'Emerald', 'Ruby', 'Sapphire', 'Steel'];
-
-const sortByInkOrder = R.sortWith([
-    R.descend(R.prop('quantity')),
-    R.ascend(item => inkOrder.indexOf(item.ink))
-]);
-
-const mergedCards = (cards) => Object.values(
-    cards.reduce((acc, card) => {
-        const key = card.id;
-        if (!acc[key]) {
-            acc[key] = { ...card, quantity: 1 };
-        } else {
-            acc[key].quantity += 1;
-        }
-        return acc;
-    }, {})
-);
-
-const Builder = ({ cards }) => {
-    const [builderCards, dispatch] = useReducer(builderReducer, sortByInkOrder(mergedCards(cards)));
+const Builder = () => {
+    const builderCards = useSelectedCardsStore(state => state.builderCards);
+    const setCardQuantity = useSelectedCardsStore(state => state.setCardQuantity);
     const cardsSelected = builderCards.filter(card => card.quantitySelected > 0)
-    const addCard = ({ id }) => dispatch({ type: 'ADD_QUANTITY', payload: { id } });
-    const removeCard = ({ id }) => dispatch({ type: 'REMOVE_QUANTITY', payload: { id } });
-    return <Grid container spacing={2}>
+    const addCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected + 1);
+    const removeCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected - 1);
+
+    return builderCards && <Grid container spacing={2}>
         <Grid size={{ xs: 6, md: 8 }}>
             <CardList>
                 {
@@ -106,13 +91,13 @@ const Builder = ({ cards }) => {
             </CardList>
         </Grid>
         <Grid size={{ xs: 6, md: 4 }}>
-            <div>Nombre de carte: {cardsSelected.reduce((sum, card) => sum + card.quantitySelected || 0, 0)}</div>
+            <div>Nombre de carte: {builderCards.reduce((sum, card) => sum + card.quantitySelected || 0, 0)}</div>
             {
                 cardsSelected.map(card =>
                     <CardHorizontal ink={card.inks?.join('-') || card.ink.toLowerCase()} key={card.id}>
                         <Ink type={card.inks || card.ink} width={32} />
                         <InkCount count={card.cost} size={32} />
-                        {`${card.name}${card.version ? ` - ${card.version}` : ''} ${card.quantitySelected}/${card.quantity}`}
+                        <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{`${card.name}${card.version ? ` - ${card.version}` : ''} ${card.quantitySelected}/${card.quantity}`}</div>
 
                         <ButtonsContianer>
                             <IconButton sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">

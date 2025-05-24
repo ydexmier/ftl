@@ -28,25 +28,57 @@ function a11yProps(index) {
 }
 
 export default function BasicTabs(props) {
+    const { fixed = false } = props;
     const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);
     };
-
+    if (fixed) {
+        return (
+            <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+                <Box sx={{
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 100,
+                    backgroundColor: 'background.paper',
+                    borderBottom: 1,
+                    borderColor: 'divider',
+                }}>
+                    <Tabs value={value} onChange={handleChange} aria-label="fixed tabs">
+                        {props.tabs.map((tab, index) => <Tab disabled={tab.disabled} label={tab.label} {...a11yProps(index)} />)}
+                    </Tabs>
+                </Box>
+                <Box sx={{ flex: 1, overflowY: 'auto' }}>
+                    {props.tabs.map(
+                        (tab, index) =>
+                            <CustomTabPanel value={value} index={index}>
+                                {tab.component}
+                            </CustomTabPanel>
+                    )}
+                </Box>
+            </Box>
+        );
+    }
     return (
         <Box sx={{ width: '100%' }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                    {props.tabs.map((tab, index) => <Tab disabled={tab.disabled} label={tab.label} {...a11yProps(index)} />)}
+                <Tabs value={value} onChange={handleChange} aria-label="basic tabs">
+                    {tabs.map((tab, index) => (
+                        <Tab
+                            key={index}
+                            disabled={tab.disabled}
+                            label={tab.label}
+                            {...a11yProps(index)}
+                        />
+                    ))}
                 </Tabs>
             </Box>
-            {props.tabs.map(
-                (tab, index) =>
-                    <CustomTabPanel value={value} index={index}>
-                        {tab.component}
-                    </CustomTabPanel>
-            )}
+            {tabs.map((tab, index) => (
+                <CustomTabPanel key={index} value={value} index={index}>
+                    {tab.component}
+                </CustomTabPanel>
+            ))}
         </Box>
     );
 }
