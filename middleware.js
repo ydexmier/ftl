@@ -15,6 +15,7 @@ export function middleware(req) {
 
     // Décodage base64 du header "Basic base64(user:password)"
     const base64Credentials = authHeader.split(' ')[1];
+
     const credentials = Buffer.from(base64Credentials, 'base64').toString(
         'ascii'
     );
