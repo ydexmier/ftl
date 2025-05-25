@@ -32,12 +32,10 @@ export const useSelectedCardsStore = create(
             // Liste des boosters (tableau de tableaux de cartes)
             boosterCards: [],
             setBuilderCards: (cards) => {
-                console.log(mergedCards(cards));
                 return set({builderCards: sortByInkOrder(mergedCards(cards))});
             },
 
             setCardQuantity: (cardId, quantity) => {
-                console.log(cardId, quantity);
                 if (quantity >= 0) {
                     set((state) => ({
                         builderCards: state.builderCards.map((c) =>

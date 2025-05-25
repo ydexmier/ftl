@@ -16,13 +16,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "TELL EVERYBODY During opponents' turns, you can't lose lore.",
         "keywords": [],
         "move_cost": null,
@@ -30,9 +25,7 @@
         "willpower": 1,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Therese Vildefall"
-        ],
+        "illustrators": ["Therese Vildefall"],
         "collector_number": "1",
         "lang": "en",
         "flavor_text": "\"I mean, I don't want to brag or nothing, but I got some moves.\"",
@@ -67,13 +60,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -81,9 +69,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Shannon Hallstein"
-        ],
+        "illustrators": ["Shannon Hallstein"],
         "collector_number": "2",
         "lang": "en",
         "flavor_text": "The Lorcana Hide-and-Seek Championship was hers for the taking.",
@@ -118,26 +104,16 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Prince"],
         "text": "Singer 6 (This character counts as cost 6 to sing songs.)\nIT'S BEAUTIFUL, NO? When you play this character, you may play a song with cost 6 or less for free.",
-        "keywords": [
-            "Singer"
-        ],
+        "keywords": ["Singer"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Rosa la Barbera / Livio Cacciatore"
-        ],
+        "illustrators": ["Rosa la Barbera / Livio Cacciatore"],
         "collector_number": "3",
         "lang": "en",
         "flavor_text": null,
@@ -172,25 +148,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Support (Whenever this character quests, you may add their {S} to another chosen character's {S} this turn.)",
-        "keywords": [
-            "Support"
-        ],
+        "keywords": ["Support"],
         "move_cost": null,
         "strength": 3,
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Ron Baird"
-        ],
+        "illustrators": ["Ron Baird"],
         "collector_number": "4",
         "lang": "en",
         "flavor_text": "\"Let's find some nice twigs, eh? I could use a snack!\"",
@@ -225,13 +192,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "BROTHERS FOREVER While this character is exerted, your characters named Koda can't be challenged.",
         "keywords": [],
         "move_cost": null,
@@ -239,9 +201,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Chunxi Mu"
-        ],
+        "illustrators": ["Chunxi Mu"],
         "collector_number": "5",
         "lang": "en",
         "flavor_text": "\"You have to look after your little brother, no matter how big a pain he is.\"\n-Kenai",
@@ -276,15 +236,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Princess",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Princess", "Racer"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -292,9 +245,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "César Vergara / Eri Welli"
-        ],
+        "illustrators": ["César Vergara / Eri Welli"],
         "collector_number": "6",
         "lang": "en",
         "flavor_text": "\"Look, the code may say I'm a princess, but I know who I really am...\"",
@@ -329,13 +280,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -343,9 +289,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Ron Baird"
-        ],
+        "illustrators": ["Ron Baird"],
         "collector_number": "7",
         "lang": "en",
         "flavor_text": "\"I'd love a snack, but I'm kinda tied up right now.\"",
@@ -380,25 +324,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "Support (Whenever this character quests, you may add their {S} to another chosen character's {S} this turn.)",
-        "keywords": [
-            "Support"
-        ],
+        "keywords": ["Support"],
         "move_cost": null,
         "strength": 1,
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Olivier Désirée"
-        ],
+        "illustrators": ["Olivier Désirée"],
         "collector_number": "8",
         "lang": "en",
         "flavor_text": "\"Peanut butter and pineapple! This'll be the best cake ever!\"",
@@ -433,15 +368,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Princess",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Princess", "Racer"],
         "text": "YOU'VE GOT TO PAY TO PLAY Whenever this character quests, chosen opposing character gets -1 {S} until the start of your next turn.",
         "keywords": [],
         "move_cost": null,
@@ -449,9 +377,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Hedvig Häggman-Sund"
-        ],
+        "illustrators": ["Hedvig Häggman-Sund"],
         "collector_number": "9",
         "lang": "en",
         "flavor_text": "\"I'll take whatever you've got...as long as it's got sugar in it.\"",
@@ -486,25 +412,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "Bodyguard (This character may enter play exerted. An opposing character who challenges one of your characters must choose one with Bodyguard if able.)",
-        "keywords": [
-            "Bodyguard"
-        ],
+        "keywords": ["Bodyguard"],
         "move_cost": null,
         "strength": 2,
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Hedvig Häggman-Sund"
-        ],
+        "illustrators": ["Hedvig Häggman-Sund"],
         "collector_number": "10",
         "lang": "en",
         "flavor_text": "\"Golly, this place is going to take some real fixing!\"",
@@ -539,25 +456,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Singer 5 (This character counts as cost 5 to sing songs.)",
-        "keywords": [
-            "Singer"
-        ],
+        "keywords": ["Singer"],
         "move_cost": null,
         "strength": 2,
         "willpower": 3,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Lauren Barger"
-        ],
+        "illustrators": ["Lauren Barger"],
         "collector_number": "11",
         "lang": "en",
         "flavor_text": "\"Good evening, Lorcana! We are here tonight to celebrate the possibilities that open up to us when we unite.\"",
@@ -592,25 +500,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named Fix-It Felix, Jr.)\nBUILDING TOGETHER Your locations get +2 {W}.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 4,
         "willpower": 5,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "João Moura"
-        ],
+        "illustrators": ["João Moura"],
         "collector_number": "12",
         "lang": "en",
         "flavor_text": null,
@@ -645,13 +544,8 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally"],
         "text": "SONG OF THE HERD For each song card in your discard, you pay 1 {I} less to play this character.\nBodyguard (This character may enter play exerted. An opposing character who challenges one of your characters must choose one with Bodyguard if able.)",
         "keywords": [],
         "move_cost": null,
@@ -659,9 +553,7 @@
         "willpower": 7,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Jochem van Gool"
-        ],
+        "illustrators": ["Jochem van Gool"],
         "collector_number": "13",
         "lang": "en",
         "flavor_text": null,
@@ -696,14 +588,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Madrigal"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Madrigal"],
         "text": "NOT WITHOUT MY FAMILY You can't play this character unless you have 5 or more characters in play.",
         "keywords": [],
         "move_cost": null,
@@ -711,9 +597,7 @@
         "willpower": 5,
         "lore": 5,
         "rarity": "Legendary",
-        "illustrators": [
-            "Emily Abeydeera"
-        ],
+        "illustrators": ["Emily Abeydeera"],
         "collector_number": "14",
         "lang": "en",
         "flavor_text": "\"There's nothing we can't accomplish together!\"",
@@ -748,25 +632,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Minnie Mouse.)\nPARADE ORDER When you play this character, if you used Shift to play her, you may search your deck for a character card and reveal that card to all players. Shuffle your deck and put that card on top of it.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 4,
         "willpower": 4,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Roger Pérez / Leonardo Giammichele"
-        ],
+        "illustrators": ["Roger Pérez / Leonardo Giammichele"],
         "collector_number": "15",
         "lang": "en",
         "flavor_text": null,
@@ -801,13 +676,8 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "BIG PRIZE Whenever this character quests, each opponent reveals the top card of their deck. If it's a character card, they may put it into their hand. Otherwise, they put it on the bottom of their deck.",
         "keywords": [],
         "move_cost": null,
@@ -815,9 +685,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Francesco D'ippolito / Giuseppe di Maio"
-        ],
+        "illustrators": ["Francesco D'ippolito / Giuseppe di Maio"],
         "collector_number": "16",
         "lang": "en",
         "flavor_text": null,
@@ -852,13 +720,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "OH, MY LAND! When you play this character, if you have a location in play, draw a card.",
         "keywords": [],
         "move_cost": null,
@@ -866,9 +729,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Cristian Romero"
-        ],
+        "illustrators": ["Cristian Romero"],
         "collector_number": "17",
         "lang": "en",
         "flavor_text": "\"I don't think I've ever seen anything as sweet as this.\"",
@@ -903,14 +764,8 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Princess"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Princess"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -918,9 +773,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Isabella Ceravolo"
-        ],
+        "illustrators": ["Isabella Ceravolo"],
         "collector_number": "18",
         "lang": "en",
         "flavor_text": "\"Investigate every part of the Illuminary, find the chromicons, restore the Illuminary, how hard can it—wait, what was that noise?\"",
@@ -955,27 +808,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "Princess",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "Princess", "Racer"],
         "text": "Shift 2 (You may pay 2 {I} to play this on top of one of your characters named Vanellope von Schweetz.)\nI HEREBY DECREE Whenever you play another Princess character, all opposing characters get -1 {S} until the start of your next turn.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 2,
         "willpower": 4,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Vanessa Morales"
-        ],
+        "illustrators": ["Vanessa Morales"],
         "collector_number": "19",
         "lang": "en",
         "flavor_text": null,
@@ -1010,13 +852,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "FAN FAVORITE Whenever you play a song, gain 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -1024,9 +861,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "John Loren"
-        ],
+        "illustrators": ["John Loren"],
         "collector_number": "20",
         "lang": "en",
         "flavor_text": "\"Thank you! Now here's a little ditty for our floodborn friends that we call 'Martin and the Flood.'\"",
@@ -1061,13 +896,8 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "I'VE GOT THE COOLEST FRIEND When you play this character, return a character card from your discard to your hand. If that card is a Princess character card, gain 2 lore.",
         "keywords": [],
         "move_cost": null,
@@ -1075,9 +905,7 @@
         "willpower": 7,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Hyuna Lee"
-        ],
+        "illustrators": ["Hyuna Lee"],
         "collector_number": "21",
         "lang": "en",
         "flavor_text": "If he must give a victory speech, he'll keep it brief.",
@@ -1112,13 +940,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Princess"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Princess"],
         "text": "IF IT PLEASES THE LADY When you play this character, chosen opposing character gets -5 {S} until the start of your next turn.",
         "keywords": [],
         "move_cost": null,
@@ -1126,9 +949,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Jenna Gray"
-        ],
+        "illustrators": ["Jenna Gray"],
         "collector_number": "22",
         "lang": "en",
         "flavor_text": "\"And who might you be, my noble knight and champion?\"",
@@ -1163,13 +984,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "REINDEER GAMES When you play this character, you may ready chosen character. They can't quest or challenge for the rest of this turn.",
         "keywords": [],
         "move_cost": null,
@@ -1177,9 +993,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Gonzalo Kenny"
-        ],
+        "illustrators": ["Gonzalo Kenny"],
         "collector_number": "23",
         "lang": "en",
         "flavor_text": null,
@@ -1214,13 +1028,8 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "PATCH THEM UP Whenever this character quests, you may remove up to 2 damage from chosen character.",
         "keywords": [],
         "move_cost": null,
@@ -1228,9 +1037,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Gonzalo Kenny"
-        ],
+        "illustrators": ["Gonzalo Kenny"],
         "collector_number": "24",
         "lang": "en",
         "flavor_text": "\"Oh my! Is that part of the Illuminary? I have to go help!\"",
@@ -1264,10 +1071,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 4 or more can {E} to sing this song for free.)\nRemove up to 3 damage from chosen character and ready them. They can't quest or challenge for the rest of this turn.",
         "keywords": [],
@@ -1276,9 +1080,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Nicolas Ky"
-        ],
+        "illustrators": ["Nicolas Ky"],
         "collector_number": "25",
         "lang": "en",
         "flavor_text": "I want to try even though I could fail",
@@ -1312,9 +1114,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Remove up to 4 damage from chosen character. Draw a card.",
         "keywords": [],
@@ -1323,9 +1123,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Mariana Moreno"
-        ],
+        "illustrators": ["Mariana Moreno"],
         "collector_number": "26",
         "lang": "en",
         "flavor_text": "\"The heart is not so easily changed, but the head can be persuaded.\" —Grand Pabbie",
@@ -1359,9 +1157,7 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Play a character card with cost 5 or less from your discard for free.",
         "keywords": [],
@@ -1370,9 +1166,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Jared Mathews"
-        ],
+        "illustrators": ["Jared Mathews"],
         "collector_number": "27",
         "lang": "en",
         "flavor_text": "Not all that is lost is gone forever.",
@@ -1406,10 +1200,7 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 6 or more can {E} to sing this song for free.)\nName a card. Return all character cards with that name from your discard to your hand.",
         "keywords": [],
@@ -1418,9 +1209,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Nicola Saviori"
-        ],
+        "illustrators": ["Nicola Saviori"],
         "collector_number": "28",
         "lang": "en",
         "flavor_text": null,
@@ -1454,9 +1243,7 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Reveal the top 2 cards of your deck. Put revealed character cards into your hand. Put the rest on the bottom of your deck in any order.",
         "keywords": [],
@@ -1465,9 +1252,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Taraneh"
-        ],
+        "illustrators": ["Taraneh"],
         "collector_number": "29",
         "lang": "en",
         "flavor_text": null,
@@ -1501,9 +1286,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "RENEWING ESSENCE {E} — Remove up to 2 damage from chosen character.",
         "keywords": [],
@@ -1512,9 +1295,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Alex Accorsi"
-        ],
+        "illustrators": ["Alex Accorsi"],
         "collector_number": "30",
         "lang": "en",
         "flavor_text": null,
@@ -1548,9 +1329,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "SYMBOL OF NOBILITY At the start of your turn, if you have a Princess or Queen character in play, gain 1 lore.\nROYAL SEARCH {E}, 2 {I} — Reveal the top card of your deck. If it's a Princess or Queen character card, you may put it into your hand. Otherwise, put it on the top of your deck.",
         "keywords": [],
@@ -1559,9 +1338,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Juan Diego Leon"
-        ],
+        "illustrators": ["Juan Diego Leon"],
         "collector_number": "31",
         "lang": "en",
         "flavor_text": null,
@@ -1595,9 +1372,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "AMBER LIGHT {E} — Remove up to 1 damage from each of your characters.",
         "keywords": [],
@@ -1606,9 +1381,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "32",
         "lang": "en",
         "flavor_text": "\"Comfort the weak and weary.\"\n-Inscription",
@@ -1643,9 +1416,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "SAFE AND SOUND Characters get +3 {W} while here.",
         "keywords": [],
@@ -1654,9 +1425,7 @@
         "willpower": 8,
         "lore": 0,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Jeremy Adams"
-        ],
+        "illustrators": ["Jeremy Adams"],
         "collector_number": "33",
         "lang": "en",
         "flavor_text": "\"It's a scary world out there.\"\n–Mother Gothel",
@@ -1691,9 +1460,7 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "OUR HUMBLE HOME While you have 3 or more characters here, you may banish this location to play a character from your discard for free.",
         "keywords": [],
@@ -1702,9 +1469,7 @@
         "willpower": 8,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Matthew Oates"
-        ],
+        "illustrators": ["Matthew Oates"],
         "collector_number": "34",
         "lang": "en",
         "flavor_text": null,
@@ -1739,27 +1504,16 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain", "Queen", "Sorcerer"],
         "text": "Shift 6 (You may pay 6 {I} to play this on top of one of your characters named Maleficent.)\nLISTEN WELL, ALL OF YOU When you play this character, for each of your characters named Maleficent in play, return a chosen opposing character, item, or location with cost 3 or less to their player's hand.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 7,
         "willpower": 7,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Malia Ewart"
-        ],
+        "illustrators": ["Malia Ewart"],
         "collector_number": "35",
         "lang": "en",
         "flavor_text": null,
@@ -1794,13 +1548,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "TURNING TIDES When you play this character, you may move up to 2 damage counters from chosen character to chosen opposing character.",
         "keywords": [],
         "move_cost": null,
@@ -1808,9 +1557,7 @@
         "willpower": 5,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Randy Bishop"
-        ],
+        "illustrators": ["Randy Bishop"],
         "collector_number": "36",
         "lang": "en",
         "flavor_text": null,
@@ -1845,13 +1592,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally"],
         "text": "TIME TO MOVE IT! When you play this character, chosen character gains Rush this turn. (They can challenge the turn they're played.)",
         "keywords": [],
         "move_cost": null,
@@ -1859,9 +1601,7 @@
         "willpower": 1,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "37",
         "lang": "en",
         "flavor_text": "\"Step to it! Time is of the essence.\"",
@@ -1896,14 +1636,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Mentor",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Mentor", "Sorcerer"],
         "text": "GIVE ME TIME TO THINK When you play this character and when he leaves play, look at the top 2 cards of your deck. Put one on the top of your deck and the other on the bottom.",
         "keywords": [],
         "move_cost": null,
@@ -1911,9 +1645,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Andrea Femerstrand"
-        ],
+        "illustrators": ["Andrea Femerstrand"],
         "collector_number": "38",
         "lang": "en",
         "flavor_text": "\"Don't rush me, now—this is important.\"",
@@ -1948,25 +1680,16 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 2,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Kendall Hale"
-        ],
+        "illustrators": ["Kendall Hale"],
         "collector_number": "39",
         "lang": "en",
         "flavor_text": "\"Hmph. What does an owl have to do to get a little peace and quiet around here?\"",
@@ -2001,25 +1724,16 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)\nPARTING GIFT When this character is banished, you may draw a card.",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 2,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Kendall Hale"
-        ],
+        "illustrators": ["Kendall Hale"],
         "collector_number": "40",
         "lang": "en",
         "flavor_text": null,
@@ -2054,13 +1768,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "UNEARTHED When you play this character, each opponent draws a card.",
         "keywords": [],
         "move_cost": null,
@@ -2068,9 +1777,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "41",
         "lang": "en",
         "flavor_text": "Who woke up the big guy?",
@@ -2105,13 +1812,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "RECURRING GUST When this character is banished in a challenge, return this card to your hand.",
         "keywords": [],
         "move_cost": null,
@@ -2119,9 +1821,7 @@
         "willpower": 2,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Amber Kommavongsa"
-        ],
+        "illustrators": ["Amber Kommavongsa"],
         "collector_number": "42",
         "lang": "en",
         "flavor_text": null,
@@ -2156,13 +1856,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -2170,9 +1865,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "James C Mulligan"
-        ],
+        "illustrators": ["James C Mulligan"],
         "collector_number": "43",
         "lang": "en",
         "flavor_text": "Oh me, oh my! Did a piece just fall off the Illuminary?! I've got to tell someone before it's too late, late, late!",
@@ -2207,14 +1900,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Sorcerer"],
         "text": "A LITTLE GAME When you play this character, banish her or return another chosen character of yours to your hand.\nSNEAKY MOVE At the start of your turn, you may move up to 2 damage counters from this character to chosen opposing character.",
         "keywords": [],
         "move_cost": null,
@@ -2222,9 +1909,7 @@
         "willpower": 7,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Kenneth Anderson"
-        ],
+        "illustrators": ["Kenneth Anderson"],
         "collector_number": "44",
         "lang": "en",
         "flavor_text": null,
@@ -2259,14 +1944,8 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Madrigal"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Madrigal"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -2274,9 +1953,7 @@
         "willpower": 8,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Samanta Erdini"
-        ],
+        "illustrators": ["Samanta Erdini"],
         "collector_number": "45",
         "lang": "en",
         "flavor_text": "\"This is just a warm-up, folks! Wait 'til you see the big finale!\"",
@@ -2311,27 +1988,16 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "Queen", "Sorcerer"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Anna.)\nEXCEPTIONAL POWER When you play this character, exert all opposing characters.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 4,
         "willpower": 5,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Jackie Droujko"
-        ],
+        "illustrators": ["Jackie Droujko"],
         "collector_number": "46",
         "lang": "en",
         "flavor_text": null,
@@ -2366,27 +2032,16 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named Archimedes.)\nEvasive (Only characters with Evasive can challenge this character.)\nChallenger +3 (While challenging, this character gets +3 {S}.)",
-        "keywords": [
-            "Challenger",
-            "Evasive",
-            "Shift"
-        ],
+        "keywords": ["Challenger", "Evasive", "Shift"],
         "move_cost": null,
         "strength": 1,
         "willpower": 4,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Michaela Martin"
-        ],
+        "illustrators": ["Michaela Martin"],
         "collector_number": "47",
         "lang": "en",
         "flavor_text": null,
@@ -2421,28 +2076,16 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Queen", "Sorcerer"],
         "text": "Rush (This character can challenge the turn they're played.)\nEvasive (Only characters with Evasive can challenge this character.)\nCRYSTALLIZE When you play this character, exert chosen opposing character.",
-        "keywords": [
-            "Evasive",
-            "Rush"
-        ],
+        "keywords": ["Evasive", "Rush"],
         "move_cost": null,
         "strength": 2,
         "willpower": 5,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Lisanne Koeteeuw"
-        ],
+        "illustrators": ["Lisanne Koeteeuw"],
         "collector_number": "48",
         "lang": "en",
         "flavor_text": null,
@@ -2477,13 +2120,8 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "PHENOMENAL SHOWMAN While this character is exerted, opposing characters can't ready at the start of their turn.",
         "keywords": [],
         "move_cost": null,
@@ -2491,9 +2129,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Brian Kesinger"
-        ],
+        "illustrators": ["Brian Kesinger"],
         "collector_number": "49",
         "lang": "en",
         "flavor_text": "\"Keep your eyes on me, folks! It's time for a little prestidigitation!\"",
@@ -2528,25 +2164,16 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "CLEAR THE PATH For each exerted character opponents have in play, you pay 1 {I} less to play this character.\nEvasive (Only characters with Evasive can challenge this character.)",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 6,
         "willpower": 6,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Andrea Parisi"
-        ],
+        "illustrators": ["Andrea Parisi"],
         "collector_number": "50",
         "lang": "en",
         "flavor_text": null,
@@ -2581,14 +2208,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Sorcerer"],
         "text": "WHAT AN AWKWARD SITUATION Whenever this character quests, you may choose and discard a card to return chosen character, item, or location with cost 3 or less to their player's hand.",
         "keywords": [],
         "move_cost": null,
@@ -2596,9 +2217,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Carlos Gomes Cabral"
-        ],
+        "illustrators": ["Carlos Gomes Cabral"],
         "collector_number": "51",
         "lang": "en",
         "flavor_text": null,
@@ -2633,12 +2252,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -2646,9 +2261,7 @@
         "willpower": 6,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Ivan Shavrin"
-        ],
+        "illustrators": ["Ivan Shavrin"],
         "collector_number": "52",
         "lang": "en",
         "flavor_text": "The great beast breached the surface of the Azurite Sea, and the cry went out, \"Monstro! Monstro!\"",
@@ -2683,14 +2296,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Sorcerer"],
         "text": "PLAYING WITH POWER During opponents' turns, if an effect would cause you to discard one or more cards from your hand, you don't discard.",
         "keywords": [],
         "move_cost": null,
@@ -2698,9 +2305,7 @@
         "willpower": 5,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Stefano Spagnuolo"
-        ],
+        "illustrators": ["Stefano Spagnuolo"],
         "collector_number": "53",
         "lang": "en",
         "flavor_text": null,
@@ -2735,14 +2340,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Sorcerer"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -2750,9 +2349,7 @@
         "willpower": 2,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Aris Zentelis"
-        ],
+        "illustrators": ["Aris Zentelis"],
         "collector_number": "54",
         "lang": "en",
         "flavor_text": "\"Evidently my invitation was lost. How dreadful. Here, let me help with the decorations . . .\"",
@@ -2787,26 +2384,16 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Mentor",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Mentor", "Sorcerer"],
         "text": "Rush (This character can challenge the turn they're played.)\nSURPRISING SKILL When you play this character, he gains Challenger +4 this turn. (They get +4 {S} while challenging.)",
-        "keywords": [
-            "Rush"
-        ],
+        "keywords": ["Rush"],
         "move_cost": null,
         "strength": 1,
         "willpower": 4,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Giulia Riva"
-        ],
+        "illustrators": ["Giulia Riva"],
         "collector_number": "55",
         "lang": "en",
         "flavor_text": null,
@@ -2841,14 +2428,8 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Queen"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Queen"],
         "text": "GROWING POWERS When you play this character, each opponent chooses and exerts one of their ready characters.",
         "keywords": [],
         "move_cost": null,
@@ -2856,9 +2437,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Leonardo Giammichele"
-        ],
+        "illustrators": ["Leonardo Giammichele"],
         "collector_number": "56",
         "lang": "en",
         "flavor_text": "\"Okay, I can move small objects without any problems. I need something bigger... Where is Kristoff's sleigh?\"",
@@ -2893,14 +2472,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "King"],
         "text": "PLEASING THE QUEEN {E} — Chosen exerted character can't ready at the start of their next turn.",
         "keywords": [],
         "move_cost": null,
@@ -2908,9 +2481,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Brittney Hackett"
-        ],
+        "illustrators": ["Brittney Hackett"],
         "collector_number": "57",
         "lang": "en",
         "flavor_text": "\"By order of the king. You heard what she said!\"",
@@ -2945,14 +2516,8 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Madrigal"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Madrigal"],
         "text": "IMITATE Whenever this character quests, you may gain lore equal to the {L} of chosen other character of yours. Return that character to your hand.",
         "keywords": [],
         "move_cost": null,
@@ -2960,9 +2525,7 @@
         "willpower": 7,
         "lore": 1,
         "rarity": "Legendary",
-        "illustrators": [
-            "Saulo Nate"
-        ],
+        "illustrators": ["Saulo Nate"],
         "collector_number": "58",
         "lang": "en",
         "flavor_text": null,
@@ -2996,9 +2559,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Draw a card. Chosen character gains Challenger +2 this turn. (They get +2 {S} while challenging.)",
         "keywords": [],
@@ -3007,9 +2568,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Giulia Riva"
-        ],
+        "illustrators": ["Giulia Riva"],
         "collector_number": "59",
         "lang": "en",
         "flavor_text": "Suddenly, Basil felt a strong desire to find the broken crown.",
@@ -3043,9 +2602,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Draw 3 cards.",
         "keywords": [],
@@ -3054,9 +2611,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Andy Estra / Stefano Zanchi"
-        ],
+        "illustrators": ["Andy Estra / Stefano Zanchi"],
         "collector_number": "60",
         "lang": "en",
         "flavor_text": "\"Three wishes, comin' right up!\"\n- Iago",
@@ -3090,10 +2645,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 3 or more can {E} to sing this song for free.)\nShuffle chosen card from your discard into your deck. Reveal the top card of your deck. If it has the same name as the chosen card, you may play the revealed card for free. Otherwise, put it into your hand.",
         "keywords": [],
@@ -3102,9 +2654,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Jake Murphy"
-        ],
+        "illustrators": ["Jake Murphy"],
         "collector_number": "61",
         "lang": "en",
         "flavor_text": null,
@@ -3138,9 +2688,7 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Gain 2 lore.",
         "keywords": [],
@@ -3149,9 +2697,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Heidi Neunhoffer"
-        ],
+        "illustrators": ["Heidi Neunhoffer"],
         "collector_number": "62",
         "lang": "en",
         "flavor_text": "\"Just think! All this knowledge was under our noses the whole time. We only had to look in the right place.\"",
@@ -3185,9 +2731,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Chosen character gains Challenger +3 and “When this character is banished in a challenge, return this card to your hand” this turn. (They get +3 {S} while challenging.)",
         "keywords": [],
@@ -3196,9 +2740,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Luca Pinelli"
-        ],
+        "illustrators": ["Luca Pinelli"],
         "collector_number": "63",
         "lang": "en",
         "flavor_text": "\"You've got some power in your corner now!\" –Genie",
@@ -3232,9 +2774,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "EXTRACT OF AMETHYST 2 {I}, Banish this item — Return chosen character, item, or location with cost 3 or less to their player's hand.",
         "keywords": [],
@@ -3243,9 +2783,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Stefano Zanchi"
-        ],
+        "illustrators": ["Stefano Zanchi"],
         "collector_number": "64",
         "lang": "en",
         "flavor_text": null,
@@ -3279,9 +2817,7 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "AN UNEXPECTED FIND {E}, 2 {I} — Draw a card.\nA PERILOUS POWER {E}, 2 {I}, Discard a card — Exert chosen character.",
         "keywords": [],
@@ -3290,9 +2826,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "John Loren"
-        ],
+        "illustrators": ["John Loren"],
         "collector_number": "65",
         "lang": "en",
         "flavor_text": "The broken crown holds dark and mysterious powers.",
@@ -3326,9 +2860,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "AMETHYST LIGHT {E} — Each player may draw a card.",
         "keywords": [],
@@ -3337,9 +2869,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "66",
         "lang": "en",
         "flavor_text": "\"Seek not power for its own sake.\"\n– Inscription",
@@ -3374,9 +2904,7 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "ETERNAL WINTER When you play this location, choose an exerted character. While this location is in play, that character can't ready at the start of their turn.",
         "keywords": [],
@@ -3385,9 +2913,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Wietse Treurniet"
-        ],
+        "illustrators": ["Wietse Treurniet"],
         "collector_number": "67",
         "lang": "en",
         "flavor_text": null,
@@ -3422,9 +2948,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "LOST IN A BOOK Whenever a character is banished while here, you may draw a card.",
         "keywords": [],
@@ -3433,9 +2957,7 @@
         "willpower": 8,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Roberto Gatto"
-        ],
+        "illustrators": ["Roberto Gatto"],
         "collector_number": "68",
         "lang": "en",
         "flavor_text": null,
@@ -3470,25 +2992,16 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "TAG ME IN! For each 1 damage on opposing characters, you pay 1 {I} less to play this character.\nWard (Opponents can't choose this character except to challenge.)",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 6,
         "willpower": 6,
         "lore": 4,
         "rarity": "Rare",
-        "illustrators": [
-            "James Rey Sanchez"
-        ],
+        "illustrators": ["James Rey Sanchez"],
         "collector_number": "69",
         "lang": "en",
         "flavor_text": null,
@@ -3523,26 +3036,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)\nEASY PICKINGS While challenging a damaged character, this character gets +2 {S}.",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Julien Vandois"
-        ],
+        "illustrators": ["Julien Vandois"],
         "collector_number": "70",
         "lang": "en",
         "flavor_text": null,
@@ -3577,13 +3080,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -3591,9 +3089,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "John Loren"
-        ],
+        "illustrators": ["John Loren"],
         "collector_number": "71",
         "lang": "en",
         "flavor_text": "\"You're in for a real treat, Rob. Tonight's house special is my famous outlaw grub. Made from the finest whatever we could find!\"",
@@ -3628,25 +3124,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 3,
         "willpower": 5,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Kuya Jaypi"
-        ],
+        "illustrators": ["Kuya Jaypi"],
         "collector_number": "72",
         "lang": "en",
         "flavor_text": "\"Oh, I guess one quick spin through the lights won't hurt.\"",
@@ -3681,13 +3168,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "SILENT PERFORMANCE This character can't {E} to sing songs.",
         "keywords": [],
         "move_cost": null,
@@ -3695,9 +3177,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Matt Chapman"
-        ],
+        "illustrators": ["Matt Chapman"],
         "collector_number": "73",
         "lang": "en",
         "flavor_text": "His performances are unspeakably good.",
@@ -3732,14 +3212,8 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "CAUSE A PANIC When you play this character, you may deal 2 damage to chosen damaged character.",
         "keywords": [],
         "move_cost": null,
@@ -3747,9 +3221,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Otto Paredes"
-        ],
+        "illustrators": ["Otto Paredes"],
         "collector_number": "74",
         "lang": "en",
         "flavor_text": "\"A-heh, heh, heh, heh, heh, heh, heeee.\"",
@@ -3784,14 +3256,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Fairy"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Fairy"],
         "text": "FIDDLE FADDLE While being challenged, this character gets +2 {S}.",
         "keywords": [],
         "move_cost": null,
@@ -3799,9 +3265,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Eri Welli"
-        ],
+        "illustrators": ["Eri Welli"],
         "collector_number": "75",
         "lang": "en",
         "flavor_text": "\"Don't fuss, dear! A flick of the wrist will turn these briars into something beautiful.\"",
@@ -3836,14 +3300,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Fairy"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Fairy"],
         "text": "RAY OF HOPE When you play this character, you may pay 1 {I} to give chosen character +2 {S} this turn.",
         "keywords": [],
         "move_cost": null,
@@ -3851,9 +3309,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Eri Welli"
-        ],
+        "illustrators": ["Eri Welli"],
         "collector_number": "76",
         "lang": "en",
         "flavor_text": "\"The most beautiful color is blue!\"",
@@ -3888,13 +3344,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "TRICK SHOT When you play this character, if an opponent has a damaged character in play, gain 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -3902,9 +3353,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Oggy Christiansson"
-        ],
+        "illustrators": ["Oggy Christiansson"],
         "collector_number": "77",
         "lang": "en",
         "flavor_text": "\"For a second there, I thought this might be a real challenge.\"",
@@ -3939,14 +3388,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Fairy"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Fairy"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -3954,9 +3397,7 @@
         "willpower": 7,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Eri Welli"
-        ],
+        "illustrators": ["Eri Welli"],
         "collector_number": "78",
         "lang": "en",
         "flavor_text": "\"The secret to a good cake is combining everything just right. Every ingredient is important, but the magic is in how they work together.\"",
@@ -3991,25 +3432,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)\nIN DISGUISE Whenever this character quests, you pay 2 {I} less for the next action you play this turn.",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 4,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Hadjie Joos / Pix Smith"
-        ],
+        "illustrators": ["Hadjie Joos / Pix Smith"],
         "collector_number": "79",
         "lang": "en",
         "flavor_text": null,
@@ -4044,14 +3476,8 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -4059,9 +3485,7 @@
         "willpower": 2,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Otto Paredes"
-        ],
+        "illustrators": ["Otto Paredes"],
         "collector_number": "80",
         "lang": "en",
         "flavor_text": "He will never refuse a quick bite before dinner.",
@@ -4096,14 +3520,8 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "ROWDY GUEST Damaged characters can't challenge this character.",
         "keywords": [],
         "move_cost": null,
@@ -4111,9 +3529,7 @@
         "willpower": 4,
         "lore": 3,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Stefano Spagnuolo"
-        ],
+        "illustrators": ["Stefano Spagnuolo"],
         "collector_number": "81",
         "lang": "en",
         "flavor_text": "As far as he's concerned, there's no such thing as bad taste.",
@@ -4148,27 +3564,16 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Alien",
-            "Pirate"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Alien", "Pirate"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)\nDO SAY HELLO TO MR. ARROW When you play this character, you may pay 3 {I} to banish chosen damaged character.",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 1,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Justin Runfola"
-        ],
+        "illustrators": ["Justin Runfola"],
         "collector_number": "82",
         "lang": "en",
         "flavor_text": null,
@@ -4203,14 +3608,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Prince"],
         "text": "SLAYER OF DRAGONS When you play this character, banish chosen opposing Dragon character.\nPRESSING THE ADVANTAGE Whenever he challenges a damaged character, ready this character after the challenge.",
         "keywords": [],
         "move_cost": null,
@@ -4218,9 +3617,7 @@
         "willpower": 9,
         "lore": 3,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Ian MacDonald"
-        ],
+        "illustrators": ["Ian MacDonald"],
         "collector_number": "83",
         "lang": "en",
         "flavor_text": null,
@@ -4255,25 +3652,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Clarabelle.)\nKEEP IN STEP At the end of your turn, if chosen opponent has more cards in their hand than you, you may draw cards until you have the same number.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 5,
         "willpower": 6,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Jennifer Park / Livio Cacciatore"
-        ],
+        "illustrators": ["Jennifer Park / Livio Cacciatore"],
         "collector_number": "84",
         "lang": "en",
         "flavor_text": null,
@@ -4308,14 +3696,8 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Queen"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Queen"],
         "text": "ROYAL RESOLUTION When you play this character, you may pay 2 {I} to choose one: \n• Each opponent chooses and discards a card. \n• Chosen character gets +2 {S} this turn. \n• Banish chosen damaged character.",
         "keywords": [],
         "move_cost": null,
@@ -4323,9 +3705,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Dylan Bonner / Celeste Jamneck"
-        ],
+        "illustrators": ["Dylan Bonner / Celeste Jamneck"],
         "collector_number": "85",
         "lang": "en",
         "flavor_text": null,
@@ -4360,13 +3740,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "BUTTERFINGERS When you play this character, you may pay 2 {I} to banish chosen item.",
         "keywords": [],
         "move_cost": null,
@@ -4374,9 +3749,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Kenneth Anderson"
-        ],
+        "illustrators": ["Kenneth Anderson"],
         "collector_number": "86",
         "lang": "en",
         "flavor_text": null,
@@ -4411,14 +3784,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "HERE KITTY, KITTY, KITTY When you play this character, you may exert chosen damaged character.",
         "keywords": [],
         "move_cost": null,
@@ -4426,9 +3793,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alexandria Neonakis"
-        ],
+        "illustrators": ["Alexandria Neonakis"],
         "collector_number": "87",
         "lang": "en",
         "flavor_text": "\"What do we got here, a little snack pack?\"",
@@ -4463,25 +3828,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named Robin Hood.)\nCLEVER PLAN This character gets +1 {L} for each opposing damaged character in play.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 5,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Nicholas Kole"
-        ],
+        "illustrators": ["Nicholas Kole"],
         "collector_number": "88",
         "lang": "en",
         "flavor_text": null,
@@ -4516,13 +3872,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "MOTHER KNOWS BEST When you play this character, you may pay 3 {I} to return chosen character to their player's hand.",
         "keywords": [],
         "move_cost": null,
@@ -4530,9 +3881,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Carlos Gomes Cabral"
-        ],
+        "illustrators": ["Carlos Gomes Cabral"],
         "collector_number": "89",
         "lang": "en",
         "flavor_text": "A beautiful lady never stands meekly at the back of the line.",
@@ -4567,13 +3916,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "ONE STEP BEHIND When you play this character, if an opponent has more cards in their hand than you, you may draw a card.",
         "keywords": [],
         "move_cost": null,
@@ -4581,9 +3925,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Lissette Carrera"
-        ],
+        "illustrators": ["Lissette Carrera"],
         "collector_number": "90",
         "lang": "en",
         "flavor_text": "\"Golly! Those dancers can really moo-ve!\"",
@@ -4618,14 +3960,8 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Hyena"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Hyena"],
         "text": "STICK AROUND FOR DINNER This character gets +1 {S} for each other Hyena character you have in play.\nWHAT HAVE WE GOT HERE? Whenever one of your Hyena characters challenges a damaged character, gain 2 lore.",
         "keywords": [],
         "move_cost": null,
@@ -4633,9 +3969,7 @@
         "willpower": 6,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Otto Paredes"
-        ],
+        "illustrators": ["Otto Paredes"],
         "collector_number": "91",
         "lang": "en",
         "flavor_text": null,
@@ -4670,25 +4004,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Mother Gothel.)\nTHE WORLD IS DARK When you play this character, each opponent chooses one of their characters and returns that card to their hand.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 4,
         "willpower": 6,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Dylan Bonner"
-        ],
+        "illustrators": ["Dylan Bonner"],
         "collector_number": "92",
         "lang": "en",
         "flavor_text": null,
@@ -4723,25 +4048,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "Ward (Opponents can't choose this character except to challenge.)\nLIFE'S NOT FAIR, IS IT? Whenever one of your characters challenges a damaged character, you may draw a card.",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 4,
         "willpower": 2,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "César Vergara"
-        ],
+        "illustrators": ["César Vergara"],
         "collector_number": "93",
         "lang": "en",
         "flavor_text": null,
@@ -4775,9 +4091,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Draw 3 cards, then put 2 cards from your hand on the top of your deck in any order.",
         "keywords": [],
@@ -4786,9 +4100,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Elodie Mondoloni"
-        ],
+        "illustrators": ["Elodie Mondoloni"],
         "collector_number": "94",
         "lang": "en",
         "flavor_text": "\"A security device! Easily defeated, of course. Once I make room for the crown, I . . . can . . . bring . . . it . . . to . . . him.\"",
@@ -4822,9 +4134,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Draw a card. Chosen character gains Reckless during their next turn. (They can't quest and must challenge if able.)",
         "keywords": [],
@@ -4833,9 +4143,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Antoine Couttolenc"
-        ],
+        "illustrators": ["Antoine Couttolenc"],
         "collector_number": "95",
         "lang": "en",
         "flavor_text": "\"I think someone is targeting predators on purpose and making them go savage!\"\n— Judy Hopps",
@@ -4869,10 +4177,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 4 or more can {E} to sing this song for free.)\nShuffle chosen character, item, or location into their player's deck. That player draws 2 cards.",
         "keywords": [],
@@ -4881,9 +4186,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "César Vergara"
-        ],
+        "illustrators": ["César Vergara"],
         "collector_number": "96",
         "lang": "en",
         "flavor_text": "I make everything happen!",
@@ -4917,9 +4220,7 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "If chosen opponent has more cards in their hand than you, draw cards until you have the same number.",
         "keywords": [],
@@ -4928,9 +4229,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Cory Godbey"
-        ],
+        "illustrators": ["Cory Godbey"],
         "collector_number": "97",
         "lang": "en",
         "flavor_text": null,
@@ -4964,9 +4263,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "YOU LOOK REGAL If you have a character named Prince John in play, you pay 1 {I} less to play this item.\nA FEELING OF POWER At the end of each opponent's turn, if they have more than 3 cards in their hand, they discard until they have 3 cards in their hand.",
         "keywords": [],
@@ -4975,9 +4272,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Stefano Zanchi"
-        ],
+        "illustrators": ["Stefano Zanchi"],
         "collector_number": "98",
         "lang": "en",
         "flavor_text": null,
@@ -5011,9 +4306,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "EXTRACT OF EMERALD 2 {I}, Banish this item — Your characters gain Ward until the start of your next turn. (Opponents can't choose them except to challenge.)",
         "keywords": [],
@@ -5022,9 +4315,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Stefano Zanchi"
-        ],
+        "illustrators": ["Stefano Zanchi"],
         "collector_number": "99",
         "lang": "en",
         "flavor_text": null,
@@ -5058,9 +4349,7 @@
         "inkwell": false,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "EMERALD LIGHT During opponents' turns, whenever one of your characters is banished, you may return chosen character to their player's hand.",
         "keywords": [],
@@ -5069,9 +4358,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "100",
         "lang": "en",
         "flavor_text": "\"Trust in the winds of change.\"\n- Inscription",
@@ -5106,9 +4393,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "FOREST HOME Your characters named Robin Hood may move here for free.\nFAMILIAR TERRAIN Characters gain Ward and “{E}, 1 {I} — Deal 2 damage to chosen damaged character” while here. (Opponents can't choose them except to challenge.)",
         "keywords": [],
@@ -5117,9 +4402,7 @@
         "willpower": 7,
         "lore": 0,
         "rarity": "Rare",
-        "illustrators": [
-            "Douglas De La Hoz"
-        ],
+        "illustrators": ["Douglas De La Hoz"],
         "collector_number": "101",
         "lang": "en",
         "flavor_text": "",
@@ -5154,9 +4437,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "SNACK TIME Opposing damaged characters gain Reckless. (They can't quest and must challenge if able.)",
         "keywords": [],
@@ -5165,9 +4446,7 @@
         "willpower": 6,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Andreas Rocha"
-        ],
+        "illustrators": ["Andreas Rocha"],
         "collector_number": "102",
         "lang": "en",
         "flavor_text": null,
@@ -5202,14 +4481,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Racer"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -5217,9 +4490,7 @@
         "willpower": 2,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Koni"
-        ],
+        "illustrators": ["Koni"],
         "collector_number": "103",
         "lang": "en",
         "flavor_text": "\"There's not a glimmer that can keep up with me. You might as well quit now.\"",
@@ -5254,13 +4525,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "REFRESHING BREAK Whenever you ready this character, gain 1 lore for each 1 damage on him.",
         "keywords": [],
         "move_cost": null,
@@ -5268,9 +4534,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Lisanne Koeteeuw"
-        ],
+        "illustrators": ["Lisanne Koeteeuw"],
         "collector_number": "104",
         "lang": "en",
         "flavor_text": null,
@@ -5305,13 +4569,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "ROYALLY BIG REWARDS At the end of your turn, if you have any characters in play with 5 {S} or more, gain 2 lore. If you have any in play with 10 {S} or more, gain 5 lore instead.",
         "keywords": [],
         "move_cost": null,
@@ -5319,9 +4578,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Federico Maria Cugliari"
-        ],
+        "illustrators": ["Federico Maria Cugliari"],
         "collector_number": "105",
         "lang": "en",
         "flavor_text": "It's easy to get carried away when it comes to tug-of-war.",
@@ -5356,26 +4613,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Racer"],
         "text": "Rush (This character can challenge the turn they're played.)\nGAME JUMP This character also counts as being named King Candy for Shift.",
-        "keywords": [
-            "Rush"
-        ],
+        "keywords": ["Rush"],
         "move_cost": null,
         "strength": 2,
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Juan Diego Leon"
-        ],
+        "illustrators": ["Juan Diego Leon"],
         "collector_number": "106",
         "lang": "en",
         "flavor_text": null,
@@ -5410,26 +4657,16 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "Knight"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "Knight"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Donald Duck.)\nHUMBLE PIE When you play this character, if you used Shift to play him, each opponent loses 2 lore.\nRAGING DUCK While an opponent has 10 or more lore, this character gets +6 {S}.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 6,
         "lore": 1,
         "rarity": "Legendary",
-        "illustrators": [
-            "César Vergara"
-        ],
+        "illustrators": ["César Vergara"],
         "collector_number": "107",
         "lang": "en",
         "flavor_text": null,
@@ -5464,14 +4701,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Racer"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -5479,9 +4710,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Ellie Horie"
-        ],
+        "illustrators": ["Ellie Horie"],
         "collector_number": "108",
         "lang": "en",
         "flavor_text": "Ingredients: Butter, sugar, unsweetened chocolate, vanilla, and arrogance.",
@@ -5516,13 +4745,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "LONG LIVE THE KING When you play this character, you may banish chosen character named Mufasa.",
         "keywords": [],
         "move_cost": null,
@@ -5530,9 +4754,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dinulescu Alexandru"
-        ],
+        "illustrators": ["Dinulescu Alexandru"],
         "collector_number": "109",
         "lang": "en",
         "flavor_text": "The second Rule of Villainy: Never settle for second place.",
@@ -5567,26 +4789,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Racer"],
         "text": "Rush (This character can challenge the turn they're played.)",
-        "keywords": [
-            "Rush"
-        ],
+        "keywords": ["Rush"],
         "move_cost": null,
         "strength": 2,
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Simangaliso Sibaya"
-        ],
+        "illustrators": ["Simangaliso Sibaya"],
         "collector_number": "110",
         "lang": "en",
         "flavor_text": "When it comes to racing, she never gets cold feet.",
@@ -5621,25 +4833,16 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "Evasive (Only characters with Evasive can challenge this character.)",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 2,
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Maddie Shilt"
-        ],
+        "illustrators": ["Maddie Shilt"],
         "collector_number": "111",
         "lang": "en",
         "flavor_text": "She has an unblemished record.",
@@ -5674,13 +4877,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero"],
         "text": "PERFECT PARTNERS While you have a character named Minnie Mouse in play, this character gets +2 {S}.",
         "keywords": [],
         "move_cost": null,
@@ -5688,9 +4886,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Raquel Villanueva"
-        ],
+        "illustrators": ["Raquel Villanueva"],
         "collector_number": "112",
         "lang": "en",
         "flavor_text": "He loves to share the spotlight with a star like Minnie.",
@@ -5725,13 +4921,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain"],
         "text": "NOTHING CAN STAND IN MY WAY While this character has damage, he gets +2 {S}.",
         "keywords": [],
         "move_cost": null,
@@ -5739,9 +4930,7 @@
         "willpower": 5,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Adam Fenton"
-        ],
+        "illustrators": ["Adam Fenton"],
         "collector_number": "113",
         "lang": "en",
         "flavor_text": "The world's most diabolical genius should never suffer such indignities!",
@@ -5776,14 +4965,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally", "Racer"],
         "text": "SHOWSTOPPER When you play this character, if you have a location in play, each opponent loses 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -5791,9 +4974,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Carlos Luzzi"
-        ],
+        "illustrators": ["Carlos Luzzi"],
         "collector_number": "114",
         "lang": "en",
         "flavor_text": "\"Never lose sight of where you're going. Second place.\"",
@@ -5828,12 +5009,8 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -5841,9 +5018,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Mike Parker"
-        ],
+        "illustrators": ["Mike Parker"],
         "collector_number": "115",
         "lang": "en",
         "flavor_text": "\"You'll pay for what you've done! I'll track you all the way to the Azurite Sea if I have to!\"",
@@ -5878,13 +5053,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "SCRAM! When you play this character, if you have another character named Pete in play, you may banish chosen opposing character.",
         "keywords": [],
         "move_cost": null,
@@ -5892,9 +5062,7 @@
         "willpower": 6,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Louis Jones"
-        ],
+        "illustrators": ["Louis Jones"],
         "collector_number": "116",
         "lang": "en",
         "flavor_text": null,
@@ -5929,26 +5097,16 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally", "Racer"],
         "text": "Shift 2 (You may pay 2 {I} to play this on top of one of your characters named Taffyta Muttonfudge.)\nNEW ROSTER Once per turn, when this character moves to a location, gain 2 lore.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Jiahui Eva Gao"
-        ],
+        "illustrators": ["Jiahui Eva Gao"],
         "collector_number": "117",
         "lang": "en",
         "flavor_text": null,
@@ -5983,13 +5141,8 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "MY GREATEST PERFORMANCE Whenever this character quests, look at the top 4 cards of your deck. You may reveal an action card with cost 6 or less and play it for free. Put the rest in your discard.",
         "keywords": [],
         "move_cost": null,
@@ -5997,9 +5150,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Federico Maria Cugliari"
-        ],
+        "illustrators": ["Federico Maria Cugliari"],
         "collector_number": "118",
         "lang": "en",
         "flavor_text": null,
@@ -6034,25 +5185,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain"],
         "text": "A MAN AMONG MEN! For each damaged character you have in play, you pay 2 {I} less to play this character.\nRush (This character can challenge the turn they're played.)",
-        "keywords": [
-            "Rush"
-        ],
+        "keywords": ["Rush"],
         "move_cost": null,
         "strength": 10,
         "willpower": 6,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Dave Alvarez / Livio Cacciatore"
-        ],
+        "illustrators": ["Dave Alvarez / Livio Cacciatore"],
         "collector_number": "119",
         "lang": "en",
         "flavor_text": null,
@@ -6087,13 +5229,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -6101,9 +5238,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Gaku Kumatori"
-        ],
+        "illustrators": ["Gaku Kumatori"],
         "collector_number": "120",
         "lang": "en",
         "flavor_text": "His half-baked scheme to whisk away the food almost worked. But in the end, he got his just desserts.",
@@ -6138,25 +5273,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "Reckless (This character can't quest and must challenge each turn if able.)",
-        "keywords": [
-            "Reckless"
-        ],
+        "keywords": ["Reckless"],
         "move_cost": null,
         "strength": 2,
         "willpower": 3,
         "lore": 0,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Brian Weisz"
-        ],
+        "illustrators": ["Brian Weisz"],
         "collector_number": "121",
         "lang": "en",
         "flavor_text": "\"Hold it, boy. Not so fast.\" -Merlin",
@@ -6191,13 +5317,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "PLUCKY PLAY Whenever this character challenges another character, each opponent loses 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -6205,9 +5326,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Francesco D’ippolito / Giuseppe di Maio"
-        ],
+        "illustrators": ["Francesco D’ippolito / Giuseppe di Maio"],
         "collector_number": "122",
         "lang": "en",
         "flavor_text": "He keeps his eye on the prize.",
@@ -6242,26 +5361,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Ratigan.)\nEvasive (Only characters with Evasive can challenge this character.)\nDELIGHTFULLY WICKED Your damaged characters get +2 {S}.",
-        "keywords": [
-            "Evasive",
-            "Shift"
-        ],
+        "keywords": ["Evasive", "Shift"],
         "move_cost": null,
         "strength": 5,
         "willpower": 5,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Nicholas Kole"
-        ],
+        "illustrators": ["Nicholas Kole"],
         "collector_number": "123",
         "lang": "en",
         "flavor_text": null,
@@ -6296,27 +5405,16 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Princess",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Princess", "Racer"],
         "text": "Rush (This character can challenge the turn they're played.)\nPIXLEXIA When you play this character, she gains Evasive until the start of your next turn. (Only characters with Evasive can challenge them.)",
-        "keywords": [
-            "Rush"
-        ],
+        "keywords": ["Rush"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Hyuna Lee"
-        ],
+        "illustrators": ["Hyuna Lee"],
         "collector_number": "124",
         "lang": "en",
         "flavor_text": null,
@@ -6351,14 +5449,8 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Prince"],
         "text": "I LAUGH IN THE FACE OF DANGER When you play this character, chosen character gets +2 {S} this turn.",
         "keywords": [],
         "move_cost": null,
@@ -6366,9 +5458,7 @@
         "willpower": 1,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Valentin Palombo"
-        ],
+        "illustrators": ["Valentin Palombo"],
         "collector_number": "125",
         "lang": "en",
         "flavor_text": null,
@@ -6403,13 +5493,8 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero"],
         "text": "DANCE-OFF Whenever this character or one of your characters named Mickey Mouse challenges another character, gain 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -6417,9 +5502,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Raquel Villanueva"
-        ],
+        "illustrators": ["Raquel Villanueva"],
         "collector_number": "126",
         "lang": "en",
         "flavor_text": "She doesn't seek the spotlight—the spotlight seeks her.",
@@ -6453,9 +5536,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Deal 1 damage to chosen character of yours. They gain Rush and get +1 {S} this turn. (They can challenge the turn they're played.)",
         "keywords": [],
@@ -6464,9 +5545,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Brian Kesinger"
-        ],
+        "illustrators": ["Brian Kesinger"],
         "collector_number": "127",
         "lang": "en",
         "flavor_text": "Tink darted from the shattered lantern in the blink of an eye.",
@@ -6500,9 +5579,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Ready chosen character of yours. They can't quest for the rest of this turn. If a Villain character is chosen, gain 1 lore.",
         "keywords": [],
@@ -6511,9 +5588,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Adam Bunch"
-        ],
+        "illustrators": ["Adam Bunch"],
         "collector_number": "128",
         "lang": "en",
         "flavor_text": null,
@@ -6547,10 +5622,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 7 or more can {E} to sing this song for free.)\nReady all your characters. They can't quest for the rest of this turn.",
         "keywords": [],
@@ -6559,9 +5631,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Linh Dang"
-        ],
+        "illustrators": ["Linh Dang"],
         "collector_number": "129",
         "lang": "en",
         "flavor_text": "Let's call it a night",
@@ -6595,9 +5665,7 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Banish chosen character of yours to banish chosen character.",
         "keywords": [],
@@ -6606,9 +5674,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Ian MacDonald"
-        ],
+        "illustrators": ["Ian MacDonald"],
         "collector_number": "130",
         "lang": "en",
         "flavor_text": "Hades: \"Listen, kid. If I'm gettin' banished back to the lorebook, you're going with me.\" Hercules: \"We'll see about that.\"",
@@ -6642,9 +5708,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Your characters get +2 {S} this turn.\nWhenever one of your characters with Reckless challenges another character this turn, gain 2 lore.",
         "keywords": [],
@@ -6653,9 +5717,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Denny Minonne"
-        ],
+        "illustrators": ["Denny Minonne"],
         "collector_number": "131",
         "lang": "en",
         "flavor_text": "\"Don't forget, the purple unicorn is mine!\"",
@@ -6689,9 +5751,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "VILE CONCOCTION 1 {I}, Banish this item — Chosen character gets +3 {S} this turn. If a Villain character is chosen, they get +4 {S} instead.",
         "keywords": [],
@@ -6700,9 +5760,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Kendall Hale"
-        ],
+        "illustrators": ["Kendall Hale"],
         "collector_number": "132",
         "lang": "en",
         "flavor_text": null,
@@ -6736,9 +5794,7 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "POWER APPOINTED At the start of your turn, if you have a character in play with more {S} than each opposing character in play, each opponent loses 1 lore and you gain lore equal to the lore lost.",
         "keywords": [],
@@ -6747,9 +5803,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Mario Oscar Gabriele"
-        ],
+        "illustrators": ["Mario Oscar Gabriele"],
         "collector_number": "133",
         "lang": "en",
         "flavor_text": null,
@@ -6783,9 +5837,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "RUBY LIGHT {E} — Chosen character gets +1 {S} this turn.",
         "keywords": [],
@@ -6794,9 +5846,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "134",
         "lang": "en",
         "flavor_text": "\"Leave fear behind.\"\n– Inscription",
@@ -6831,9 +5881,7 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "ON YOUR MARKS! Once per turn, you may {E} chosen character here and deal them 1 damage to move them to another location for free.",
         "keywords": [],
@@ -6842,9 +5890,7 @@
         "willpower": 5,
         "lore": 0,
         "rarity": "Rare",
-        "illustrators": [
-            "Cristian Romero"
-        ],
+        "illustrators": ["Cristian Romero"],
         "collector_number": "135",
         "lang": "en",
         "flavor_text": null,
@@ -6879,9 +5925,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "MISFITS' REVELRY While you have a damaged character here, this location gets +2 {L}.",
         "keywords": [],
@@ -6890,9 +5934,7 @@
         "willpower": 7,
         "lore": 0,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Jeremy Adams"
-        ],
+        "illustrators": ["Jeremy Adams"],
         "collector_number": "136",
         "lang": "en",
         "flavor_text": null,
@@ -6927,15 +5969,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "King",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "King", "Racer"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -6943,9 +5978,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Otto Paredes"
-        ],
+        "illustrators": ["Otto Paredes"],
         "collector_number": "137",
         "lang": "en",
         "flavor_text": "\"My sweet subjects, I can without a pinch of hesitation assure you that I have never been so happy.\"",
@@ -6980,13 +6013,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -6994,9 +6022,7 @@
         "willpower": 3,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Rianti Hidayat"
-        ],
+        "illustrators": ["Rianti Hidayat"],
         "collector_number": "138",
         "lang": "en",
         "flavor_text": "\"Look, look! My tooth is even looser today!\"",
@@ -7031,27 +6057,16 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Queen", "Sorcerer"],
         "text": "Ward (Opponents can't choose this character except to challenge.)",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 0,
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Carmine Pucci"
-        ],
+        "illustrators": ["Carmine Pucci"],
         "collector_number": "139",
         "lang": "en",
         "flavor_text": "She'd seen what the ink could do for other glimmers. What could it do for her?",
@@ -7086,13 +6101,8 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -7100,9 +6110,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Cam Kendell"
-        ],
+        "illustrators": ["Cam Kendell"],
         "collector_number": "140",
         "lang": "en",
         "flavor_text": "\"The secret room should be right here! Ach, I cannot believe I paid a whole penny for this map.\"",
@@ -7137,14 +6145,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain", "Prince"],
         "text": "TAXES NEVER FAIL ME Whenever you play an item, this character gets +2 {S} this turn.",
         "keywords": [],
         "move_cost": null,
@@ -7152,9 +6154,7 @@
         "willpower": 5,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Carlos Gomes Cabral"
-        ],
+        "illustrators": ["Carlos Gomes Cabral"],
         "collector_number": "141",
         "lang": "en",
         "flavor_text": "\"Of course I'm on the list. Check under 'PJ.'\"",
@@ -7189,14 +6189,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Mentor",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Mentor", "Sorcerer"],
         "text": "LONG LIVE THE KING! Your characters named Arthur gain Resist +1. (Damage dealt to them is reduced by 1.)",
         "keywords": [],
         "move_cost": null,
@@ -7204,9 +6198,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "142",
         "lang": "en",
         "flavor_text": "\"A little peace and quiet will do your health good, boy.\"",
@@ -7241,13 +6233,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "HELPFUL SUPPLIES At the start of your turn, if you have an item in play, gain 1 lore.\nPERFECT DIRECTIONS At the start of your turn, if you have a location in play, gain 1 lore.",
         "keywords": [],
         "move_cost": null,
@@ -7255,9 +6242,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Alex Accorsi"
-        ],
+        "illustrators": ["Alex Accorsi"],
         "collector_number": "143",
         "lang": "en",
         "flavor_text": null,
@@ -7292,28 +6277,16 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain", "Queen", "Sorcerer"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named The Queen.)\nWard (Opponents can't choose this character except to challenge.)\nREFLECTIONS OF VANITY For each other character named The Queen you have in play, this character gets +1 {L}.",
-        "keywords": [
-            "Shift",
-            "Ward"
-        ],
+        "keywords": ["Shift", "Ward"],
         "move_cost": null,
         "strength": 2,
         "willpower": 6,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Aisha Durmagambetova"
-        ],
+        "illustrators": ["Aisha Durmagambetova"],
         "collector_number": "144",
         "lang": "en",
         "flavor_text": null,
@@ -7348,25 +6321,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "EVERY LITTLE BIT HELPS For each item you have in play, you pay 1 {I} less to play this character.\nSupport (Whenever this character quests, you may add their {S} to another chosen character's {S} this turn.)",
-        "keywords": [
-            "Support"
-        ],
+        "keywords": ["Support"],
         "move_cost": null,
         "strength": 5,
         "willpower": 9,
         "lore": 4,
         "rarity": "Rare",
-        "illustrators": [
-            "Josep Solé"
-        ],
+        "illustrators": ["Josep Solé"],
         "collector_number": "145",
         "lang": "en",
         "flavor_text": null,
@@ -7401,25 +6365,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "Support (Whenever this character quests, you may add their {S} to another chosen character's {S} this turn.)\nONE ON THE WAY During your turn, when you put a card into your inkwell, if it's the second card you've put into your inkwell this turn, you may draw a card.",
-        "keywords": [
-            "Support"
-        ],
+        "keywords": ["Support"],
         "move_cost": null,
         "strength": 2,
         "willpower": 1,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Grace Tran"
-        ],
+        "illustrators": ["Grace Tran"],
         "collector_number": "146",
         "lang": "en",
         "flavor_text": null,
@@ -7454,14 +6409,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Prince"],
         "text": "BEAUTIFUL, LOVELY TAXES {E} — Play an item from your hand or discard with cost 5 or less for free, exerted.",
         "keywords": [],
         "move_cost": null,
@@ -7469,9 +6418,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Koni"
-        ],
+        "illustrators": ["Koni"],
         "collector_number": "147",
         "lang": "en",
         "flavor_text": "A villainous schemer from day to night.",
@@ -7506,27 +6453,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Queen",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Queen", "Sorcerer"],
         "text": "Ward (Opponents can't choose this character except to challenge.)\nGATHERER OF THE WICKED When you play this character, look at the top 3 cards of your deck. You may reveal any number of character cards named The Queen and put them into your hand. Put the rest on the bottom of your deck in any order.",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 3,
         "willpower": 2,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Lava Hijzelaar / Ellie Horie"
-        ],
+        "illustrators": ["Lava Hijzelaar / Ellie Horie"],
         "collector_number": "148",
         "lang": "en",
         "flavor_text": null,
@@ -7561,13 +6497,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "King"],
         "text": "OUTPLACEMENT When you play this character, you may put chosen item or location into its player's inkwell facedown and exerted.\nBY INVITE ONLY 4 {I} — Your other characters gain Resist +1 until the start of your next turn. (Damage dealt to them is reduced by 1.)",
         "keywords": [],
         "move_cost": null,
@@ -7575,9 +6506,7 @@
         "willpower": 5,
         "lore": 2,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Carlos Ruiz"
-        ],
+        "illustrators": ["Carlos Ruiz"],
         "collector_number": "149",
         "lang": "en",
         "flavor_text": null,
@@ -7612,14 +6541,8 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Mentor",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Mentor", "King"],
         "text": "A DELICATE BALANCE When you play this character, exert all cards in your inkwell, then return 2 cards at random from your inkwell to your hand.\nEVERYTHING THE LIGHT TOUCHES Whenever this character quests, ready all cards in your inkwell.",
         "keywords": [],
         "move_cost": null,
@@ -7627,9 +6550,7 @@
         "willpower": 9,
         "lore": 4,
         "rarity": "Legendary",
-        "illustrators": [
-            "Jeanne Plounevez"
-        ],
+        "illustrators": ["Jeanne Plounevez"],
         "collector_number": "150",
         "lang": "en",
         "flavor_text": null,
@@ -7664,13 +6585,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -7678,9 +6594,7 @@
         "willpower": 4,
         "lore": 3,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Matt Chapman"
-        ],
+        "illustrators": ["Matt Chapman"],
         "collector_number": "151",
         "lang": "en",
         "flavor_text": "\"So you see, there's a dark void at the edge of Lorcana. A complete absence of electromagnetic radiation! What's it made of? I don't know! The light's just gone. Kaput!\"",
@@ -7715,14 +6629,8 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Inventor"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Inventor"],
         "text": "CAKE CATAPULT When you play this character, chosen character gets -2 {S} this turn.",
         "keywords": [],
         "move_cost": null,
@@ -7730,9 +6638,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Lauren Levering"
-        ],
+        "illustrators": ["Lauren Levering"],
         "collector_number": "152",
         "lang": "en",
         "flavor_text": "This puts the Frosting Flinger 2000 to shame.",
@@ -7767,26 +6673,16 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Detective"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Detective"],
         "text": "Support (Whenever this character quests, you may add their {S} to another chosen character's {S} this turn.)",
-        "keywords": [
-            "Support"
-        ],
+        "keywords": ["Support"],
         "move_cost": null,
         "strength": 2,
         "willpower": 1,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Eva Widermann"
-        ],
+        "illustrators": ["Eva Widermann"],
         "collector_number": "153",
         "lang": "en",
         "flavor_text": "\"This case is as good as solved!\"\n-Basil",
@@ -7821,27 +6717,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain",
-            "King",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain", "King", "Racer"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named King Candy.)\nCHANGING THE CODE When you play this character, you may draw 2 cards, then put a card from your hand on the bottom of your deck.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Jake Parker"
-        ],
+        "illustrators": ["Jake Parker"],
         "collector_number": "154",
         "lang": "en",
         "flavor_text": null,
@@ -7876,14 +6761,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Detective"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Detective"],
         "text": "BAFFLING MYSTERY When you play this character, you may put the top card of your deck into your inkwell facedown and exerted.",
         "keywords": [],
         "move_cost": null,
@@ -7891,9 +6770,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Luigi Aimé"
-        ],
+        "illustrators": ["Luigi Aimé"],
         "collector_number": "155",
         "lang": "en",
         "flavor_text": "There's just gotta be one of those chromi-thingies around here somewhere!",
@@ -7928,13 +6805,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "YOUR BROTHERS NEED GUIDANCE When you play this character, you may remove up to 1 damage from chosen character or location.",
         "keywords": [],
         "move_cost": null,
@@ -7942,9 +6814,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "156",
         "lang": "en",
         "flavor_text": null,
@@ -7979,13 +6849,8 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "MEASURE ME AGAIN When you play this character, you may put a card from your hand into your inkwell facedown and exerted.",
         "keywords": [],
         "move_cost": null,
@@ -7993,9 +6858,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Kapik"
-        ],
+        "illustrators": ["Kapik"],
         "collector_number": "157",
         "lang": "en",
         "flavor_text": "\"Mom, Mom! I think I'm still growing!\"",
@@ -8030,26 +6893,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Princess"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Princess"],
         "text": "Ward (Opponents can't choose this character except to challenge.)\nUSHERED INTO THE PARTY When you play this character, your other characters gain Ward until the start of your next turn.",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 2,
         "willpower": 3,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "French Carlomagno"
-        ],
+        "illustrators": ["French Carlomagno"],
         "collector_number": "158",
         "lang": "en",
         "flavor_text": null,
@@ -8084,26 +6937,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Mentor",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Mentor", "Sorcerer"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Merlin.)\nOVERDEVELOPED BRAIN When you play this character, if you used Shift to play him, you may search your deck for any card, put that card into your hand, then shuffle your deck.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 7,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Jake Parker"
-        ],
+        "illustrators": ["Jake Parker"],
         "collector_number": "159",
         "lang": "en",
         "flavor_text": null,
@@ -8137,9 +6980,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Look at the top 5 cards of your deck. Put one into your hand and the rest on the bottom of your deck in any order.",
         "keywords": [],
@@ -8148,9 +6989,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Leonardo Giammichele"
-        ],
+        "illustrators": ["Leonardo Giammichele"],
         "collector_number": "160",
         "lang": "en",
         "flavor_text": "\"We must repair the Illuminary before it's too late. And we'll need these devices, these chromicons, to fix it.\"",
@@ -8184,9 +7023,7 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Banish any number of your items, then draw a card for each item banished this way.",
         "keywords": [],
@@ -8195,9 +7032,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Michela Cacciatore / Giulia Riva"
-        ],
+        "illustrators": ["Michela Cacciatore / Giulia Riva"],
         "collector_number": "161",
         "lang": "en",
         "flavor_text": "\"I am King! King! King!\"",
@@ -8231,10 +7066,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 2 or more can {E} to sing this song for free.)\nRemove up to 2 damage from any number of chosen characters.",
         "keywords": [],
@@ -8243,9 +7075,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Grace Tran"
-        ],
+        "illustrators": ["Grace Tran"],
         "collector_number": "162",
         "lang": "en",
         "flavor_text": "It will surprise you\nJust like the sun from the east",
@@ -8279,9 +7109,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Put chosen item or location into its player's inkwell facedown and exerted.",
         "keywords": [],
@@ -8290,9 +7118,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Mike Parker"
-        ],
+        "illustrators": ["Mike Parker"],
         "collector_number": "163",
         "lang": "en",
         "flavor_text": "Fauna: \"Oh my! We dropped some ...\"\nMerryweather: \"You mean you dropped some!\"",
@@ -8326,9 +7152,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Put chosen character of yours into your inkwell facedown and exerted.",
         "keywords": [],
@@ -8337,9 +7161,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Adam Ford"
-        ],
+        "illustrators": ["Adam Ford"],
         "collector_number": "164",
         "lang": "en",
         "flavor_text": "\"Pretty pathetic, huh?\"",
@@ -8373,9 +7195,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "CONGRATULATIONS, SOLDIER {E}, 2 {I}, Banish this item — Chosen character of yours gets +2 {L} this turn.",
         "keywords": [],
@@ -8384,9 +7204,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Toni Bruno"
-        ],
+        "illustrators": ["Toni Bruno"],
         "collector_number": "165",
         "lang": "en",
         "flavor_text": "\"You have etched in the rock of virtue a legacy beyond compare.\"\n- General Hologram",
@@ -8420,9 +7238,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "FIND WHAT'S HIDDEN {E}, 2 {I} — Look at the top 3 cards of your deck. You may reveal an item card and put it into your hand. Put the rest on the bottom of your deck in any order.",
         "keywords": [],
@@ -8431,9 +7247,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "McKay Anderson"
-        ],
+        "illustrators": ["McKay Anderson"],
         "collector_number": "166",
         "lang": "en",
         "flavor_text": "'I say, a piece of the Hexwell Crown!' – Basil",
@@ -8467,9 +7281,7 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "HOCKETY POCKETY {E}, 1 {I} — Return an item card from your discard to your hand.",
         "keywords": [],
@@ -8478,9 +7290,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Gaku Kumatori"
-        ],
+        "illustrators": ["Gaku Kumatori"],
         "collector_number": "167",
         "lang": "en",
         "flavor_text": "'What a way to pack!' – Arthur",
@@ -8514,9 +7324,7 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "POWERING UP This item enters play exerted.\nSAPPHIRE LIGHT {E}, 2 {I}, Banish one of your items — Gain 2 lore.",
         "keywords": [],
@@ -8525,9 +7333,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "168",
         "lang": "en",
         "flavor_text": "\"Knowledge is eternal.\"\n-Inscription",
@@ -8562,9 +7368,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "WARM WELCOME Characters with Support get +1 {L} and +2 {W} while here.",
         "keywords": [],
@@ -8573,9 +7377,7 @@
         "willpower": 9,
         "lore": 0,
         "rarity": "Rare",
-        "illustrators": [
-            "Carlos Ruiz"
-        ],
+        "illustrators": ["Carlos Ruiz"],
         "collector_number": "169",
         "lang": "en",
         "flavor_text": "Every surface glows with the joy of celebration.",
@@ -8610,9 +7412,7 @@
         "inkwell": true,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "KNOWLEDGE IS POWER Each player plays with the top card of their deck face up.",
         "keywords": [],
@@ -8621,9 +7421,7 @@
         "willpower": 7,
         "lore": 0,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Gabe"
-        ],
+        "illustrators": ["Gabe"],
         "collector_number": "170",
         "lang": "en",
         "flavor_text": null,
@@ -8658,14 +7456,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Alien"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Alien"],
         "text": "HEAVE HO! When you play this character, you may deal 2 damage to chosen character.",
         "keywords": [],
         "move_cost": null,
@@ -8673,9 +7465,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Karen Hallion"
-        ],
+        "illustrators": ["Karen Hallion"],
         "collector_number": "171",
         "lang": "en",
         "flavor_text": "He's not the biggest glimmer on the team, but he still packs a wallop.",
@@ -8710,26 +7500,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain", "Sorcerer"],
         "text": "Challenger +7 (While challenging, this character gets +7 {S}.)\nINTIMIDATING GAZE Opposing characters with cost 4 or less can't challenge.",
-        "keywords": [
-            "Challenger"
-        ],
+        "keywords": ["Challenger"],
         "move_cost": null,
         "strength": 0,
         "willpower": 7,
         "lore": 2,
         "rarity": "Legendary",
-        "illustrators": [
-            "Cam Kendell"
-        ],
+        "illustrators": ["Cam Kendell"],
         "collector_number": "172",
         "lang": "en",
         "flavor_text": "No one will keep me from the broken crown!",
@@ -8764,14 +7544,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Prince"],
         "text": "FACE THE PAST During your turn, whenever this character banishes another character in a challenge, you may draw a card.",
         "keywords": [],
         "move_cost": null,
@@ -8779,9 +7553,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alexandria Neonakis"
-        ],
+        "illustrators": ["Alexandria Neonakis"],
         "collector_number": "173",
         "lang": "en",
         "flavor_text": "\"This is my kingdom. If I don't fight for it, who will?\"",
@@ -8816,12 +7588,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -8829,9 +7597,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Jon Densk / Hayley Evans"
-        ],
+        "illustrators": ["Jon Densk / Hayley Evans"],
         "collector_number": "174",
         "lang": "en",
         "flavor_text": "\"The Illusionary can't handle this much groove! We have to keep the noise down or it'll fall apart for sure!\"",
@@ -8866,12 +7632,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -8879,9 +7641,7 @@
         "willpower": 7,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Valerio Buonfantino"
-        ],
+        "illustrators": ["Valerio Buonfantino"],
         "collector_number": "175",
         "lang": "en",
         "flavor_text": "\"Hey, I've been turned into a cow. Can I go home?\"",
@@ -8916,25 +7676,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "Resist +1 (Damage dealt to this character is reduced by 1.)",
-        "keywords": [
-            "Resist"
-        ],
+        "keywords": ["Resist"],
         "move_cost": null,
         "strength": 1,
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Mariana Moreno"
-        ],
+        "illustrators": ["Mariana Moreno"],
         "collector_number": "176",
         "lang": "en",
         "flavor_text": "Underestimating him is a recipe for disaster.",
@@ -8969,27 +7720,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "Bodyguard (This character may enter play exerted. An opposing character who challenges one of your characters must choose one with Bodyguard if able.)",
-        "keywords": [
-            "Bodyguard"
-        ],
+        "keywords": ["Bodyguard"],
         "move_cost": null,
         "strength": 0,
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Wouter Bruneel"
-        ],
+        "illustrators": ["Wouter Bruneel"],
         "collector_number": "177",
         "lang": "en",
         "flavor_text": null,
@@ -9024,25 +7764,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally"],
         "text": "Challenger +1 (While challenging, this character gets +1 {S}.)",
-        "keywords": [
-            "Challenger"
-        ],
+        "keywords": ["Challenger"],
         "move_cost": null,
         "strength": 1,
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alex Accorsi"
-        ],
+        "illustrators": ["Alex Accorsi"],
         "collector_number": "178",
         "lang": "en",
         "flavor_text": "\"Maybe *this* one's a chromicon. Probably not. I really should have paid more attention when that wizard guy was talking . . .\"",
@@ -9077,25 +7808,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally"],
         "text": "Bodyguard (This character may enter play exerted. An opposing character who challenges one of your characters must choose one with Bodyguard if able.)",
-        "keywords": [
-            "Bodyguard"
-        ],
+        "keywords": ["Bodyguard"],
         "move_cost": null,
         "strength": 4,
         "willpower": 5,
         "lore": 2,
         "rarity": "Common",
-        "illustrators": [
-            "Brian Weisz"
-        ],
+        "illustrators": ["Brian Weisz"],
         "collector_number": "179",
         "lang": "en",
         "flavor_text": "Who's the 'boat snack' now?!",
@@ -9130,15 +7852,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "HEADWIND When you play this character, chosen Knight character gains Challenger +2 this turn. (They get +2 {S} while challenging.)",
         "keywords": [],
         "move_cost": null,
@@ -9146,9 +7861,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "180",
         "lang": "en",
         "flavor_text": null,
@@ -9183,15 +7896,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "STRONGER TOGETHER When you play this character, if you have another Knight character in play, you may deal 1 damage to chosen character or location.",
         "keywords": [],
         "move_cost": null,
@@ -9199,9 +7905,7 @@
         "willpower": 2,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "181",
         "lang": "en",
         "flavor_text": null,
@@ -9236,26 +7940,16 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain",
-            "Princess"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain", "Princess"],
         "text": "I DON'T HAVE ANY OTHER CHOICE For each opposing character banished in a challenge this turn, you pay 2 {I} less to play this character.\nResist +3 (Damage dealt to this character is reduced by 3.)",
-        "keywords": [
-            "Resist"
-        ],
+        "keywords": ["Resist"],
         "move_cost": null,
         "strength": 5,
         "willpower": 5,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Jenna Gray"
-        ],
+        "illustrators": ["Jenna Gray"],
         "collector_number": "182",
         "lang": "en",
         "flavor_text": null,
@@ -9290,15 +7984,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Princess",
-            "Knight"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Princess", "Knight"],
         "text": "NATURAL LEADER This character gains Resist +1 for each other Knight character you have in play. (Damage dealt to this character is reduced by 1 for each other Knight.)",
         "keywords": [],
         "move_cost": null,
@@ -9306,9 +7993,7 @@
         "willpower": 5,
         "lore": 3,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Aubrey Archer"
-        ],
+        "illustrators": ["Aubrey Archer"],
         "collector_number": "183",
         "lang": "en",
         "flavor_text": "Friendship is the best armor of all.",
@@ -9343,14 +8028,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain",
-            "Sorcerer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain", "Sorcerer"],
         "text": "I'M WARNING YOU! During your turn, whenever one of your characters banishes a character in a challenge, you may deal 1 damage to chosen character.",
         "keywords": [],
         "move_cost": null,
@@ -9358,9 +8037,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Rare",
-        "illustrators": [
-            "Carlos Gomes Cabral"
-        ],
+        "illustrators": ["Carlos Gomes Cabral"],
         "collector_number": "184",
         "lang": "en",
         "flavor_text": "\"What do you mean, 'not on the list'?! I told you to always put me on the list!\"",
@@ -9395,26 +8072,16 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally",
-            "Captain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally", "Captain"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Kronk.)\nARE YOU ON THE LIST? During your turn, whenever this character banishes another character in a challenge, you may play a character with cost 5 or less for free.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 6,
         "willpower": 6,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Nicholas Kole"
-        ],
+        "illustrators": ["Nicholas Kole"],
         "collector_number": "185",
         "lang": "en",
         "flavor_text": null,
@@ -9449,15 +8116,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "BOON OF RESILIENCE While one of your Knight characters is at a location, that character gains Resist +2. (Damage dealt to them is reduced by 2.)\nBURST OF SPEED During your turn, this character gains Evasive. (They can challenge characters with Evasive.)",
         "keywords": [],
         "move_cost": null,
@@ -9465,9 +8125,7 @@
         "willpower": 1,
         "lore": 1,
         "rarity": "Super_rare",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "186",
         "lang": "en",
         "flavor_text": null,
@@ -9502,13 +8160,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain"],
         "text": "RE-PETE {E} - Reveal the top card of your deck. If it's a character card named Pete, you may play it for free.",
         "keywords": [],
         "move_cost": null,
@@ -9516,9 +8169,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Rianti Hidayat"
-        ],
+        "illustrators": ["Rianti Hidayat"],
         "collector_number": "187",
         "lang": "en",
         "flavor_text": "He'll have you seeing double.",
@@ -9553,13 +8204,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Knight"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Knight"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -9567,9 +8213,7 @@
         "willpower": 10,
         "lore": 3,
         "rarity": "Rare",
-        "illustrators": [
-            "Brian Weisz"
-        ],
+        "illustrators": ["Brian Weisz"],
         "collector_number": "188",
         "lang": "en",
         "flavor_text": "\"Well, by Jove. Don't just stand there. Raise a glass to my son Kay...and may we be rid of the trickster wizard Marvin, or whatever his blasted name was.\"",
@@ -9604,15 +8248,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "IMPRESS THE PRINCESS While you have a character named Snow White in play, this character gains Bodyguard. (An opposing character who challenges one of your characters must choose one with Bodyguard if able.)",
         "keywords": [],
         "move_cost": null,
@@ -9620,9 +8257,7 @@
         "willpower": 4,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Mariana Moreno"
-        ],
+        "illustrators": ["Mariana Moreno"],
         "collector_number": "189",
         "lang": "en",
         "flavor_text": null,
@@ -9657,13 +8292,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "",
         "keywords": [],
         "move_cost": null,
@@ -9671,9 +8301,7 @@
         "willpower": 2,
         "lore": 2,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Kasia Brzezinska"
-        ],
+        "illustrators": ["Kasia Brzezinska"],
         "collector_number": "190",
         "lang": "en",
         "flavor_text": "\"That boy's got real spark. Lots of spirit. Throws himself heart and soul into everything he does.\"\n–Merlin",
@@ -9708,15 +8336,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "BURST OF SPEED During your turn, this character gains Evasive. (They can challenge characters with Evasive.)",
         "keywords": [],
         "move_cost": null,
@@ -9724,9 +8345,7 @@
         "willpower": 1,
         "lore": 1,
         "rarity": "Common",
-        "illustrators": [
-            "Mariana Moreno"
-        ],
+        "illustrators": ["Mariana Moreno"],
         "collector_number": "191",
         "lang": "en",
         "flavor_text": null,
@@ -9761,26 +8380,16 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "King"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Simba.)\nFEARSOME ROAR When you play this character, you may banish chosen item or location.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 5,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Shannon Hallstein"
-        ],
+        "illustrators": ["Shannon Hallstein"],
         "collector_number": "192",
         "lang": "en",
         "flavor_text": null,
@@ -9815,15 +8424,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Ally",
-            "Knight",
-            "Seven Dwarfs"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Ally", "Knight", "Seven Dwarfs"],
         "text": "DRASTIC MEASURES When you play this character, you may discard your hand to draw 2 cards.",
         "keywords": [],
         "move_cost": null,
@@ -9831,9 +8433,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Mariana Moreno"
-        ],
+        "illustrators": ["Mariana Moreno"],
         "collector_number": "193",
         "lang": "en",
         "flavor_text": null,
@@ -9868,26 +8468,16 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "King"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Arthur.)\nKNIGHTED BY THE KING When you play this character, chosen character gains Challenger +2 and Resist +2 and can challenge ready characters this turn. (They get +2 {S} while challenging. Damage dealt to them is reduced by 2.)",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 6,
         "lore": 3,
         "rarity": "Legendary",
-        "illustrators": [
-            "Anna Stosik"
-        ],
+        "illustrators": ["Anna Stosik"],
         "collector_number": "194",
         "lang": "en",
         "flavor_text": null,
@@ -9922,13 +8512,8 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Villain"],
         "text": "BLOW THE WHISTLE When you play this character, opponents can't play actions until the start of your next turn.",
         "keywords": [],
         "move_cost": null,
@@ -9936,9 +8521,7 @@
         "willpower": 3,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Luis Huerta"
-        ],
+        "illustrators": ["Luis Huerta"],
         "collector_number": "195",
         "lang": "en",
         "flavor_text": "\"It ain't cheatin' if you're the one makin' the rules.\"",
@@ -9972,9 +8555,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Choose one:\n• Deal 1 damage to each opposing character without Evasive.\n• Deal 3 damage to each opposing character with Evasive.",
         "keywords": [],
@@ -9983,9 +8564,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Maxine Vee"
-        ],
+        "illustrators": ["Maxine Vee"],
         "collector_number": "196",
         "lang": "en",
         "flavor_text": null,
@@ -10019,10 +8598,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 3 or more can {E} to sing this song for free.)\nChosen character can't challenge during their next turn. Draw a card.",
         "keywords": [],
@@ -10031,9 +8607,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Javi Salas"
-        ],
+        "illustrators": ["Javi Salas"],
         "collector_number": "197",
         "lang": "en",
         "flavor_text": "Stuck in the same place I've always been...",
@@ -10067,9 +8641,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Chosen character gains Resist +1 and Evasive this turn. (Damage dealt to them is reduced by 1. They can challenge characters with Evasive.)",
         "keywords": [],
@@ -10078,9 +8650,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Gianluca Barone"
-        ],
+        "illustrators": ["Gianluca Barone"],
         "collector_number": "198",
         "lang": "en",
         "flavor_text": null,
@@ -10114,9 +8684,7 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Your characters gain “{E}, 1 {I} — Deal 1 damage to chosen character” this turn.",
         "keywords": [],
@@ -10125,9 +8693,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Leonardo Giammichele"
-        ],
+        "illustrators": ["Leonardo Giammichele"],
         "collector_number": "199",
         "lang": "en",
         "flavor_text": "\"Gawrsh, who ordered the...upside-down CAA-AA-AKE?\"",
@@ -10161,9 +8727,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "DEFLECT Banish this item — Chosen character gains Resist +1 until the start of your next turn. (Damage dealt to them is reduced by 1.)",
         "keywords": [],
@@ -10172,9 +8736,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Common",
-        "illustrators": [
-            "Eva Widermann"
-        ],
+        "illustrators": ["Eva Widermann"],
         "collector_number": "200",
         "lang": "en",
         "flavor_text": null,
@@ -10208,9 +8770,7 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "WELL CRAFTED {E} — Chosen character gains Resist +2 until the start of your next turn. (Damage dealt to them is reduced by 2.)",
         "keywords": [],
@@ -10219,9 +8779,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Rare",
-        "illustrators": [
-            "Gaku Kumatori"
-        ],
+        "illustrators": ["Gaku Kumatori"],
         "collector_number": "201",
         "lang": "en",
         "flavor_text": null,
@@ -10255,9 +8813,7 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Item"
-        ],
+        "type": ["Item"],
         "classifications": null,
         "text": "STEEL LIGHT {E} — Deal 1 damage to chosen character.",
         "keywords": [],
@@ -10266,9 +8822,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Dustin Panzino"
-        ],
+        "illustrators": ["Dustin Panzino"],
         "collector_number": "202",
         "lang": "en",
         "flavor_text": "\"Strong in will, strong in battle.\"\n– Inscription",
@@ -10303,9 +8857,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "THERE'S NO ONE I'D RATHER BE THAN ME Villain characters gain “{E}, 3 {I} — Play a character with the same name as this character for free” while here.",
         "keywords": [],
@@ -10314,9 +8866,7 @@
         "willpower": 7,
         "lore": 1,
         "rarity": "Rare",
-        "illustrators": [
-            "Saulo Nate"
-        ],
+        "illustrators": ["Saulo Nate"],
         "collector_number": "203",
         "lang": "en",
         "flavor_text": null,
@@ -10351,9 +8901,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "MOUNTAIN DEFENSE During your turn, the first time you move a character here, you may deal 1 damage to chosen character. If the moved character is a Knight, deal 2 damage instead.",
         "keywords": [],
@@ -10362,9 +8910,7 @@
         "willpower": 6,
         "lore": 1,
         "rarity": "Uncommon",
-        "illustrators": [
-            "Alexa Rockman"
-        ],
+        "illustrators": ["Alexa Rockman"],
         "collector_number": "204",
         "lang": "en",
         "flavor_text": null,
@@ -10399,26 +8945,16 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero",
-            "Prince"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero", "Prince"],
         "text": "Singer 6 (This character counts as cost 6 to sing songs.)\nIT'S BEAUTIFUL, NO? When you play this character, you may play a song with cost 6 or less for free.",
-        "keywords": [
-            "Singer"
-        ],
+        "keywords": ["Singer"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Aisha Durmagambetova"
-        ],
+        "illustrators": ["Aisha Durmagambetova"],
         "collector_number": "205",
         "lang": "en",
         "flavor_text": null,
@@ -10452,27 +8988,16 @@
         "inkwell": true,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "Princess",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "Princess", "Racer"],
         "text": "Shift 2 (You may pay 2 {I} to play this on top of one of your characters named Vanellope von Schweetz.)\nI HEREBY DECREE Whenever you play another Princess character, all opposing characters get -1 {S} until the start of your next turn.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 2,
         "willpower": 4,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Natalie Dombois"
-        ],
+        "illustrators": ["Natalie Dombois"],
         "collector_number": "206",
         "lang": "en",
         "flavor_text": null,
@@ -10505,9 +9030,7 @@
         "inkwell": false,
         "ink": "Amber",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Play a character with cost 5 or less from your discard for free.",
         "keywords": [],
@@ -10516,9 +9039,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Aisha Durmagambetova"
-        ],
+        "illustrators": ["Aisha Durmagambetova"],
         "collector_number": "207",
         "lang": "en",
         "flavor_text": null,
@@ -10552,27 +9073,16 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named Archimedes.)\nEvasive (Only characters with Evasive can challenge this character.)\nChallenger +3 (While challenging, this character gets +3 {S}.)",
-        "keywords": [
-            "Challenger",
-            "Evasive",
-            "Shift"
-        ],
+        "keywords": ["Challenger", "Evasive", "Shift"],
         "move_cost": null,
         "strength": 1,
         "willpower": 4,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Andrew Thompson"
-        ],
+        "illustrators": ["Andrew Thompson"],
         "collector_number": "208",
         "lang": "en",
         "flavor_text": null,
@@ -10606,25 +9116,16 @@
         "inkwell": false,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Ally"],
         "text": "CLEAR THE PATH For each exerted character opponents have in play, you pay 1 {I} less to play this character.\nEvasive (Only characters with Evasive can challenge this character.)",
-        "keywords": [
-            "Evasive"
-        ],
+        "keywords": ["Evasive"],
         "move_cost": null,
         "strength": 6,
         "willpower": 6,
         "lore": 3,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Alice Pisoni"
-        ],
+        "illustrators": ["Alice Pisoni"],
         "collector_number": "209",
         "lang": "en",
         "flavor_text": null,
@@ -10657,9 +9158,7 @@
         "inkwell": true,
         "ink": "Amethyst",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Draw 3 cards.",
         "keywords": [],
@@ -10668,9 +9167,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Rachel Elese"
-        ],
+        "illustrators": ["Rachel Elese"],
         "collector_number": "210",
         "lang": "en",
         "flavor_text": null,
@@ -10704,25 +9201,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Ally"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Ally"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Clarabelle.)\nKEEP IN STEP At the end of your turn, if chosen opponent has more cards in their hand than you, you may draw cards until you have the same number.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 5,
         "willpower": 6,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Natalie Dombois"
-        ],
+        "illustrators": ["Natalie Dombois"],
         "collector_number": "211",
         "lang": "en",
         "flavor_text": null,
@@ -10756,25 +9244,16 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Villain"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Villain"],
         "text": "Ward (Opponents can't choose this character except to challenge.)\nLIFE'S NOT FAIR, IS IT? Whenever one of your characters challenges a damaged character, you may draw a card.",
-        "keywords": [
-            "Ward"
-        ],
+        "keywords": ["Ward"],
         "move_cost": null,
         "strength": 4,
         "willpower": 2,
         "lore": 1,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Dominik Mayer"
-        ],
+        "illustrators": ["Dominik Mayer"],
         "collector_number": "212",
         "lang": "en",
         "flavor_text": null,
@@ -10807,10 +9286,7 @@
         "inkwell": true,
         "ink": "Emerald",
         "inks": null,
-        "type": [
-            "Action",
-            "Song"
-        ],
+        "type": ["Action", "Song"],
         "classifications": null,
         "text": "(A character with cost 4 or more can {E} to sing this song for free.)\nShuffle chosen character, item, or location into their player's deck. That player draws 2 cards.",
         "keywords": [],
@@ -10819,9 +9295,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Stefano Zanchi"
-        ],
+        "illustrators": ["Stefano Zanchi"],
         "collector_number": "213",
         "lang": "en",
         "flavor_text": null,
@@ -10855,26 +9329,16 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "Knight"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "Knight"],
         "text": "Shift 4 (You may pay 4 {I} to play this on top of one of your characters named Donald Duck.)\nHUMBLE PIE When you play this character, if you used Shift to play him, each opponent loses 2 lore.\nRAGING DUCK While an opponent has 10 or more lore, this character gets +6 {S}.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 6,
         "lore": 1,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Gabriel Quinn"
-        ],
+        "illustrators": ["Gabriel Quinn"],
         "collector_number": "214",
         "lang": "en",
         "flavor_text": null,
@@ -10908,13 +9372,8 @@
         "inkwell": false,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Hero"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Hero"],
         "text": "MY GREATEST PERFORMANCE Whenever this character quests, look at the top 4 cards of your deck. You may reveal an action card with cost 6 or less and play it for free. Put the rest in your discard.",
         "keywords": [],
         "move_cost": null,
@@ -10922,9 +9381,7 @@
         "willpower": 4,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Vanessa Morales"
-        ],
+        "illustrators": ["Vanessa Morales"],
         "collector_number": "215",
         "lang": "en",
         "flavor_text": null,
@@ -10958,9 +9415,7 @@
         "inkwell": true,
         "ink": "Ruby",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "MISFITS' REVELRY While you have a damaged character here, this location gets +2 {L}.",
         "keywords": [],
@@ -10969,9 +9424,7 @@
         "willpower": 7,
         "lore": 0,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Rachel Elese"
-        ],
+        "illustrators": ["Rachel Elese"],
         "collector_number": "216",
         "lang": "en",
         "flavor_text": null,
@@ -11005,14 +9458,8 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Storyborn",
-            "Mentor",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Storyborn", "Mentor", "King"],
         "text": "A DELICATE BALANCE When you play this character, exert all cards in your inkwell, then return 2 cards at random from your inkwell to your hand.\nEVERYTHING THE LIGHT TOUCHES Whenever this character quests, ready all cards in your inkwell.",
         "keywords": [],
         "move_cost": null,
@@ -11020,9 +9467,7 @@
         "willpower": 9,
         "lore": 4,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Jochem van Gool"
-        ],
+        "illustrators": ["Jochem van Gool"],
         "collector_number": "217",
         "lang": "en",
         "flavor_text": null,
@@ -11056,27 +9501,16 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Villain",
-            "King",
-            "Racer"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Villain", "King", "Racer"],
         "text": "Shift 3 (You may pay 3 {I} to play this on top of one of your characters named King Candy.)\nCHANGING THE CODE When you play this character, you may draw 2 cards, then put a card from your hand on the bottom of your deck.",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 3,
         "lore": 2,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Lorenza Pigliamosche"
-        ],
+        "illustrators": ["Lorenza Pigliamosche"],
         "collector_number": "218",
         "lang": "en",
         "flavor_text": null,
@@ -11109,9 +9543,7 @@
         "inkwell": false,
         "ink": "Sapphire",
         "inks": null,
-        "type": [
-            "Action"
-        ],
+        "type": ["Action"],
         "classifications": null,
         "text": "Banish any number of your items, then draw a card for each item banished this way.",
         "keywords": [],
@@ -11120,9 +9552,7 @@
         "willpower": null,
         "lore": null,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Jennifer Wu"
-        ],
+        "illustrators": ["Jennifer Wu"],
         "collector_number": "219",
         "lang": "en",
         "flavor_text": null,
@@ -11156,15 +9586,8 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Dreamborn",
-            "Hero",
-            "Princess",
-            "Knight"
-        ],
+        "type": ["Character"],
+        "classifications": ["Dreamborn", "Hero", "Princess", "Knight"],
         "text": "NATURAL LEADER This character gains Resist +1 for each other Knight character you have in play. (Damage dealt to this character is reduced by 1 for each other Knight.)",
         "keywords": [],
         "move_cost": null,
@@ -11172,9 +9595,7 @@
         "willpower": 5,
         "lore": 3,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Otto Schmidt"
-        ],
+        "illustrators": ["Otto Schmidt"],
         "collector_number": "220",
         "lang": "en",
         "flavor_text": null,
@@ -11208,26 +9629,16 @@
         "inkwell": false,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Character"
-        ],
-        "classifications": [
-            "Floodborn",
-            "Hero",
-            "King"
-        ],
+        "type": ["Character"],
+        "classifications": ["Floodborn", "Hero", "King"],
         "text": "Shift 5 (You may pay 5 {I} to play this on top of one of your characters named Arthur.)\nKNIGHTED BY THE KING When you play this character, chosen character gains Challenger +2 and Resist +2 and can challenge ready characters this turn. (They get +2 {S} while challenging. Damage dealt to them is reduced by 2.)",
-        "keywords": [
-            "Shift"
-        ],
+        "keywords": ["Shift"],
         "move_cost": null,
         "strength": 3,
         "willpower": 6,
         "lore": 3,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Lisa Parfenova"
-        ],
+        "illustrators": ["Lisa Parfenova"],
         "collector_number": "221",
         "lang": "en",
         "flavor_text": null,
@@ -11261,9 +9672,7 @@
         "inkwell": true,
         "ink": "Steel",
         "inks": null,
-        "type": [
-            "Location"
-        ],
+        "type": ["Location"],
         "classifications": null,
         "text": "THERE'S NO ONE I'D RATHER BE THAN ME Villain characters gain “{E}, 3 {I} — Play a character with the same name as this character for free” while here.",
         "keywords": [],
@@ -11272,9 +9681,7 @@
         "willpower": 7,
         "lore": 1,
         "rarity": "Enchanted",
-        "illustrators": [
-            "Rachel Elese"
-        ],
+        "illustrators": ["Rachel Elese"],
         "collector_number": "222",
         "lang": "en",
         "flavor_text": null,
@@ -11289,52 +9696,6 @@
         },
         "prices": {
             "usd_foil": "21.62"
-        }
-    },
-    {
-        "id": "crd_cbd6fc9596f14329af2f0c237a7be6a2",
-        "name": "Half Hexwell Crown",
-        "layout": "normal",
-        "released_at": "2024-08-09",
-        "image_uris": {
-            "digital": {
-                "small": "https://cards.lorcast.io/card/digital/small/crd_cbd6fc9596f14329af2f0c237a7be6a2.avif?1723917209",
-                "normal": "https://cards.lorcast.io/card/digital/normal/crd_cbd6fc9596f14329af2f0c237a7be6a2.avif?1723917209",
-                "large": "https://cards.lorcast.io/card/digital/large/crd_cbd6fc9596f14329af2f0c237a7be6a2.avif?1723917209"
-            }
-        },
-        "cost": 6,
-        "inkwell": false,
-        "ink": "Amethyst",
-        "inks": null,
-        "type": [
-            "Item"
-        ],
-        "classifications": null,
-        "text": "AN UNEXPECTED FIND {E}, 2 {I} - Draw a card.\nA PERILOUS POWER {E}, 2 {I}, Discard a card - Exert chosen character.",
-        "keywords": [],
-        "move_cost": null,
-        "strength": null,
-        "willpower": null,
-        "lore": null,
-        "rarity": "Rare",
-        "illustrators": [
-            "Billy Wimblett"
-        ],
-        "collector_number": "223",
-        "lang": "en",
-        "flavor_text": "The broken crown holds dark and mysterious powers.",
-        "tcgplayer_id": 557538,
-        "legalities": {
-            "core": "legal"
-        },
-        "set": {
-            "id": "set_c64f092e725a4f66966f43af3aa161b6",
-            "code": "5",
-            "name": "Shimmering Skies"
-        },
-        "prices": {
-            "usd_foil": "0.72"
         }
     }
 ]

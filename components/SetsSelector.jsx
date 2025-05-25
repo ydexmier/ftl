@@ -7,8 +7,9 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
+import ExportButton from './ExportButton';
 
-const SetsSelector = ({ onClick }) => {
+const SetsSelector = ({ onClick, cards }) => {
     const router = useRouter();
     const goToBuilder = () => {
         router.push('/builder');
@@ -24,7 +25,6 @@ const SetsSelector = ({ onClick }) => {
                 id: prev.length > 0 ? prev[prev.length - 1].id + 1 : 1,
                 setNumber: "1",
                 boosterCount: 1,
-                cards: [],
                 loading: false,
                 error: null,
             },
@@ -88,13 +88,16 @@ const SetsSelector = ({ onClick }) => {
                 {index === entries.length - 1 && <Divider textAlign="left" ><Button onClick={addEntry} variant="outlined">Ajouter un set</Button></Divider>}
             </>
         ))}
-        <Grid container spacing={2}>
+        <Grid container spacing={2} justifyContent="space-between" alignItems="center">
             <Button onClick={() => onClick(entries)} variant="contained">
                 Générer tous les boosters
             </Button>
-            <Button variant="contained" onClick={goToBuilder} endIcon={<SendIcon />}>
-                Builder avec ces boosters
-            </Button>
+            <Grid container spacing={2}>
+                <Button variant="contained" onClick={goToBuilder} endIcon={<SendIcon />}>
+                    Builder
+                </Button>
+                <ExportButton buttonLabel='Exporter' disabled={cards.length === 0} cards={cards} />
+            </Grid>
         </Grid>
     </Grid >
 }

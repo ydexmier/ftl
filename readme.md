@@ -33,15 +33,16 @@ Dans votre dossier de travail:
 `npm install` (recommandé pour votre IDE mais n'empeche pas le fonctionnement de l'application normalement)
 
 et enfin `npm run dev` pour pouvoir acceder a `localhost:3000`
-`docker-compose up --build`
 
 et vous pouvez acceder au site `http://localhost:3000`
 
-Une fois le build éffectuer une première fois, vous pouvez relancer le projet en faisant simplement `docker-compose up`
-
 # 🚀 Commandes utiles - Projet Next.js + Docker + MongoDB
 
-## 📦 Lancer le projet
+## 📦 Pour les utilisateurs de docker
+
+`docker-compose up --build`
+
+Une fois le build éffectuer une première fois, vous pouvez relancer le projet en faisant simplement `docker-compose up`
 
 ```bash
 docker-compose up
@@ -149,3 +150,7 @@ Pour consulter les icons disponibles: https://mui.com/material-ui/material-icons
     ```env
     MONGODB_URI=mongodb://mongo:27017/mydb
     ```
+
+## Plateform de deploiement
+
+https://vercel.com/yoann-dexmiers-projects-07fa6415/ftl (On a le droit qu'a un seul pour la version gratuite, c'est celui de Yoann actuellement)

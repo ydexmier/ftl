@@ -1,15 +1,16 @@
-import React, { useReducer, useMemo, useEffect } from 'react';
+import React from 'react';
 import styled from '@emotion/styled';
-import * as R from 'ramda';
+
 import Card from '../card';
 import { Grid } from '@mui/material';
-import builderReducer from './builderReducer';
+import { exportCards } from '../../utils/exportCards';
 import Ink from '../Ink';
 import InkCount from '../InkCount';
 import IconButton from '@mui/material/IconButton';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useSelectedCardsStore } from '../stores/useSelectedCardsStore';
+import ExportButton from '../ExportButton';
 
 const CardList = styled.div`
     display: grid;
@@ -72,7 +73,10 @@ const Builder = () => {
     const addCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected + 1);
     const removeCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected - 1);
 
-    return builderCards && <Grid container spacing={2}>
+    return builderCards && <Grid sx={{ m: 2 }} container spacing={2}>
+        <Grid sx={{ mt: 2 }} size={{ xs: 12 }}>
+            <ExportButton buttonLabel='Exporter la selection' cards={exportCards(cardsSelected, true)} />
+        </Grid>
         <Grid size={{ xs: 6, md: 8 }}>
             <CardList>
                 {
@@ -112,7 +116,7 @@ const Builder = () => {
                 )
             }
         </Grid>
-    </Grid>
+    </Grid >
 }
 
 export default Builder;

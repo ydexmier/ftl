@@ -44,7 +44,7 @@ export default function Layout({ children }) {
                     </Toolbar>
                 </Container>
             </AppBar>
-            <main>{children}</main>
+            <main><Container sx={{ pl: 4, pr: 4 }}>{children}</Container></main>
         </>
     );
 }
