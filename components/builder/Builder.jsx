@@ -11,6 +11,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useSelectedCardsStore } from '../stores/useSelectedCardsStore';
 import ExportButton from '../ExportButton';
+import ImportButton from './ImportButton';
 
 const CardList = styled.div`
     display: grid;
@@ -76,21 +77,22 @@ const Builder = () => {
     return builderCards && <Grid sx={{ m: 2 }} container spacing={2}>
         <Grid sx={{ mt: 2 }} size={{ xs: 12 }}>
             <ExportButton buttonLabel='Exporter la selection' cards={exportCards(cardsSelected, true)} />
+            <ImportButton />
         </Grid>
         <Grid size={{ xs: 6, md: 8 }}>
             <CardList>
                 {
-                    builderCards.map(card =>
-                        <CardContainer key={card.id}>
-                            <Card data={card}></Card>
-                            <IconButton sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
-                                <RemoveCircleOutlineIcon />
-                            </IconButton>
-                            {card.quantitySelected || 0}/{card.quantity}
-                            <IconButton sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
-                                <AddCircleOutlineIcon />
-                            </IconButton>
-                        </CardContainer>)
+                    builderCards.map(card => <CardContainer key={card.id}>
+                        <Card data={card}></Card>
+                        <IconButton sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
+                            <RemoveCircleOutlineIcon />
+                        </IconButton>
+                        {card.quantitySelected || 0}/{card.quantity}
+                        <IconButton sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
+                            <AddCircleOutlineIcon />
+                        </IconButton>
+                    </CardContainer>
+                    )
                 }
             </CardList>
         </Grid>

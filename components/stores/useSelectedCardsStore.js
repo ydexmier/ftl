@@ -10,19 +10,6 @@ const sortByInkOrder = R.sortWith([
     R.ascend((item) => inkOrder.indexOf(item.ink)),
 ]);
 
-const mergedCards = (cards) =>
-    Object.values(
-        cards.reduce((acc, card) => {
-            const key = card.id;
-            if (!acc[key]) {
-                acc[key] = {...card, quantity: 1};
-            } else {
-                acc[key].quantity += 1;
-            }
-            return acc;
-        }, {})
-    );
-
 export const useSelectedCardsStore = create(
     persist(
         (set, get) => ({
@@ -32,7 +19,7 @@ export const useSelectedCardsStore = create(
             // Liste des boosters (tableau de tableaux de cartes)
             boosterCards: [],
             setBuilderCards: (cards) => {
-                return set({builderCards: sortByInkOrder(mergedCards(cards))});
+                return set({builderCards: sortByInkOrder(cards)});
             },
 
             setCardQuantity: (cardId, quantity) => {

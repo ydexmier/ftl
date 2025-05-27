@@ -2,6 +2,7 @@
     "name": "nextjs-mongoose-docker-app",
     "version": "1.0.0",
     "scripts": {
+        "prebuild": "node scripts/mergeCards.js",
         "dev": "next dev -p 3000",
         "build": "next build",
         "start": "next start"

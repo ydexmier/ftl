@@ -7,6 +7,20 @@ import BoosterView from "../components/BoosterView";
 import SetsSelector from "../components/SetsSelector";
 import { useSelectedCardsStore } from '../components/stores/useSelectedCardsStore';
 import { Button, Grid } from "@mui/material";
+
+const mergedCards = (cards) =>
+    Object.values(
+        cards.reduce((acc, card) => {
+            const key = card.id;
+            if (!acc[key]) {
+                acc[key] = { ...card, quantity: 1 };
+            } else {
+                acc[key].quantity += 1;
+            }
+            return acc;
+        }, {})
+    );
+
 export default function OpenBoosters() {
     const boosterCards = useSelectedCardsStore(state => state.boosterCards);
     const builderCards = useSelectedCardsStore(state => state.builderCards);
@@ -49,7 +63,7 @@ export default function OpenBoosters() {
         }
 
         setBoosterCards(allBoosters);
-        setBuilderCards(allBoosters.flat())
+        setBuilderCards(mergedCards(allBoosters.flat()))
     };
 
 
