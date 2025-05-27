@@ -2,7 +2,7 @@ import React from 'react';
 import styled from '@emotion/styled';
 
 import Card from '../card';
-import { Grid } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { exportCards } from '../../utils/exportCards';
 import Ink from '../Ink';
 import InkCount from '../InkCount';
@@ -76,8 +76,10 @@ const Builder = () => {
 
     return builderCards && <Grid sx={{ m: 2 }} container spacing={2}>
         <Grid sx={{ mt: 2 }} size={{ xs: 12 }}>
-            <ExportButton buttonLabel='Exporter la selection' cards={exportCards(cardsSelected, true)} />
-            <ImportButton />
+            <Box display="flex" justifyContent="space-between" width="100%">
+                <ImportButton />
+                <ExportButton buttonLabel='Exporter la selection' cards={exportCards(cardsSelected, true)} />
+            </Box>
         </Grid>
         <Grid size={{ xs: 6, md: 8 }}>
             <CardList>
