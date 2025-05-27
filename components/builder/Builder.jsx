@@ -86,11 +86,11 @@ const Builder = () => {
                 {
                     builderCards.map(card => <CardContainer key={card.id}>
                         <Card data={card}></Card>
-                        <IconButton sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
+                        <IconButton disabled={card.quantitySelected === 0} sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
                             <RemoveCircleOutlineIcon />
                         </IconButton>
                         {card.quantitySelected || 0}/{card.quantity}
-                        <IconButton sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
+                        <IconButton disabled={card.quantitySelected === card.quantity} sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
                             <AddCircleOutlineIcon />
                         </IconButton>
                     </CardContainer>
@@ -108,11 +108,11 @@ const Builder = () => {
                         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{`${card.name}${card.version ? ` - ${card.version}` : ''} ${card.quantitySelected}/${card.quantity}`}</div>
 
                         <ButtonsContianer>
-                            <IconButton sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
+                            <IconButton disabled={card.quantitySelected === 0} sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
                                 <RemoveCircleOutlineIcon />
                             </IconButton>
                             {card.quantitySelected || 0}/{card.quantity}
-                            <IconButton sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
+                            <IconButton disabled={card.quantitySelected === card.quantity} sx={{ marginLeft: '8px' }} onClick={() => addCard(card)} aria-label="add">
                                 <AddCircleOutlineIcon />
                             </IconButton>
                         </ButtonsContianer>

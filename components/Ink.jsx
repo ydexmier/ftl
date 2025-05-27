@@ -16,8 +16,8 @@ const Container = styled.div`
   }
 
   ${({ isBicolor }) =>
-        isBicolor
-            ? css`
+    isBicolor
+      ? css`
           img {
             width: 200%; /* double largeur */
           }
@@ -31,7 +31,7 @@ const Container = styled.div`
             clip-path: inset(0 0 0 50%); /* couper moitié gauche */
           }
         `
-            : css`
+      : css`
           img {
             width: 100%; /* image pleine largeur */
             position: static;
@@ -42,23 +42,23 @@ const Container = styled.div`
 export const types = ['Amber', 'Amethyst', 'Emerald', 'Ruby', 'Sapphire', 'Steel'];
 
 export default function Ink({ type, width = 100 }) {
-    const size = typeof width === 'number' ? `${width}px` : width;
-    let src;
-    const isBicolor = Array.isArray(type) && type.length > 1;
-    console.log(typeof type, type);
-    if (Array.isArray(type)) {
-        src = type.map(ink => `/svg/${ink.toLowerCase()}.svg`);
-    } else {
-        src = [`/svg/${type.toLowerCase()}.svg`];
-    }
+  const size = typeof width === 'number' ? `${width}px` : width;
+  let src;
+  const isBicolor = Array.isArray(type) && type.length > 1;
 
-    return (
-        <Container isBicolor={isBicolor} width={size}>
-            {src.map(inkSrc => <img
-                src={inkSrc}
-                alt={inkSrc}
-                style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-            />)}
-        </Container>
-    );
+  if (Array.isArray(type)) {
+    src = type.map(ink => `/svg/${ink.toLowerCase()}.svg`);
+  } else {
+    src = [`/svg/${type.toLowerCase()}.svg`];
+  }
+
+  return (
+    <Container isBicolor={isBicolor} width={size}>
+      {src.map(inkSrc => <img
+        src={inkSrc}
+        alt={inkSrc}
+        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+      />)}
+    </Container>
+  );
 }

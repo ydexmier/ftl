@@ -32,7 +32,7 @@ export const useSelectedCardsStore = create(
                                       quantitySelected:
                                           quantity <= c.quantity
                                               ? quantity
-                                              : quantitySelected,
+                                              : c.quantitySelected,
                                   }
                                 : c
                         ),
