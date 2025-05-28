@@ -29,7 +29,7 @@ export const exportCardsCSV = (cards) => {
         const row = [
             item.set.code,
             item.collector_number,
-            item.variant || 'normal',
+            'normal',
             item.quantity,
         ];
         csvRows.push(row.join(','));
