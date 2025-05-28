@@ -5,7 +5,12 @@ const useFilteredAndSortedCards = (cards) => {
     const {ink, cost, order} = useFilterStore();
 
     const isInkSelected = (card) => R.includes(card.ink, ink);
-    const isCostSelected = (card) => R.includes(card.cost, cost);
+    const isCostSelected = (card) => {
+        return R.any((selected) => {
+            if (selected === '9+') return card.cost >= 9;
+            return card.cost === selected;
+        }, cost);
+    };
 
     // Filtrage combiné
     const filtered = R.filter(
