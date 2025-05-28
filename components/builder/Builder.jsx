@@ -3,7 +3,6 @@ import styled from '@emotion/styled';
 
 import Card from '../card';
 import { Grid, Box } from '@mui/material';
-import { exportCards } from '../../utils/exportCards';
 import Ink from '../Ink';
 import InkCount from '../InkCount';
 import IconButton from '@mui/material/IconButton';
@@ -76,9 +75,12 @@ const Builder = () => {
 
     return builderCards && <Grid sx={{ m: 2 }} container spacing={2}>
         <Grid sx={{ mt: 2 }} size={{ xs: 12 }}>
-            <Box display="flex" justifyContent="space-between" width="100%">
-                <ImportButton />
-                <ExportButton buttonLabel='Exporter la selection' cards={exportCards(cardsSelected, true)} />
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" width="100%">
+                <Box display="flex" gap={2} flexDirection='column'>
+                    <ImportButton />
+                    <ExportButton variant='outlined' buttonLabel='Exporter la collection' cards={builderCards} />
+                </Box>
+                <ExportButton noCSV buttonLabel='Exporter la selection' cards={cardsSelected.map((card) => ({ ...card, quantity: quantitySelected }))} />
             </Box>
         </Grid>
         <Grid size={{ xs: 6, md: 8 }}>

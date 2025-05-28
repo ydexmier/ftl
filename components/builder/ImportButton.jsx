@@ -40,7 +40,6 @@ const ImportButton = () => {
                 );
 
                 if (matchedCard) {
-                    console.log(quantity)
                     result.push({ ...matchedCard, quantity });
                 } else {
                     console.warn(`Carte non trouvée : ${name} - ${version}`);

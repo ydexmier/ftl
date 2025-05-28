@@ -10,6 +10,9 @@ const rarityOrder = [
     'Enchanted',
 ];
 
+const CARD_VARIANT_FOIL = 'foil';
+const CARD_VARIANT_NORMAL = 'normal';
+
 // Récupère toutes les cartes d'une rareté donnée avec un ink spécifique exclu
 function filterCards(cards, rarity, excludedInks) {
     return cards.filter((card) => {
@@ -36,7 +39,7 @@ export function generateBoosters(cards, boosterCount) {
             const possibles = filterCards(cards, 'Common', usedInks);
             if (possibles.length === 0) break; // sécurité
             const chosen = pickRandom(possibles);
-            booster.push(chosen);
+            booster.push({...chosen, variant: CARD_VARIANT_NORMAL});
             usedInks.add(chosen.ink);
         }
 
@@ -47,7 +50,7 @@ export function generateBoosters(cards, boosterCount) {
             const possibles = filterCards(cards, 'Uncommon', usedInks);
             if (possibles.length === 0) break;
             const chosen = pickRandom(possibles);
-            booster.push(chosen);
+            booster.push({...chosen, variant: CARD_VARIANT_NORMAL});
             usedInks.add(chosen.ink);
         }
 
@@ -64,7 +67,7 @@ export function generateBoosters(cards, boosterCount) {
             if (rare1Options.length === 0)
                 throw new Error(`Pas de cartes pour rareté ${rareRarity}`);
             rareCard = pickRandom(rare1Options);
-            booster.push(rareCard);
+            booster.push({...rareCard, variant: CARD_VARIANT_NORMAL});
         }
 
         // Petit algo pour retrier par rareté
@@ -81,7 +84,7 @@ export function generateBoosters(cards, boosterCount) {
             throw new Error(`Aucune carte avec la rareté foil: ${foilRarity}`);
 
         const foilCard = pickRandom(foilPossible);
-        sortedBooster.push(foilCard);
+        sortedBooster.push({...foilCard, variant: CARD_VARIANT_FOIL});
 
         boosters.push(sortedBooster);
     }

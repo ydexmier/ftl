@@ -78,7 +78,7 @@ export default function OpenBoosters() {
                     <Button onClick={generateWorldScelle}>Génerer Format World</Button>
                 </Grid>
                 <Grid>
-                    <SetsSelector onClick={generateAllBoosters} cards={exportCards(builderCards)} />
+                    <SetsSelector onClick={generateAllBoosters} cards={builderCards} />
                 </Grid>
                 {boosterCards.length > 0 && boosterCards.map((booster, i) => (
                     <div key={i} style={{ marginBottom: 15 }}>

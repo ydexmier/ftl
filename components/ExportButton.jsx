@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Button from '@mui/material/Button';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { Modal, Box, TextareaAutosize as TextareaAutosizeComponent } from '@mui/material';
+import { Modal, Box, TextareaAutosize as TextareaAutosizeComponent, Grid, Snackbar, IconButton } from '@mui/material';
 import styled from '@emotion/styled';
+import { exportCardsCSV, exportCards } from '../utils/exportCards';
+import DownloadIcon from '@mui/icons-material/Download';
+import CloseIcon from '@mui/icons-material/Close';
 
 const TextareaAutosize = styled(TextareaAutosizeComponent)`
     resize: vertical;
@@ -23,23 +26,37 @@ const style = {
     pb: 3,
 };
 
-const ExportButton = ({ cards, buttonLabel }) => {
+const ExportButton = ({ cards, buttonLabel, noCSV = false, variant = "contained" }) => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
-    const [buttonText, setButtonText] = useState(buttonLabel);
+    const [snackbarText, setSnackbarText] = useState('');
+    const textareaRef = useRef();
     const onCopy = () => {
-        navigator.clipboard.writeText(cards)
+        navigator.clipboard.writeText(textareaRef.current.value)
             .then(() => {
-                setButtonText('Texte copié dans le presse-papier !');
+                setSnackbarText('Texte copié dans le presse-papier !');
             })
             .catch(err => {
-                setButtonText('Erreur lors de la copie !');
+                setSnackbarText('Erreur lors de la copie !');
                 console.error(err);
             });
     }
+
+    const onDownloadCSV = () => {
+        exportCardsCSV(cards);
+        setSnackbarText('.csv généré');
+    }
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setSnackbarText('');
+    };
     return <>
-        <Button variant="contained" onClick={handleOpen}>{buttonText}</Button>
+        <Button variant={variant} onClick={handleOpen}>{buttonLabel}</Button>
         <Modal
             open={open}
             onClose={handleClose}
@@ -49,11 +66,28 @@ const ExportButton = ({ cards, buttonLabel }) => {
             <Box sx={{ ...style }}>
                 <Box>
                     <h2 id="parent-modal-title">Copier la liste de cartes</h2>
-                    <TextareaAutosize maxRows={10} defaultValue={cards} />
+                    <TextareaAutosize ref={textareaRef} maxRows={10} defaultValue={exportCards(cards)} />
                 </Box>
-                <Button sx={{ mt: 2 }} onClick={onCopy} variant="contained" endIcon={<ContentCopyIcon />}>Dreamborn</Button>
+                <Grid container spacing={2} justifyContent="space-between" alignItems="center">
+                    <Button sx={{ mt: 2 }} onClick={onCopy} variant="contained" endIcon={<ContentCopyIcon />}>TXT</Button>
+                    {!noCSV && <Button sx={{ mt: 2 }} onClick={onDownloadCSV} variant="contained" endIcon={<DownloadIcon />}>.CSV</Button>}
+                </Grid>
             </Box>
         </Modal>
+        <Snackbar
+            open={!!snackbarText}
+            autoHideDuration={6000}
+            onClose={handleCloseSnackbar}
+            message={snackbarText}
+            action={<IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={handleCloseSnackbar}
+            >
+                <CloseIcon fontSize="small" />
+            </IconButton>}
+        />
     </>
 }
 
