@@ -11,6 +11,9 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { useSelectedCardsStore } from '../stores/useSelectedCardsStore';
 import ExportButton from '../ExportButton';
 import ImportButton from './ImportButton';
+import Filters from './Filters';
+import { useFilterStore } from '../stores/useFilterBuilderStore';
+import useFilteredAndSortedCards from './hooks/useFilteredAndSortedCards';
 
 const CardList = styled.div`
     display: grid;
@@ -67,13 +70,16 @@ const ButtonsContianer = styled.div`
 `;
 
 const Builder = () => {
-    const builderCards = useSelectedCardsStore(state => state.builderCards);
-    const setCardQuantity = useSelectedCardsStore(state => state.setCardQuantity);
+    const { ink, cost, order } = useFilterStore();
+    const { builderCards, setCardQuantity } = useSelectedCardsStore();
     const cardsSelected = builderCards.filter(card => card.quantitySelected > 0)
+
     const addCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected + 1);
     const removeCard = ({ id, quantitySelected = 0 }) => setCardQuantity(id, quantitySelected - 1);
 
-    return builderCards && <Grid sx={{ m: 2 }} container spacing={2}>
+    const filterCards = useFilteredAndSortedCards(builderCards);
+
+    return <Grid sx={{ m: 2 }} container spacing={2}>
         <Grid sx={{ mt: 2 }} size={{ xs: 12 }}>
             <Box display="flex" justifyContent="space-between" alignItems="flex-start" width="100%">
                 <Box display="flex" gap={2} flexDirection='column'>
@@ -83,10 +89,13 @@ const Builder = () => {
                 <ExportButton noCSV buttonLabel='Exporter la selection' cards={cardsSelected.map((card) => ({ ...card, quantity: quantitySelected }))} />
             </Box>
         </Grid>
+        <Grid size={{ xs: 12 }}>
+            <Filters />
+        </Grid>
         <Grid size={{ xs: 6, md: 8 }}>
             <CardList>
                 {
-                    builderCards.map(card => <CardContainer key={card.id}>
+                    filterCards && filterCards.map(card => <CardContainer key={card.id}>
                         <Card data={card}></Card>
                         <IconButton disabled={card.quantitySelected === 0} sx={{ marginRight: '8px' }} onClick={() => removeCard(card)} aria-label="remove">
                             <RemoveCircleOutlineIcon />

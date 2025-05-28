@@ -13,7 +13,7 @@ const InkCountStyled = styled.div`
         height: ${size}px;
         width: ${size}px;
         line-height: ${size}px;
-        font-size: ${size * 0.4375}px;
+        font-size: ${size * 0.4}px;
     `}
 `
 
