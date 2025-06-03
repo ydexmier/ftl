@@ -86,7 +86,7 @@ const Builder = () => {
                     <ImportButton />
                     <ExportButton variant='outlined' buttonLabel='Exporter la collection' cards={builderCards} />
                 </Box>
-                <ExportButton noCSV buttonLabel='Exporter la selection' cards={cardsSelected.map((card) => ({ ...card, quantity: quantitySelected }))} />
+                <ExportButton noCSV buttonLabel='Exporter la selection' cards={cardsSelected.map((card) => ({ ...card, quantity: card.quantitySelected }))} />
             </Box>
         </Grid>
         <Grid size={{ xs: 12 }}>
