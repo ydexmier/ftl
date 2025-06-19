@@ -154,3 +154,53 @@ Pour consulter les icons disponibles: https://mui.com/material-ui/material-icons
 ## Plateform de deploiement
 
 https://vercel.com/yoann-dexmiers-projects-07fa6415/ftl (On a le droit qu'a un seul pour la version gratuite, c'est celui de Yoann actuellement)
+
+
+## Suggestion modele bdd pour scooting
+
+#### Table players:
+
+{
+  "_id": ObjectId,
+  "name": "Alice",
+
+  // À remplir une fois les couleurs sont confirmées
+  "inferredColors": null, // ["red", "blue"], une fois confirmé
+
+  // Historique des combinaisons observées dans les matchs
+  "observedCombos": [
+    ["red", "blue"],
+    ["red", "green"]
+  ]
+}
+
+#### Table matches:
+
+{
+  "_id": ObjectId,
+  "round": 1,
+  "players": ["Alice", "Bob"],
+
+  // Couleurs visibles dans ce match (ordre inconnu)
+  "colorCombos": [
+    ["red", "blue"],
+    ["red", "green"]
+  ],
+
+  // Attribution aux joueurs (null tant qu’inconnue)
+  "assignedCombos": {
+    "Alice": null,
+    "Bob": null
+  },
+
+  "status": "unresolved" // "inferred" ou "confirmed" plus tard
+}
+
+#### Table rounds:
+
+{
+  "_id": ObjectId,
+  "number": 1,
+  "matchIds": [ObjectId("match1"), ObjectId("match2")]
+}
+
