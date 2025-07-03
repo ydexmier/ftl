@@ -36,6 +36,27 @@ et enfin `npm run dev` pour pouvoir acceder a `localhost:3000`
 
 et vous pouvez acceder au site `http://localhost:3000`
 
+## installer mongoDB en local sur Mac
+
+brew tap mongodb/brew
+brew install mongodb-community@7.0
+brew services start mongodb-community@7.0
+
+Vérifier que c'est bien installé
+
+brew services list
+
+MongoDB est maintenant accessible sur :
+
+mongodb://localhost:27017
+
+## importer un tournoi
+
+node components/scooting/scripts/fetchAndSaveTournament.js 159805
+
+## Installer extension MongoDB for VS Code
+cliquer sur l'icone "feuille verte"
+
 # 🚀 Commandes utiles - Projet Next.js + Docker + MongoDB
 
 ## 📦 Pour les utilisateurs de docker
