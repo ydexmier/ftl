@@ -28,6 +28,7 @@ const RankingEntrySchema = new mongoose.Schema({
 });
 
 const RankingSchema = new mongoose.Schema({
+  id_tournament: { type: Number, required: true },
   page_size: { type: Number, required: true },
   count: { type: Number, required: true },
   total: { type: Number, required: true },
