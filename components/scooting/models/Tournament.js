@@ -1,5 +1,6 @@
 // models/Tournament.js
 import mongoose from 'mongoose';
+import { getModel } from './utils.mjs';
 
 const RoundSchema = new mongoose.Schema({
   id: Number,
@@ -88,5 +89,19 @@ const TournamentSchema = new mongoose.Schema({
   timezone: String,
 }, { timestamps: true });
 
-const Tournament = mongoose.model('Tournament', TournamentSchema);
+// ⚡ configure AVANT de compiler le modèle
+if (process.env.NODE_ENV === 'development') {
+  TournamentSchema.set('autoIndex', true);
+}
+
+// ⚡ compile après config
+let Tournament;
+
+try {
+  Tournament = mongoose.model("Tournament");
+} catch {
+  Tournament = mongoose.model("Tournament", TournamentSchema);
+}
+
 export default Tournament;
+

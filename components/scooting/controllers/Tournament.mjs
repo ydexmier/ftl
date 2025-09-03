@@ -1,10 +1,12 @@
-import { findOneAndUpdate, find, findOne, deleteOne } from '../models/Tournament.mjs';
+import Tournament from '../models/Tournament.js';
+import connectToMongoDB from '../utils/connectToMongoDB.mjs';
 
 // Create or update (upsert)
 export async function upsertTournament(req, res) {
   try {
     const data = req.body;
-    const tournament = await findOneAndUpdate(
+    await connectToMongoDB();
+    const tournament = await Tournament.findOneAndUpdate(
       { id: data.id },
       data,
       { new: true, upsert: true }
@@ -18,7 +20,8 @@ export async function upsertTournament(req, res) {
 // Get all events
 export async function getAllTournaments(req, res) {
   try {
-    const tournaments = await find();
+    await connectToMongoDB();
+    const tournaments = await Tournament.find();
     res.json(tournaments);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -28,7 +31,8 @@ export async function getAllTournaments(req, res) {
 // Get single event
 export async function getTournamentById(req, res) {
   try {
-    const tournament = await findOne({ id: req.params.id });
+    await connectToMongoDB();
+    const tournament = await Tournament.findOne({ id: req.params.id });
     if (!tournament) return res.status(404).json({ error: 'Tournament not found' });
     res.json(tournament);
   } catch (err) {
@@ -39,7 +43,8 @@ export async function getTournamentById(req, res) {
 // Delete Tournament
 export async function deleteTournament(req, res) {
   try {
-    const result = await deleteOne({ id: req.params.id });
+    await connectToMongoDB();
+    const result = await Tournament.deleteOne({ id: req.params.id });
     if (result.deletedCount === 0) return res.status(404).json({ error: 'Tournament not found' });
     res.status(200).json({ message: 'Tournament deleted' });
   } catch (err) {

@@ -61,6 +61,18 @@ const MatchSchema = new mongoose.Schema({
   player_match_relationships: [PlayerMatchRelationshipSchema]
 });
 
-const Match = mongoose.model('Match', MatchSchema);
+// ⚡ configure AVANT de compiler le modèle
+if (process.env.NODE_ENV === 'development') {
+  MatchSchema.set('autoIndex', true);
+}
+
+// ⚡ compile après config
+let Match;
+
+try {
+  Match = mongoose.model("Match");
+} catch {
+  Match = mongoose.model("Match", MatchSchema);
+}
 
 export default Match;

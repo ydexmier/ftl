@@ -32,7 +32,10 @@ export default function Layout({ children }) {
                         <MenuItem>
                             <Link underline='none' href="/"><Typography>Accueil</Typography></Link>
                         </MenuItem>
-                        <MenuItem >
+                        <MenuItem>
+                            <Link underline='none' href="/tournaments"><Typography>Tournois</Typography></Link>
+                        </MenuItem>
+                        {/* <MenuItem >
                             <Link underline='none' href="/openBoosters"><Typography >Ouvrir des boosters</Typography></Link>
                         </MenuItem>
                         <MenuItem  >
@@ -40,7 +43,7 @@ export default function Layout({ children }) {
                         </MenuItem>
                         <MenuItem >
                             <Link underline='none' href="/sets"><Typography >Sets</Typography></Link>
-                        </MenuItem>
+                        </MenuItem> */}
                     </Toolbar>
                 </Container>
             </AppBar>

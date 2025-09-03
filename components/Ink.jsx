@@ -55,6 +55,7 @@ export default function Ink({ type, width = 100 }) {
     return (
         <Container isBicolor={isBicolor} width={size}>
             {src.map(inkSrc => <img
+                key={inkSrc}
                 src={inkSrc}
                 alt={inkSrc}
                 style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}

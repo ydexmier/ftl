@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import { Box, ButtonBase, Button, Divider, Select, MenuItem, FormControl } from '@mui/material';
-import Ink, { types } from '../Ink';
+import InkButton, { types } from '../InkButton';
 import InkCount from '../InkCount';
 import { useFilterStore, allCosts } from '../stores/useFilterBuilderStore';
 
@@ -24,7 +24,7 @@ const Filters = (props) => {
     };
     return <>
         <Box {...props} justifyContent="flex-start" display="flex" flexWrap="wrap">
-            {types.map(type => <StyledInkButton isInactive={!ink.includes(type)} onClick={() => toggleInk(type)}><Ink type={type} width={32} /></StyledInkButton>)}
+            {types.map(type => <InkButton isInactive={!ink.includes(type)} onClick={() => toggleInk(type)} />)}
             <Divider orientation="vertical" flexItem />
             <Box>{allCosts.map(buttonCost => <StyledInkButton isInactive={!cost.includes(buttonCost)} onClick={() => toggleCost(buttonCost)}><InkCount count={buttonCost} size={36} /></StyledInkButton>)}</Box>
         </Box>

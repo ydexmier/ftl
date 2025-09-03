@@ -5,3 +5,7 @@
 - [Récupérer le classement du tournoi](docs/ranking.md)
 
 
+
+Script pour fetch un tournoi et enregistrer dans mongoDB:
+
+node ftl/components/scooting/scripts/fetchAndSaveTournament.mjs 159805
