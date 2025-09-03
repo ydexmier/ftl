@@ -7,22 +7,18 @@ export function useFetch(url) {
 
   useEffect(() => {
     if (!url) return; // si pas d'URL → on ne fetch pas
-console.log("Fetching data from URL:", url);
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
         const response = await fetch(url);
-        console.log("Response received:", response);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const json = await response.json();
         setData(json);
-        console.log("Data fetched:", json);
       } catch (err) {
-        console.error("Error fetching data:", err);
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
