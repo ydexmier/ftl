@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGO_URI = process.env.NODE_ENV === 'development' ? process.env.MONGO_URI_LOCAL || '' : process.env.MONGO_URI_PROD || '';
+const MONGO_URI = process.env.MONGO_URI || "";
 
 if (!MONGO_URI) {
   throw new Error("Please define the MONGO_URI environment variable");

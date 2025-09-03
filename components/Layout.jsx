@@ -5,6 +5,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import AdbIcon from '@mui/icons-material/Adb';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
+
 export default function Layout({ children }) {
     return (
         <>
@@ -29,25 +33,30 @@ export default function Layout({ children }) {
                         >
                             LOGO
                         </Typography>
+
                         <MenuItem>
                             <Link underline='none' href="/"><Typography>Accueil</Typography></Link>
                         </MenuItem>
                         <MenuItem>
                             <Link underline='none' href="/tournaments"><Typography>Tournois</Typography></Link>
                         </MenuItem>
-                        {/* <MenuItem >
-                            <Link underline='none' href="/openBoosters"><Typography >Ouvrir des boosters</Typography></Link>
-                        </MenuItem>
-                        <MenuItem  >
-                            <Link underline='none' href="/builder"><Typography >Builder</Typography></Link>
-                        </MenuItem>
-                        <MenuItem >
-                            <Link underline='none' href="/sets"><Typography >Sets</Typography></Link>
-                        </MenuItem> */}
+
+                        {/* Spacer pour pousser le menu admin à droite */}
+                        <Box sx={{ marginLeft: 'auto' }}>
+                            <MenuItem>
+                                <Link underline='none' href="/admin/dashboard">
+                                    <IconButton color="inherit">
+                                        <AdminPanelSettingsIcon />
+                                    </IconButton>
+                                </Link>
+                            </MenuItem>
+                        </Box>
                     </Toolbar>
                 </Container>
             </AppBar>
-            <main><Container sx={{ pl: 4, pr: 4 }}>{children}</Container></main>
+            <main>
+                <Container sx={{ pl: 4, pr: 4 }}>{children}</Container>
+            </main>
         </>
     );
 }
