@@ -50,11 +50,8 @@ MongoDB est maintenant accessible sur :
 
 mongodb://localhost:27017
 
-## importer un tournoi
-
-node components/scooting/scripts/fetchAndSaveTournament.js 159805
-
 ## Installer extension MongoDB for VS Code
+
 cliquer sur l'icone "feuille verte"
 
 # 🚀 Commandes utiles - Projet Next.js + Docker + MongoDB
@@ -69,9 +66,9 @@ Une fois le build éffectuer une première fois, vous pouvez relancer le projet 
 docker-compose up
 ```
 
--   Démarre l'application en mode développement
--   Active le live-reload avec Next.js
--   Lance aussi le service MongoDB
+- Démarre l'application en mode développement
+- Active le live-reload avec Next.js
+- Lance aussi le service MongoDB
 
 ---
 
@@ -163,11 +160,11 @@ Pour consulter les icons disponibles: https://mui.com/material-ui/material-icons
 
 ## 🛠 Dépannage
 
--   **Changements non pris en compte ?**  
-    Vérifie que les volumes sont bien montés dans `docker-compose.yml`.
+- **Changements non pris en compte ?**  
+  Vérifie que les volumes sont bien montés dans `docker-compose.yml`.
 
--   **MongoDB inaccessible ?**  
-    Vérifie que la variable `MONGODB_URI` est bien définie dans le fichier `.env` :
+- **MongoDB inaccessible ?**  
+  Vérifie que la variable `MONGODB_URI` est bien définie dans le fichier `.env` :
     ```env
     MONGODB_URI=mongodb://mongo:27017/mydb
     ```
@@ -176,52 +173,50 @@ Pour consulter les icons disponibles: https://mui.com/material-ui/material-icons
 
 https://vercel.com/yoann-dexmiers-projects-07fa6415/ftl (On a le droit qu'a un seul pour la version gratuite, c'est celui de Yoann actuellement)
 
-
 ## Suggestion modele bdd pour scooting
 
 #### Table players:
 
 {
-  "_id": ObjectId,
-  "name": "Alice",
+"\_id": ObjectId,
+"name": "Alice",
 
-  // À remplir une fois les couleurs sont confirmées
-  "inferredColors": null, // ["red", "blue"], une fois confirmé
+// À remplir une fois les couleurs sont confirmées
+"inferredColors": null, // ["red", "blue"], une fois confirmé
 
-  // Historique des combinaisons observées dans les matchs
-  "observedCombos": [
-    ["red", "blue"],
-    ["red", "green"]
-  ]
+// Historique des combinaisons observées dans les matchs
+"observedCombos": [
+["red", "blue"],
+["red", "green"]
+]
 }
 
 #### Table matches:
 
 {
-  "_id": ObjectId,
-  "round": 1,
-  "players": ["Alice", "Bob"],
+"\_id": ObjectId,
+"round": 1,
+"players": ["Alice", "Bob"],
 
-  // Couleurs visibles dans ce match (ordre inconnu)
-  "colorCombos": [
-    ["red", "blue"],
-    ["red", "green"]
-  ],
+// Couleurs visibles dans ce match (ordre inconnu)
+"colorCombos": [
+["red", "blue"],
+["red", "green"]
+],
 
-  // Attribution aux joueurs (null tant qu’inconnue)
-  "assignedCombos": {
-    "Alice": null,
-    "Bob": null
-  },
+// Attribution aux joueurs (null tant qu’inconnue)
+"assignedCombos": {
+"Alice": null,
+"Bob": null
+},
 
-  "status": "unresolved" // "inferred" ou "confirmed" plus tard
+"status": "unresolved" // "inferred" ou "confirmed" plus tard
 }
 
 #### Table rounds:
 
 {
-  "_id": ObjectId,
-  "number": 1,
-  "matchIds": [ObjectId("match1"), ObjectId("match2")]
+"\_id": ObjectId,
+"number": 1,
+"matchIds": [ObjectId("match1"), ObjectId("match2")]
 }
-
