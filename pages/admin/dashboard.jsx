@@ -1,37 +1,88 @@
-// app/admin/dashboard/page.jsx
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import {
+  Box,
+  Button,
+  Container,
+  Typography,
+  Paper,
+  Alert,
+  Card,
+  CardContent,
+  CardMedia,
+  Grid,
+} from '@mui/material';
+import TournamentGrid from '../../components/admin/TournamentsGrid';
+import FetchTournamentForm from '../../components/admin/FetchTournamentForm';
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogout = () => {
-    // Supprimer le cookie
     Cookies.remove('adminAuth');
-
-    // Rediriger vers la page login
     router.push('/admin/login');
   };
 
+  const fetchTournaments = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/tournaments'); // ta route existante
+      if (!res.ok) throw new Error('Erreur lors de la récupération des tournois');
+      
+      const data = await res.json();
+      console.log('Tournois récupérés:', data);
+      setTournaments(data || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTournaments();
+  }, []);
+
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Admin Dashboard</h1>
-      <button 
-        onClick={handleLogout} 
-        style={{
-          padding: '0.5rem 1rem',
-          backgroundColor: '#f00',
-          color: '#fff',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          marginTop: '1rem'
-        }}
-      >
-        Déconnexion
-      </button>
-    </div>
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Paper sx={{ p: 4, mb: 4 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+          <Typography variant="h4">Admin Dashboard</Typography>
+          <Button variant="contained" color="error" onClick={handleLogout}>
+            Déconnexion
+          </Button>
+        </Box>
+
+        <Paper sx={{ p: 3, mb: 4 }} elevation={2}>
+          <Typography variant="h6" gutterBottom>
+            Récupérer un tournoi
+          </Typography>
+          <FetchTournamentForm onValidate={(id) => !tournaments.some(t => t.id === id)} onFetch={fetchTournaments} />
+        </Paper>
+
+        <Paper sx={{ p: 3 }} elevation={2}>
+          <Typography variant="h6" gutterBottom>
+            Tournois stockés
+          </Typography>
+
+          {loading && <Typography>Chargement...</Typography>}
+          {error && <Alert severity="error">{error}</Alert>}
+
+          {!loading && tournaments.length === 0 && (
+            <Typography>Aucun tournoi trouvé</Typography>
+          )}
+
+          <TournamentGrid tournaments={tournaments} />
+
+        </Paper>
+      </Paper>
+    </Container>
   );
 }

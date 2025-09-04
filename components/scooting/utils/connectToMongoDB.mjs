@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-// import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 
-// dotenv.config(); // charge .env automatiquement à la racine
+dotenv.config(); // charge .env automatiquement à la racine
 
 export default async function connectToMongoDB() {
   const mongoUri =  process.env.MONGO_URI || ""; // Remplacez par votre URI MongoDB
