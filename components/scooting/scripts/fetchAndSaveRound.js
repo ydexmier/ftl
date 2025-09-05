@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import fetchRound from './lib/fetchRound.mjs';
-import Round from '../components/scooting/models/Round.js'; // adapte le chemin
-import mergeDeep from '../components/scooting/utils/mergeDeep.mjs';
-import connectToMongoDB from '../components/scooting/utils/connectToMongoDB.mjs';
-import Tournament from '../components/scooting/models/Tournament.js';
+import fetchRound from '../services/fetchRound.mjs';
+import Round from '../models/Round.js'; // adapte le chemin
+import mergeDeep from '../utils/mergeDeep.mjs';
+import connectToMongoDB from '../utils/connectToMongoDB.mjs';
+import Tournament from '../models/Tournament.js';
 
 // Fonction pour insérer ou mettre à jour le tournoi
 async function upsertRound(newData) {
@@ -35,12 +35,10 @@ async function fetchAndUpsertRound(idRound, tournamentId) {
 	}
 }
 
-async function main() {
+export default async function fetchAndSaveRound(tournamentId, idRound) {
 	try {
 		await connectToMongoDB(); // 🔹 ajouter await ici
 
-		const tournamentId = process.argv[2];
-		const idRound = Number(process.argv[3]);
 		if (!tournamentId || !idRound) {
 			throw new Error('Merci de fournir un tournamentId et idRound en argument, ex: node fetchAndUpsertRound.js');
 		}
@@ -54,7 +52,7 @@ async function main() {
 		if (!actualRoundSettings) {
 			throw new Error(`Round ${idRound} introuvable dans le tournoi ${tournamentId}`);
 		}
-		console.log(`Fetch et upsert du round ${idRound} du tournoi ${tournamentId}`);
+
 		await fetchAndUpsertRound(idRound, tournamentId);
 
 		await mongoose.disconnect();
@@ -65,5 +63,3 @@ async function main() {
 		console.log('Déconnexion MongoDB');
 	}
 }
-
-main();
