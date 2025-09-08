@@ -87,6 +87,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 		if (status === 'deck_selection') {
 			return inks.map((deckInk) => (
 				<DeckButton
+					key={combination + '_' + deckInk.join('-')}
 					inks={deckInk}
 					onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, inks: deck })}
 				/>

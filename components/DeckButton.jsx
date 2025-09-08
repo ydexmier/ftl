@@ -27,7 +27,7 @@ const DeckButton = ({ inks, selected, onClick, ...props }) => {
 	return (
 		<StyledDeckButton {...props} selected={isSelected} onClick={handleOnClick}>
 			{inks.map((ink) => (
-				<Ink type={ink} width={32} />
+				<Ink key={ink} type={ink} width={32} />
 			))}
 		</StyledDeckButton>
 	);
