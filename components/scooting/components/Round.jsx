@@ -19,7 +19,7 @@ const Round = (props) => {
 	useEffect(() => {
 		if (data) {
 			setMatchs(data.results || []);
-			setPlayersDecks(data.playersDecks.players || []); // initialiser playersDecks
+			setPlayersDecks(data.playersDecks?.players || []); // initialiser playersDecks
 		}
 	}, [data]);
 
@@ -68,7 +68,7 @@ const Round = (props) => {
 			if (!hasPlayerCombinations) return acc;
 			acc.push({
 				playerId: pmr.player.id,
-				inks: [...new Set(getPlayerDecksInk(pmr.player.id).flatMap((item) => item.inks))],
+				inks: getPlayerDecksInk(pmr.player.id).map((item) => item.inks),
 			});
 			return acc;
 		}, []);

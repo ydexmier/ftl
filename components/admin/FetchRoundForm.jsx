@@ -6,7 +6,7 @@ import { getRoundName } from '../scooting/utils/roundToString';
 export default function FetchRoundForm({ tournamentId, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);
 	const [message, setMessage] = useState('');
-
+	console.log(phases);
 	const handleRunRound = async (roundId) => {
 		setLoadingId(roundId);
 		setMessage('');

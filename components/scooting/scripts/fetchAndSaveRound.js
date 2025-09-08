@@ -11,9 +11,22 @@ async function upsertRound(newData) {
 		const existingRound = await Round.findOne({ id: newData.id });
 
 		if (existingRound) {
-			mergeDeep(existingRound, newData);
-			await existingRound.save();
-			console.log(`Round ${newData.id} mis à jour`);
+			if (existingRound.status === 'COMPLETED') {
+				console.log('Mise à jour indisponible, la round a déja été cloturé.');
+			}
+			if (newData.status === 'UPCOMING') {
+				console.log("La round précédente n'est pas encore cloturé.");
+			}
+
+			if (existingRound.status === 'IN_PROGRESS') {
+				if (newData.pairings_status === 'GENERATED') {
+					mergeDeep(existingRound, { ...newData, last_fetch: new Date() });
+					await existingRound.save();
+					console.log(`Round ${newData.id} mis à jour`);
+				} else {
+					console.log('Les pairing ne sont pas encore disponible.');
+				}
+			}
 		} else {
 			const round = new Round(newData);
 			await round.save();
