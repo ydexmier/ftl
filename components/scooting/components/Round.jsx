@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Link, Modal } from '@mui/material';
 import { useRouter } from 'next/router';
 
-import { useFetch } from '../hooks/useFetch';
-import MatchCard from './MatchCard';
-import MatchModal from './MatchModal';
-import { get, set } from 'mongoose';
+import { useFetch } from '@scooting/hooks/useFetch';
+import MatchCard from '@scooting/components/MatchCard';
+import MatchModal from '@scooting/components/MatchModal';
 
 const Round = (props) => {
 	const [matchToShow, setMatchToShow] = useState(null);

@@ -1,8 +1,8 @@
 // ftl/components/scooting/components/Tournament.jsx
 import React, { useState } from 'react';
-import { useFetch } from '../hooks/useFetch';
-import { getRoundName } from '../utils/roundToString';
-import Round from './Round';
+import { useFetch } from '@scooting/hooks/useFetch';
+import { getRoundName } from '@scooting/utils/roundToString';
+import Round from '@scooting/components/Round';
 
 export default function Tournament(props) {
 	const { id } = props; // récupère l'id de l'URL

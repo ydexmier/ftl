@@ -1,4 +1,4 @@
-import fetchAndSaveRound from '../../../components/scooting/scripts/fetchAndSaveRound.js';
+import fetchAndSaveRound from '@scooting/scripts/fetchAndSaveRound.js';
 
 export default function handler(req, res) {
 	if (req.method !== 'POST') {

@@ -17,7 +17,7 @@ import {
 	Tabs,
 	Tab,
 } from '@mui/material';
-import FetchRoundForm from '../../../components/admin/FetchRoundForm';
+import FetchRoundForm from '@components/admin/FetchRoundForm';
 
 export default function TournamentPage() {
 	const router = useRouter();

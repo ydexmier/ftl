@@ -1,7 +1,7 @@
 import React, { useState, useReducer, useEffect } from 'react';
 
 import { Modal, Typography, Box, Button, Stack, Chip, Grid, Divider } from '@mui/material';
-import InkButton, { types } from '../../InkButton';
+import InkButton, { types } from '@components/InkButton';
 import DeckButton from '@components/DeckButton';
 
 const style = {

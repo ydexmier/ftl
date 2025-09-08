@@ -1,6 +1,6 @@
-import connectToMongoDB from '../../../../../../components/scooting/utils/connectToMongoDB.mjs';
-import Round from '../../../../../../components/scooting/models/Round.js';
-import TournamentPlayersDeck from '../../../../../../components/scooting/models/TournamentPlayersDeck.js';
+import connectToMongoDB from '@scooting/utils/connectToMongoDB.mjs';
+import Round from '@scooting/models/Round.js';
+import TournamentPlayersDeck from '@scooting/models/TournamentPlayersDeck.js';
 
 export default async function handler(req, res) {
 	await connectToMongoDB();

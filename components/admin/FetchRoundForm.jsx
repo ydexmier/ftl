@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { Box, Button, Alert, Typography } from '@mui/material';
-import { getRoundName } from '../scooting/utils/roundToString';
+import { getRoundName } from '@components/scooting/utils/roundToString';
 
 export default function FetchRoundForm({ tournamentId, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);

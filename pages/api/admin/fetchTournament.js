@@ -1,4 +1,4 @@
-import fetchAndSaveTournament from '../../../components/scooting/scripts/fetchAndSaveTournament.js';
+import fetchAndSaveTournament from '@scooting/scripts/fetchAndSaveTournament.js';
 
 export default async function handler(req, res) {
 	if (req.method !== 'POST') {
