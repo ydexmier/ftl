@@ -6,8 +6,8 @@ import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 	const status = getStatusFromMatch(match);
 	const [player1, player2] = [
-		match.player_match_relationships.find((p) => p.player_order === 1),
-		match.player_match_relationships.find((p) => p.player_order === 2),
+		match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye),
+		player2Deck && match.player_match_relationships.find((p) => p.player_order === 2),
 	];
 
 	return (
@@ -27,7 +27,7 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
 					<Typography variant="h6">{player1.player.best_identifier}</Typography>
 					<Typography color="textSecondary">{showScoreFromMatch(match)}</Typography>
-					<Typography variant="h6">{player2.player.best_identifier}</Typography>
+					<Typography variant="h6">{player2 ? player2.player.best_identifier : 'BYE'}</Typography>
 				</Grid>
 				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
 					<Grid item>
@@ -39,7 +39,7 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 							</Grid>
 						))}
 					</Grid>
-					<Grid item>
+					{player2 && <Grid item>
 						{player2Deck?.map((deck) => (
 							<Grid key={player1.player.id + '_' + deck.inks.join('-')} direction="row" container>
 								{deck.inks.map((ink) => (
@@ -47,7 +47,7 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 								))}
 							</Grid>
 						))}
-					</Grid>
+					</Grid>}
 				</Grid>
 			</CardContent>
 		</Card>

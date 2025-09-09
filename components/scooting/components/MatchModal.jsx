@@ -126,7 +126,6 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 			if (combinationsInitial[0]) {
 				// première combinaison existe
 				const isDeckSelection = combinationsInitial[0].inks.length === 2;
-				let otherPlayer = null;
 				if (combinationsInitial[0].playerId) {
 					otherPlayer = getOtherPlayer(combinationsInitial[0].playerId);
 				}
@@ -151,6 +150,16 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 				});
 				player1 && onAssignPlayer('combination1',player1.id);
 
+			}
+		} else {
+			if(match?.match_is_bye) {
+				dispatch({
+					type: 'INITIALIZE_COMBINATION',
+					combo: 'combination1',
+					status: 'inks_selection',
+					inks: [],
+					playerId: match.player_match_relationships[0].player.id,
+				});
 			}
 		}
 	}, [combinationsInitial, match]);
@@ -197,17 +206,17 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 				</Grid>
 				<br />
 				{renderInkSelectionButton('combination1')}
-				<div>
+				{!match.match_is_bye && <div>
 					<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[0].player.id)}>
 						Assigner à {match.player_match_relationships[0].player.best_identifier}
 					</Button>
 					<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[1].player.id)}>
 						Assigner à {match.player_match_relationships[1].player.best_identifier}
 					</Button>
-				</div>
+				</div>}
 				<Divider sx={{ my: 2 }} />
 				{/* Combinaison 2 */}
-				<Grid
+				{!match.match_is_bye && <><Grid
 					container
 					direction="row"
 					sx={{
@@ -232,7 +241,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 						Assigner à {match.player_match_relationships[1].player.best_identifier}
 					</Button>
 				</div>
-				<Divider sx={{ my: 2 }} />
+				<Divider sx={{ my: 2 }} /></>}
 				{/* Boutons d’action */}
 				<Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
 					<Button variant="outlined" onClick={handleCancel}>

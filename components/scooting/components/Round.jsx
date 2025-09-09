@@ -125,9 +125,9 @@ const Round = (props) => {
 									},
 								}}
 								player1Deck={getPlayerDecksInk(
-									match.player_match_relationships.find((p) => p.player_order === 1).player.id,
+									match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye).player.id,
 								)}
-								player2Deck={getPlayerDecksInk(
+								player2Deck={!match.match_is_bye && getPlayerDecksInk(
 									match.player_match_relationships.find((p) => p.player_order === 2).player.id,
 								)}
 								match={match}
