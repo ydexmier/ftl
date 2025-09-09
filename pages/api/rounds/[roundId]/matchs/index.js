@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 				.lean();
 
 			if (!round) {
-				return res.status(404).json({ error: 'Round not found' });
+				return res.status(404).json({ error: 'ROUND_NOT_FOUND' });
 			}
 
 			return res.status(200).json(round);

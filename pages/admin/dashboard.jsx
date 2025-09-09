@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import { Box, Button, Container, Typography, Paper, Alert, Card, CardContent, CardMedia, Grid } from '@mui/material';
 import TournamentGrid from '@components/admin/TournamentsGrid';
-import FetchTournamentForm from '@components/admin/FetchTournamentForm';
+import FetchTournamentForm from '@components/FetchTournamentForm';
 
 export default function DashboardPage() {
 	const router = useRouter();

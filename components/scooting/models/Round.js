@@ -66,8 +66,7 @@ const RoundSchema = new mongoose.Schema({
 	id: Number,
 	tournamentId: { type: Number, required: true },
 	results: [MatchSchema],
-	last_fetch: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
 // ⚡ virtual pour lier les decks des joueurs
 RoundSchema.virtual('playersDecks', {

@@ -1,4 +1,4 @@
-import fetchData from './fetchData.mjs';
+import fetchData from '../utils/fetchData.mjs';
 
 
 export default async function fetchRound(id, page = 1, pageSize = 10000) {

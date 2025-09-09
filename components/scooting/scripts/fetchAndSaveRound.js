@@ -16,6 +16,7 @@ async function upsertRound(newData) {
 			}
 			if (newData.status === 'UPCOMING') {
 				console.log("La round précédente n'est pas encore cloturé.");
+				return newData;
 			}
 
 			if (existingRound.status === 'IN_PROGRESS') {
@@ -25,6 +26,7 @@ async function upsertRound(newData) {
 					console.log(`Round ${newData.id} mis à jour`);
 				} else {
 					console.log('Les pairing ne sont pas encore disponible.');
+					return existingRound;
 				}
 			}
 		} else {
@@ -32,8 +34,14 @@ async function upsertRound(newData) {
 			await round.save();
 			console.log(`Round ${newData.id} inséré`);
 		}
+		const roundWithPlayers = await Round.findOne({ id: Number(newData.id) })
+			.populate('playersDecks') // ⚡ auto-merge des joueurs
+			.lean();
+
+    		return roundWithPlayers;
 	} catch (err) {
 		console.error('Erreur lors de la mise à jour ou insertion :', err);
+		throw err;
 	}
 }
 
@@ -42,9 +50,10 @@ async function fetchAndUpsertRound(idRound, tournamentId) {
 	try {
 		const res = await fetchRound(idRound);
 		if (!res) throw new Error(`Fetch failed`);
-		await upsertRound({ ...res, id: idRound, tournamentId });
+		const response = await upsertRound({ ...res, id: idRound, tournamentId });
+		return response;
 	} catch (error) {
-		console.error('Erreur dans fetchAndUpsertRound:', error);
+		throw error;
 	}
 }
 
@@ -66,13 +75,15 @@ export default async function fetchAndSaveRound(tournamentId, idRound) {
 			throw new Error(`Round ${idRound} introuvable dans le tournoi ${tournamentId}`);
 		}
 
-		await fetchAndUpsertRound(idRound, tournamentId);
+		const response = await fetchAndUpsertRound(idRound, tournamentId);
 
 		await mongoose.disconnect();
 		console.log('Déconnexion MongoDB');
+		return response;
 	} catch (err) {
 		console.error('Erreur principale:', err);
 		await mongoose.disconnect();
 		console.log('Déconnexion MongoDB');
+		throw err;
 	}
 }

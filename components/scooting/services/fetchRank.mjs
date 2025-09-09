@@ -1,4 +1,4 @@
-import fetchData from './fetchData.mjs';
+import fetchData from '../utils/fetchData.mjs';
 
 export async function fetchRank(id, page = 1, pageSize = 100) {
   const url = `https://api.ravensburgerplay.com/api/v2/tournament-rounds/${id}/standings/paginated/?page=${page}&page_size=${pageSize}&avoid_cache=true`;

@@ -13,12 +13,14 @@ export function useFetch(url) {
 
       try {
         const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
         const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json.error);
+        }
         setData(json);
       } catch (err) {
+        setData(null);
         setError(err.message || "Unknown error");
       } finally {
         setLoading(false);
@@ -28,5 +30,5 @@ export function useFetch(url) {
     fetchData();
   }, [url]); // se relance si l'URL change
 
-  return { data, loading, error };
+  return { data, loading, error, setData };
 }

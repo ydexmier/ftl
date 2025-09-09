@@ -1,26 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Grid, Link, Modal } from '@mui/material';
+import React, { useState } from 'react';
+import { Grid, Box } from '@mui/material';
 import { useRouter } from 'next/router';
 
 import { useFetch } from '@scooting/hooks/useFetch';
 import MatchCard from '@scooting/components/MatchCard';
 import MatchModal from '@scooting/components/MatchModal';
-
+import FetchButton from '@components/FetchButton';
+import { fetchRound } from '@scooting/lib/api/fetchRound';
+import { diffInSeconds } from '../utils/date';
 const Round = (props) => {
 	const [matchToShow, setMatchToShow] = useState(null);
 	const router = useRouter();
 	const { tournamentId } = router.query;
 	const { roundId } = props;
-	const { data, loading, error } = useFetch(`/api/rounds/${roundId}/matchs`);
-	const [matchs, setMatchs] = useState([]);
-	const [playersDecks, setPlayersDecks] = useState([]); // { playerId: [decks] }
-
-	useEffect(() => {
-		if (data) {
-			setMatchs(data.results || []);
-			setPlayersDecks(data.playersDecks?.players || []); // initialiser playersDecks
-		}
-	}, [data]);
+	const { data: round, loading, error, setData } = useFetch(`/api/rounds/${roundId}/matchs`);
+	const {results: matchs = [], updatedAt, playersDecks = {players: []}} = round || {};
 
 	const closeMatchModal = () => setMatchToShow(null);
 	const openMatchModal = (match) => () => setMatchToShow(match);
@@ -43,27 +37,29 @@ const Round = (props) => {
 			})
 			.then((data) => {
 				// Close the modal after successful assignment
-				setMatchs(data.matchs || []); // mettre à jour les matchs si nécessaire
-				setPlayersDecks(data.playersDecks || []); // mettre à jour playersDecks si nécessaire
+				setData({
+					...round,
+					playersDecks: {
+						...playersDecks,
+						players:data.playersDecks.players || []
+					}
+				}); // mettre à jour playersDecks si nécessaire
 				closeMatchModal();
 			})
 			.catch((error) => {
 				console.error('Error:', error);
 				// You might want to show an error message to the user here
 			});
-		// Re-fetch the matchs to get the updated data
-		// This is a simple way to do it, but you might want to use a more sophisticated state management solution
-		// like React Query or SWR for better performance and user experience
 		setMatchToShow(null);
 	};
 	const getPlayerDecksInk = (playerId) => {
-		const player = playersDecks.find((p) => p.id === playerId);
+		const player = playersDecks.players.find((p) => p.id === playerId);
 
 		return player ? player[player.status] || [] : [];
 	};
 	const getMatchPlayerInks = (match) => {
 		const matchPlayerInks = match.player_match_relationships.reduce((acc, pmr) => {
-			const hasPlayerCombinations = playersDecks.find((p) => p.id === pmr.player.id);
+			const hasPlayerCombinations = playersDecks.players.find((p) => p.id === pmr.player.id);
 			if (!hasPlayerCombinations) return acc;
 			acc.push({
 				playerId: pmr.player.id,
@@ -73,15 +69,32 @@ const Round = (props) => {
 		}, []);
 		return matchPlayerInks.length ? matchPlayerInks : undefined;
 	};
+	const renderFetchButton = () => <FetchButton
+						defaultLabel="MAJ Round"
+						onFetch={async () => {
+							// ton fetch API
+							const res = await fetchRound(tournamentId, roundId);
+							setData(res.datas);
+						}}
+						refreshDelay={60}
+						initialCooldown={diffInSeconds(new Date(updatedAt), new Date())}
+					/>
 
-	if (loading) return <div>Loading matchs...</div>;
-	if (error) return <div>Error: {error}</div>;
-	if (!matchs || matchs.length === 0) return <div>No matchs found.</div>;
+	if (loading) return <Box sx={{mt: 2}}>Loading matchs...</Box>;
+	if (error && error !== 'ROUND_NOT_FOUND') return <Box sx={{mt: 2}}>Error: {error}</Box>;
+	if (!matchs || matchs.length === 0) return <Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+		La round n'est pas encore lancé ou n'a pas été MAJ
+		{renderFetchButton()}
+		</Grid>;
 	return (
 		<>
 			<div>
-				<h2>Round</h2>
-				<Grid
+				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+					<h2>Matchs</h2>
+					{renderFetchButton()}
+				</Grid>
+				
+				{matchs.length > 0 && <Grid
 					wrap="wrap"
 					container
 					spacing={2}
@@ -121,7 +134,7 @@ const Round = (props) => {
 							/>
 						</Grid>
 					))}
-				</Grid>
+				</Grid>}
 			</div>
 			<MatchModal
 				match={matchToShow}

@@ -16,8 +16,8 @@ export default function handler(req, res) {
 
 	// Chemin absolu vers le script
 	fetchAndSaveRound(tournamentId, roundId)
-		.then(() => {
-			return res.status(200).json({ message: 'Round récupéré !' });
+		.then((datas) => {
+			return res.status(200).json({ message: 'Round récupéré !', datas });
 		})
 		.catch((error) => {
 			console.error('Erreur fetchAndSaveRound:', error);

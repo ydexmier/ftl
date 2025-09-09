@@ -1,4 +1,4 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { useState, useReducer, useEffect, useMemo } from 'react';
 
 import { Modal, Typography, Box, Button, Stack, Chip, Grid, Divider } from '@mui/material';
 import InkButton, { types } from '@components/InkButton';
@@ -17,8 +17,8 @@ const style = {
 };
 
 const initialState = {
-	combination1: { inks: [], playerId: null },
-	combination2: { inks: [], playerId: null },
+	combination1: { inks: [], playerId: null,status: 'inks_selection' },
+	combination2: { inks: [], playerId: null,status: 'inks_selection' },
 };
 
 function reducer(state, action) {
@@ -57,14 +57,16 @@ function reducer(state, action) {
 
 const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) => {
 	const [state, dispatch] = useReducer(reducer, initialState);
+	const getOtherPlayer = (playerId) => {
+		return playerId === match.player_match_relationships[0].player.id
+				? match.player_match_relationships[1].player
+				: match.player_match_relationships[0].player;
+	}
 	const onAssignPlayer = (combo, playerId) => () => {
-		const otherPlayId =
-			playerId === match.player_match_relationships[0].player.id
-				? match.player_match_relationships[1].player.id
-				: match.player_match_relationships[0].player.id;
-		dispatch({ type: 'ASSIGN_PLAYER', combo, playerId, otherPlayId });
+		const otherPlay = getOtherPlayer(playerId)
+		dispatch({ type: 'ASSIGN_PLAYER', combo, playerId, otherPlayId: otherPlay.id });
 	};
-
+	
 	const handleCancel = () => {
 		dispatch({ type: 'RESET' });
 		onClose();
@@ -89,7 +91,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 				<DeckButton
 					key={combination + '_' + deckInk.join('-')}
 					inks={deckInk}
-					onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, inks: deck })}
+					onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, inks: deck.flat() })}
 				/>
 			));
 		}
@@ -103,27 +105,52 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 		));
 	};
 
+	const enableValidateButton = useMemo(() => {
+		const {combination1, combination2} = state;
+		let combination1Valid = false;
+		let combination2Valid = false;
+		if(combination1.status === "inks_selection"){
+			combination1Valid = combination1.inks.length === 2;
+		}
+		if(combination2.status === "inks_selection"){
+			combination2Valid = combination2.inks.length === 2;
+		}
+		
+		return combination1Valid && combination2Valid
+	}, [state.combination1, state.combination2])
+
 	useEffect(() => {
 		if (combinationsInitial) {
+			let player2 = combinationsInitial[0]?.playerId && getOtherPlayer(combinationsInitial[0].playerId);
+			let player1 = combinationsInitial[1]?.playerId && getOtherPlayer(combinationsInitial[1].playerId);
 			if (combinationsInitial[0]) {
 				// première combinaison existe
+				const isDeckSelection = combinationsInitial[0].inks.length === 2;
+				let otherPlayer = null;
+				if (combinationsInitial[0].playerId) {
+					otherPlayer = getOtherPlayer(combinationsInitial[0].playerId);
+				}
 				dispatch({
 					type: 'INITIALIZE_COMBINATION',
 					combo: 'combination1',
-					status: combinationsInitial[0].inks.length === 2 ? 'deck_selection' : 'inks_selection',
-					inks: combinationsInitial[0].inks,
+					status: isDeckSelection ? 'deck_selection' : 'inks_selection',
+					inks: isDeckSelection ? combinationsInitial[0].inks :combinationsInitial[0].inks.flat(),
 					playerId: combinationsInitial[0].playerId || null,
 				});
+				player2 && onAssignPlayer('combination2',player2.id)();
 			}
 			if (combinationsInitial[1]) {
 				// deuxième combinaison existe
+				const isDeckSelection = combinationsInitial[1].inks.length === 2;
 				dispatch({
 					type: 'INITIALIZE_COMBINATION',
 					combo: 'combination2',
-					status: combinationsInitial[1].inks.length === 2 ? 'deck_selection' : 'inks_selection',
-					inks: combinationsInitial[1].inks,
+					status: isDeckSelection ? 'deck_selection' : 'inks_selection',
+					inks: isDeckSelection ? combinationsInitial[1].inks : combinationsInitial[1].inks.flat(),
 					playerId: combinationsInitial[1].playerId || null,
 				});
+				player1 && onAssignPlayer('combination1',player1.id);
+
 			}
 		}
 	}, [combinationsInitial, match]);
@@ -211,7 +238,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 					<Button variant="outlined" onClick={handleCancel}>
 						Annuler
 					</Button>
-					<Button color="success" variant="contained" onClick={handleValidate}>
+					<Button disabled={!enableValidateButton}color="success" variant="contained" onClick={handleValidate}>
 						Valider
 					</Button>
 				</Stack>

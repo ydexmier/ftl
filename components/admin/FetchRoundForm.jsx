@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Box, Button, Alert, Typography } from '@mui/material';
 import { getRoundName } from '@components/scooting/utils/roundToString';
+import { fetchRound } from '@components/scooting/lib/api/fetchRound';
 
 export default function FetchRoundForm({ tournamentId, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);
@@ -12,14 +13,7 @@ export default function FetchRoundForm({ tournamentId, phases = [] }) {
 		setMessage('');
 
 		try {
-			const res = await fetch('/api/admin/fetchRound', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ tournamentId, roundId }),
-			});
-
-			if (!res.ok) throw new Error('Erreur lors de l’exécution du script');
-			await res.json();
+			const res = await fetchRound(tournamentId, roundId);
 			setMessage(`✅ Script exécuté pour le round ${roundId}`);
 		} catch (err) {
 			setMessage(`❌ ${err.message}`);

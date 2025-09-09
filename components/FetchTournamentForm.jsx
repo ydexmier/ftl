@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
 import { TextField, Button, Alert, Box } from '@mui/material';
+import { fetchTournament } from '@scooting/lib/api/fetchTournament';
 
-export default function FetchTournamentForm({ onFetch, onValidate }) {
+export default function FetchTournamentForm({ onSubmitCallback, onValidate }) {
   const [tournamentId, setTournamentId] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -24,17 +25,11 @@ export default function FetchTournamentForm({ onFetch, onValidate }) {
     }
 
     try {
-      const fetchRes = await fetch('/api/admin/fetchTournament', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tournamentId: Number(tournamentId) }),
-      });
-
-      if (!fetchRes.ok) throw new Error('Erreur lors de la récupération du tournoi');
+      const response = await fetchTournament(tournamentId);
 
       setSuccess(`Tournoi ${tournamentId} récupéré avec succès !`);
       setTournamentId(''); // reset champ
-      if (onFetch) onFetch(); // rafraîchir liste des tournois
+      onSubmitCallback && onSubmitCallback(response.datas);
     } catch (err) {
       setError(err.message);
     }

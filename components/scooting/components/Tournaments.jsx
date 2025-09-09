@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from "next/router";
+
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
 import TournamentCard from '@components/TournamentCard';
+import FetchTournamentForm from '@components/FetchTournamentForm';
 
 const Tournaments = () => {
+	const router = useRouter();
 	const [tournaments, setTournaments] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
@@ -33,7 +38,8 @@ const Tournaments = () => {
 	if (loading) return <div>Loading tournaments...</div>;
 	if (error) return <div>Error: {error}</div>;
 	return (
-		<div>
+		<Box container sx={{mt: 4}}>
+			<FetchTournamentForm onSubmitCallback={(data) => {router.push(`/tournaments/${data.id}`)}}/>
 			<h2>Liste des tournois</h2>
 			<Grid container spacing={2}>
 				{tournaments.map((t) => (
@@ -54,7 +60,7 @@ const Tournaments = () => {
 					</Grid>
 				))}
 			</Grid>
-		</div>
+		</Box>
 	);
 };
 

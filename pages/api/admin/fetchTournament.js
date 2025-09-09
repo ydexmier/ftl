@@ -5,15 +5,15 @@ export default async function handler(req, res) {
 		return res.status(405).json({ error: 'Méthode non autorisée' });
 	}
 
-	const { tournamentId } = req.body;
+	const { tournamentId, isRefetch } = req.body;
 
 	if (!tournamentId) {
 		return res.status(400).json({ error: 'TournamentId requis' });
 	}
 
-	await fetchAndSaveTournament(tournamentId)
-		.then(() => {
-			return res.status(200).json({ message: 'Tournoi récupéré !' });
+	await fetchAndSaveTournament(tournamentId, isRefetch)
+		.then((datas) => {
+			return res.status(200).json({ message: 'Tournoi récupéré !', datas });
 		})
 		.catch((error) => {
 			console.error('Erreur fetchAndSaveTournament:', error);

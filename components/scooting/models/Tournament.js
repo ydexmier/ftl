@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 import { getModel } from './utils.mjs';
 
-const RoundSchema = new mongoose.Schema({
+export const RoundSchema = new mongoose.Schema({
   id: Number,
   round_number: Number,
   final_round_in_event: Boolean,
