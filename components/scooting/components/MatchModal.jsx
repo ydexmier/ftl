@@ -64,6 +64,7 @@ function reducer(state, action) {
 const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) => {
 	const [state, dispatch] = useReducer(reducer, initialState);
 	const getOtherPlayer = (playerId) => {
+		if (match.player_match_relationships.length < 2) return null;
 		return playerId === match.player_match_relationships[0].player.id
 			? match.player_match_relationships[1].player
 			: match.player_match_relationships[0].player;
@@ -152,7 +153,9 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 		let combination1Valid =
 			(combination1.decks.length === 1 && combination1.decks[0].length === 2) || combination1.decks.length === 2;
 		let combination2Valid =
-			(combination2.decks.length === 1 && combination1.decks[0].length === 2) || combination2.decks.length === 2;
+			match?.player_match_relationships.length < 2 ||
+			(combination2.decks.length === 1 && combination1.decks[0].length === 2) ||
+			combination2.decks.length === 2;
 
 		return combination1Valid && combination2Valid;
 	}, [state.combination1, state.combination2]);
