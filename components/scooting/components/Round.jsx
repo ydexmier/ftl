@@ -14,11 +14,12 @@ const Round = (props) => {
 	const { tournamentId } = router.query;
 	const { roundId } = props;
 	const { data: round, loading, error, setData } = useFetch(`/api/rounds/${roundId}/matchs`);
-	const {results: matchs = [], updatedAt, playersDecks = {players: []}} = round || {};
+	const { results: matchs = [], updatedAt, playersDecks = { players: [] } } = round || {};
 
 	const closeMatchModal = () => setMatchToShow(null);
 	const openMatchModal = (match) => () => setMatchToShow(match);
 	const onValidateAssignDeck = (datas) => {
+		console.log('onValidateAssignDeck', datas);
 		// Here you can call an API to save the assigned deck to the match
 		fetch(`/api/rounds/${roundId}/matchs/${matchToShow.id}/assign_deck`, {
 			method: 'POST',
@@ -41,8 +42,8 @@ const Round = (props) => {
 					...round,
 					playersDecks: {
 						...playersDecks,
-						players:data.playersDecks.players || []
-					}
+						players: data.playersDecks.players || [],
+					},
 				}); // mettre à jour playersDecks si nécessaire
 				closeMatchModal();
 			})
@@ -53,39 +54,42 @@ const Round = (props) => {
 		setMatchToShow(null);
 	};
 	const getPlayerDecksInk = (playerId) => {
-		const player = playersDecks.players.find((p) => p.id === playerId);
+		const player = playersDecks.players.find((p) => p.playerId === playerId);
 
-		return player ? player[player.status] || [] : [];
+		return player ? player.decks || [] : [];
 	};
 	const getMatchPlayerInks = (match) => {
 		const matchPlayerInks = match.player_match_relationships.reduce((acc, pmr) => {
-			const hasPlayerCombinations = playersDecks.players.find((p) => p.id === pmr.player.id);
+			const hasPlayerCombinations = playersDecks.players.find((p) => p.playerId === pmr.player.id);
 			if (!hasPlayerCombinations) return acc;
-			acc.push({
-				playerId: pmr.player.id,
-				inks: getPlayerDecksInk(pmr.player.id).map((item) => item.inks),
-			});
+			acc.push(hasPlayerCombinations);
 			return acc;
 		}, []);
+
 		return matchPlayerInks.length ? matchPlayerInks : undefined;
 	};
-	const renderFetchButton = () => <FetchButton
-						defaultLabel="MAJ Round"
-						onFetch={async () => {
-							// ton fetch API
-							const res = await fetchRound(tournamentId, roundId);
-							setData(res.datas);
-						}}
-						refreshDelay={60}
-						initialCooldown={diffInSeconds(new Date(updatedAt), new Date())}
-					/>
+	const renderFetchButton = () => (
+		<FetchButton
+			defaultLabel="MAJ Round"
+			onFetch={async () => {
+				// ton fetch API
+				const res = await fetchRound(tournamentId, roundId);
+				setData(res.datas);
+			}}
+			refreshDelay={60}
+			initialCooldown={diffInSeconds(new Date(updatedAt), new Date())}
+		/>
+	);
 
-	if (loading) return <Box sx={{mt: 2}}>Loading matchs...</Box>;
-	if (error && error !== 'ROUND_NOT_FOUND') return <Box sx={{mt: 2}}>Error: {error}</Box>;
-	if (!matchs || matchs.length === 0) return <Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
-		La round n'est pas encore lancé ou n'a pas été MAJ
-		{renderFetchButton()}
-		</Grid>;
+	if (loading) return <Box sx={{ mt: 2 }}>Loading matchs...</Box>;
+	if (error && error !== 'ROUND_NOT_FOUND') return <Box sx={{ mt: 2 }}>Error: {error}</Box>;
+	if (!matchs || matchs.length === 0)
+		return (
+			<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+				La round n'est pas encore lancé ou n'a pas été MAJ
+				{renderFetchButton()}
+			</Grid>
+		);
 	return (
 		<>
 			<div>
@@ -93,48 +97,56 @@ const Round = (props) => {
 					<h2>Matchs</h2>
 					{renderFetchButton()}
 				</Grid>
-				
-				{matchs.length > 0 && <Grid
-					wrap="wrap"
-					container
-					spacing={2}
-					sx={{
-						justifyContent: 'flex-start',
-						alignItems: 'stretch',
-					}}
-				>
-					{matchs.map((match) => (
-						<Grid
-							sx={{ display: 'flex' }}
-							xs={12} // mobile : 1 card par row
-							sm={6} // tablette : 2 cards par row
-							md={4} // desktop : 3 cards par row
-							item
-							onClick={openMatchModal(match)}
-							key={match.id}
-							size={{ xs: 12, sm: 6, md: 4 }}
-						>
-							<MatchCard
-								sx={{
-									minWidth: '100%', // ✅ prend toute la largeur du Grid item
-									display: 'flex',
-									flexDirection: 'column',
-									cursor: 'pointer',
-									'&:hover': {
-										boxShadow: 6, // effet hover
-									},
-								}}
-								player1Deck={getPlayerDecksInk(
-									match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye).player.id,
-								)}
-								player2Deck={!match.match_is_bye && getPlayerDecksInk(
-									match.player_match_relationships.find((p) => p.player_order === 2).player.id,
-								)}
-								match={match}
-							/>
-						</Grid>
-					))}
-				</Grid>}
+
+				{matchs.length > 0 && (
+					<Grid
+						wrap="wrap"
+						container
+						spacing={2}
+						sx={{
+							justifyContent: 'flex-start',
+							alignItems: 'stretch',
+						}}
+					>
+						{matchs.map((match) => (
+							<Grid
+								sx={{ display: 'flex' }}
+								xs={12} // mobile : 1 card par row
+								sm={6} // tablette : 2 cards par row
+								md={4} // desktop : 3 cards par row
+								item
+								onClick={openMatchModal(match)}
+								key={match.id}
+								size={{ xs: 12, sm: 6, md: 4 }}
+							>
+								<MatchCard
+									sx={{
+										minWidth: '100%', // ✅ prend toute la largeur du Grid item
+										display: 'flex',
+										flexDirection: 'column',
+										cursor: 'pointer',
+										'&:hover': {
+											boxShadow: 6, // effet hover
+										},
+									}}
+									player1Deck={getPlayerDecksInk(
+										match.player_match_relationships.find(
+											(p) => p.player_order === 1 || match.match_is_bye,
+										).player.id,
+									)}
+									player2Deck={
+										!match.match_is_bye &&
+										getPlayerDecksInk(
+											match.player_match_relationships.find((p) => p.player_order === 2).player
+												.id,
+										)
+									}
+									match={match}
+								/>
+							</Grid>
+						))}
+					</Grid>
+				)}
 			</div>
 			<MatchModal
 				match={matchToShow}

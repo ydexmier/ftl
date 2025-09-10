@@ -32,22 +32,24 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
 					<Grid item>
 						{player1Deck?.map((deck) => (
-							<Grid key={player1.player.id + '_' + deck.inks.join('-')} direction="row" container>
-								{deck.inks.map((ink) => (
+							<Grid key={player1.player.id + '_' + deck.join('-')} direction="row" container>
+								{deck.map((ink) => (
 									<Ink key={player1.player.id + '_' + ink} type={ink} width={40} />
 								))}
 							</Grid>
 						))}
 					</Grid>
-					{player2 && <Grid item>
-						{player2Deck?.map((deck) => (
-							<Grid key={player1.player.id + '_' + deck.inks.join('-')} direction="row" container>
-								{deck.inks.map((ink) => (
-									<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
-								))}
-							</Grid>
-						))}
-					</Grid>}
+					{player2 && (
+						<Grid item>
+							{player2Deck?.map((deck) => (
+								<Grid key={player1.player.id + '_' + deck.join('-')} direction="row" container>
+									{deck.map((ink) => (
+										<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
+									))}
+								</Grid>
+							))}
+						</Grid>
+					)}
 				</Grid>
 			</CardContent>
 		</Card>

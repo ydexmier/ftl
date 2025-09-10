@@ -1,9 +1,10 @@
-import React, { useState, useReducer, useEffect, useMemo } from 'react';
+import React, { useReducer, useEffect, useMemo } from 'react';
 
 import { Modal, Typography, Box, Button, Stack, Chip, Grid, Divider } from '@mui/material';
 import InkButton, { types } from '@components/InkButton';
 import DeckButton from '@components/DeckButton';
-
+import MoveDownIcon from '@mui/icons-material/MoveDown';
+import MoveUpIcon from '@mui/icons-material/MoveUp';
 const style = {
 	position: 'absolute',
 	top: '50%',
@@ -17,36 +18,41 @@ const style = {
 };
 
 const initialState = {
-	combination1: { inks: [], playerId: null,status: 'inks_selection' },
-	combination2: { inks: [], playerId: null,status: 'inks_selection' },
+	combination1: { decks: [], playerId: null },
+	combination2: { decks: [], playerId: null },
 };
 
 function reducer(state, action) {
 	switch (action.type) {
 		case 'SELECT_INK': {
 			const { combo, ink } = action;
-			const current = state[combo].inks;
+			const current = state[combo].decks.at(0) || [];
 			if (current.includes(ink)) {
-				return { ...state, [combo]: { ...state[combo], inks: current.filter((i) => i !== ink) } };
+				return { ...state, [combo]: { ...state[combo], decks: [current.filter((i) => i !== ink)] } };
 			}
-			return { ...state, [combo]: { ...state[combo], inks: [...current, ink] } };
+			return { ...state, [combo]: { ...state[combo], decks: [[...current, ink]] } };
 		}
 		case 'SELECT_DECK': {
-			const { combo, inks } = action;
-			return { ...state, [combo]: { ...state[combo], inks, status: 'inks_selection' } };
+			const { combo, deck } = action;
+			return { ...state, [combo]: { ...state[combo], decks: [deck] } };
 		}
 		case 'ASSIGN_PLAYER': {
 			const { combo, playerId, otherPlayId } = action;
 			const otherCombo = combo === 'combination1' ? 'combination2' : 'combination1';
 			return {
 				...state,
-				[combo]: { ...state[combo], playerId, status: 'inks_selection' },
-				[otherCombo]: { ...state[otherCombo], playerId: otherPlayId, status: 'inks_selection' },
+				[combo]: { ...state[combo], playerId },
+				[otherCombo]: { ...state[otherCombo], playerId: otherPlayId },
 			};
 		}
+		case 'COPY_DECKS': {
+			const { combo } = action;
+			const otherCombo = combo === 'combination1' ? 'combination2' : 'combination1';
+			return { ...state, [otherCombo]: { ...state[otherCombo], decks: state[combo].decks } };
+		}
 		case 'INITIALIZE_COMBINATION': {
-			const { combo, inks, playerId, status } = action;
-			return { ...state, [combo]: { ...state[combo], inks, playerId, status } };
+			const { combo, decks, playerId } = action;
+			return { ...state, [combo]: { ...state[combo], decks, playerId } };
 		}
 		case 'RESET':
 			return initialState;
@@ -59,21 +65,40 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 	const [state, dispatch] = useReducer(reducer, initialState);
 	const getOtherPlayer = (playerId) => {
 		return playerId === match.player_match_relationships[0].player.id
-				? match.player_match_relationships[1].player
-				: match.player_match_relationships[0].player;
-	}
+			? match.player_match_relationships[1].player
+			: match.player_match_relationships[0].player;
+	};
 	const onAssignPlayer = (combo, playerId) => () => {
-		const otherPlay = getOtherPlayer(playerId)
+		const otherPlay = getOtherPlayer(playerId);
 		dispatch({ type: 'ASSIGN_PLAYER', combo, playerId, otherPlayId: otherPlay.id });
 	};
-	
+
 	const handleCancel = () => {
 		dispatch({ type: 'RESET' });
 		onClose();
 	};
 
 	const handleValidate = () => {
-		onValidate(state); // tu renvoies le state complet au parent
+		const { combination1, combination2 } = state;
+		const dataToSend = {};
+		if ([combination1, combination2].every((d) => !d.playerId)) {
+			dataToSend.combination1 = {
+				...combination1,
+				decks: [...combination1.decks, ...combination2.decks],
+				playerId: match.player_match_relationships[0].player.id,
+			};
+			if (match.player_match_relationships.length > 1) {
+				dataToSend.combination2 = {
+					...combination2,
+					decks: [...combination1.decks, ...combination2.decks],
+					playerId: match.player_match_relationships[1].player.id,
+				};
+			}
+		} else {
+			dataToSend.combination1 = combination1;
+			dataToSend.combination2 = combination2;
+		}
+		onValidate(dataToSend); // tu renvoies le state complet au parent
 		onClose();
 	};
 
@@ -85,19 +110,36 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 	};
 
 	const renderInkSelectionButton = (combination) => {
-		const { status, inks } = state[combination];
-		if (status === 'deck_selection') {
-			return inks.map((deckInk) => (
-				<DeckButton
-					key={combination + '_' + deckInk.join('-')}
-					inks={deckInk}
-					onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, inks: deck.flat() })}
-				/>
-			));
+		const { decks } = state[combination];
+		if (decks.length > 1) {
+			return (
+				<Box sx={{ display: 'flex', alignItems: 'center' }}>
+					{/* Boutons à gauche */}
+					<Box sx={{ display: 'flex', gap: 1 }}>
+						{decks.map((deckInk) => (
+							<DeckButton
+								key={combination + '_' + deckInk.join('-')}
+								inks={deckInk}
+								onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, deck })}
+							/>
+						))}
+					</Box>
+
+					{/* Bouton à droite */}
+					<Box sx={{ marginLeft: 'auto' }}>
+						<Button
+							variant="contained"
+							color="primary"
+							onClick={() => dispatch({ type: 'COPY_DECKS', combo: combination })}
+							startIcon={combination === 'combination1' ? <MoveDownIcon /> : <MoveUpIcon />}
+						/>
+					</Box>
+				</Box>
+			);
 		}
 		return types.map((type) => (
 			<InkButton
-				isSelected={inks.flat().includes(type)}
+				isSelected={decks.flat().includes(type)}
 				key={type}
 				type={type}
 				onClick={() => dispatch({ type: 'SELECT_INK', combo: combination, ink: type })}
@@ -106,18 +148,14 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 	};
 
 	const enableValidateButton = useMemo(() => {
-		const {combination1, combination2} = state;
-		let combination1Valid = false;
-		let combination2Valid = false;
-		if(combination1.status === "inks_selection"){
-			combination1Valid = combination1.inks.length === 2;
-		}
-		if(combination2.status === "inks_selection"){
-			combination2Valid = combination2.inks.length === 2;
-		}
-		
-		return combination1Valid && combination2Valid
-	}, [state.combination1, state.combination2])
+		const { combination1, combination2 } = state;
+		let combination1Valid =
+			(combination1.decks.length === 1 && combination1.decks[0].length === 2) || combination1.decks.length === 2;
+		let combination2Valid =
+			(combination2.decks.length === 1 && combination1.decks[0].length === 2) || combination2.decks.length === 2;
+
+		return combination1Valid && combination2Valid;
+	}, [state.combination1, state.combination2]);
 
 	useEffect(() => {
 		if (combinationsInitial) {
@@ -125,39 +163,32 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 			let player1 = combinationsInitial[1]?.playerId && getOtherPlayer(combinationsInitial[1].playerId);
 			if (combinationsInitial[0]) {
 				// première combinaison existe
-				const isDeckSelection = combinationsInitial[0].inks.length === 2;
-				if (combinationsInitial[0].playerId) {
-					otherPlayer = getOtherPlayer(combinationsInitial[0].playerId);
-				}
 				dispatch({
 					type: 'INITIALIZE_COMBINATION',
 					combo: 'combination1',
-					status: isDeckSelection ? 'deck_selection' : 'inks_selection',
-					inks: isDeckSelection ? combinationsInitial[0].inks :combinationsInitial[0].inks.flat(),
+					decks: combinationsInitial[0].decks,
 					playerId: combinationsInitial[0].playerId || null,
 				});
-				player2 && onAssignPlayer('combination2',player2.id)();
+
+				player2 && onAssignPlayer('combination2', player2.id)();
 			}
 			if (combinationsInitial[1]) {
 				// deuxième combinaison existe
-				const isDeckSelection = combinationsInitial[1].inks.length === 2;
 				dispatch({
 					type: 'INITIALIZE_COMBINATION',
 					combo: 'combination2',
-					status: isDeckSelection ? 'deck_selection' : 'inks_selection',
-					inks: isDeckSelection ? combinationsInitial[1].inks : combinationsInitial[1].inks.flat(),
+					decks: combinationsInitial[1].decks,
 					playerId: combinationsInitial[1].playerId || null,
 				});
-				player1 && onAssignPlayer('combination1',player1.id);
-
+				player1 && onAssignPlayer('combination1', player1.id);
 			}
 		} else {
-			if(match?.match_is_bye) {
+			if (match?.match_is_bye) {
 				dispatch({
 					type: 'INITIALIZE_COMBINATION',
 					combo: 'combination1',
 					status: 'inks_selection',
-					inks: [],
+					decks: [],
 					playerId: match.player_match_relationships[0].player.id,
 				});
 			}
@@ -206,48 +237,63 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 				</Grid>
 				<br />
 				{renderInkSelectionButton('combination1')}
-				{!match.match_is_bye && <div>
-					<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[0].player.id)}>
-						Assigner à {match.player_match_relationships[0].player.best_identifier}
-					</Button>
-					<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[1].player.id)}>
-						Assigner à {match.player_match_relationships[1].player.best_identifier}
-					</Button>
-				</div>}
+				{!match.match_is_bye && (
+					<div>
+						<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[0].player.id)}>
+							Assigner à {match.player_match_relationships[0].player.best_identifier}
+						</Button>
+						<Button onClick={onAssignPlayer('combination1', match.player_match_relationships[1].player.id)}>
+							Assigner à {match.player_match_relationships[1].player.best_identifier}
+						</Button>
+					</div>
+				)}
 				<Divider sx={{ my: 2 }} />
 				{/* Combinaison 2 */}
-				{!match.match_is_bye && <><Grid
-					container
-					direction="row"
-					sx={{
-						justifyContent: 'space-between',
-						alignItems: 'center',
-					}}
-				>
-					Combinaison 2:
-					<Chip
-						size="small"
-						color={state.combination2.playerId ? 'success' : 'default'}
-						label={getPlayerNameById(state.combination2.playerId)}
-					/>
-				</Grid>
-				<br />
-				{renderInkSelectionButton('combination2')}
-				<div>
-					<Button onClick={onAssignPlayer('combination2', match.player_match_relationships[0].player.id)}>
-						Assigner à {match.player_match_relationships[0].player.best_identifier}
-					</Button>
-					<Button onClick={onAssignPlayer('combination2', match.player_match_relationships[1].player.id)}>
-						Assigner à {match.player_match_relationships[1].player.best_identifier}
-					</Button>
-				</div>
-				<Divider sx={{ my: 2 }} /></>}
+				{!match.match_is_bye && (
+					<>
+						<Grid
+							container
+							direction="row"
+							sx={{
+								justifyContent: 'space-between',
+								alignItems: 'center',
+							}}
+						>
+							Combinaison 2:
+							<Chip
+								size="small"
+								color={state.combination2.playerId ? 'success' : 'default'}
+								label={getPlayerNameById(state.combination2.playerId)}
+							/>
+						</Grid>
+						<br />
+						{renderInkSelectionButton('combination2')}
+						<div>
+							<Button
+								onClick={onAssignPlayer('combination2', match.player_match_relationships[0].player.id)}
+							>
+								Assigner à {match.player_match_relationships[0].player.best_identifier}
+							</Button>
+							<Button
+								onClick={onAssignPlayer('combination2', match.player_match_relationships[1].player.id)}
+							>
+								Assigner à {match.player_match_relationships[1].player.best_identifier}
+							</Button>
+						</div>
+						<Divider sx={{ my: 2 }} />
+					</>
+				)}
 				{/* Boutons d’action */}
 				<Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
 					<Button variant="outlined" onClick={handleCancel}>
 						Annuler
 					</Button>
-					<Button disabled={!enableValidateButton}color="success" variant="contained" onClick={handleValidate}>
+					<Button
+						disabled={!enableValidateButton}
+						color="success"
+						variant="contained"
+						onClick={handleValidate}
+					>
 						Valider
 					</Button>
 				</Stack>
