@@ -4,10 +4,11 @@ import Tournament from '@scooting/models/Tournament.js';
 export default async function handler(req, res) {
 	await connectToMongoDB();
 	const { id } = req.query;
+	const tournamentId = Number(id);
 
 	if (req.method === 'GET') {
 		try {
-			const tournament = await Tournament.findOne({ id });
+			const tournament = await Tournament.findOne({ id: tournamentId });
 			if (!tournament) {
 				return res.status(404).json({ error: 'Tournament not found' });
 			}

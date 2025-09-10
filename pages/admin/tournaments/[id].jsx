@@ -18,6 +18,7 @@ import {
 	Tab,
 } from '@mui/material';
 import FetchRoundForm from '@components/admin/FetchRoundForm';
+import DeleteTournamentButton from '@components/scooting/components/DeleteTournamentButton';
 
 export default function TournamentPage() {
 	const router = useRouter();
@@ -62,6 +63,10 @@ export default function TournamentPage() {
 
 			<Typography variant="h4" gutterBottom>
 				{tournament.name}
+				<DeleteTournamentButton
+					tournamentId={tournament.id}
+					onDeleted={() => router.push('/admin/dashboard')}
+				/>
 			</Typography>
 
 			<Paper sx={{ p: 4 }}>

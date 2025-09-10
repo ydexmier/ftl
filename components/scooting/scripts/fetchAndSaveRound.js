@@ -38,7 +38,7 @@ async function upsertRound(newData) {
 			.populate('playersDecks') // ⚡ auto-merge des joueurs
 			.lean();
 
-    		return roundWithPlayers;
+		return roundWithPlayers;
 	} catch (err) {
 		console.error('Erreur lors de la mise à jour ou insertion :', err);
 		throw err;
@@ -77,13 +77,9 @@ export default async function fetchAndSaveRound(tournamentId, idRound) {
 
 		const response = await fetchAndUpsertRound(idRound, tournamentId);
 
-		await mongoose.disconnect();
-		console.log('Déconnexion MongoDB');
 		return response;
 	} catch (err) {
 		console.error('Erreur principale:', err);
-		await mongoose.disconnect();
-		console.log('Déconnexion MongoDB');
 		throw err;
 	}
 }

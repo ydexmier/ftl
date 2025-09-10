@@ -55,7 +55,7 @@ export default function DashboardPage() {
 					</Typography>
 					<FetchTournamentForm
 						onValidate={(id) => !tournaments.some((t) => t.id === id)}
-						onFetch={fetchTournaments}
+						onSubmitCallback={(data) => router.push(`/admin/tournaments/${data.id}`)}
 					/>
 				</Paper>
 

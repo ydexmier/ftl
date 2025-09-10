@@ -9,12 +9,12 @@ import { upsertTournamentPlayersDeck } from '../controllers/TournamentPlayersDec
 async function upsertTournament(newData, isRefetch) {
 	try {
 		const existingTournament = await Tournament.findOne({ id: newData.id });
-		console.log(existingTournament && !isRefetch)
+		console.log(existingTournament && !isRefetch);
 		if (!isRefetch && existingTournament) throw new Error('Le tournoi existe déjà');
 		if (existingTournament) {
 			mergeDeep(existingTournament, newData);
 			await existingTournament.save();
-			console.log(`Tournoi ${newData.id} mis à jour`)
+			console.log(`Tournoi ${newData.id} mis à jour`);
 			return existingTournament;
 		} else {
 			const tournament = new Tournament(newData);
@@ -52,8 +52,6 @@ export default async function fetchAndSaveTournament(id, isRefetch = false) {
 
 		const response = await fetchAndUpsertTournament(id, isRefetch);
 
-		await mongoose.disconnect();
-		console.log('Déconnexion MongoDB');
 		return response;
 	} catch (err) {
 		console.error('Erreur principale:', err);

@@ -19,7 +19,7 @@ const TournamentPlayersDeckSchema = new mongoose.Schema(
 	},
 	{ timestamps: true },
 );
-
+TournamentPlayersDeckSchema.index({ tournamentId: 1 });
 // ⚡ autoIndex en dev
 if (process.env.NODE_ENV === 'development') {
 	TournamentPlayersDeckSchema.set('autoIndex', true);

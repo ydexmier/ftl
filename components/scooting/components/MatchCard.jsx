@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Typography, Chip, Grid } from '@mui/material';
+import { Card, CardContent, Typography, Chip, Grid, Box, Divider } from '@mui/material';
 import Ink from '@components/Ink';
 import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 
@@ -24,33 +24,81 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 					<Chip label={`Table ${match.table_number}`} />
 					<Chip size="small" color={status.color} label={status.label} />
 				</Grid>
-				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
-					<Typography variant="h6">{player1.player.best_identifier}</Typography>
-					<Typography color="textSecondary">{showScoreFromMatch(match)}</Typography>
-					<Typography variant="h6">{player2 ? player2.player.best_identifier : 'BYE'}</Typography>
-				</Grid>
-				<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>
-					<Grid item>
-						{player1Deck?.map((deck) => (
-							<Grid key={player1.player.id + '_' + deck.join('-')} direction="row" container>
-								{deck.map((ink) => (
-									<Ink key={player1.player.id + '_' + ink} type={ink} width={40} />
-								))}
-							</Grid>
-						))}
+				<Divider sx={{ my: 2 }} />
+				<Grid container spacing={1}>
+					<Grid size={6}>
+						<Typography variant="h6">{player1.player.best_identifier}</Typography>
 					</Grid>
-					{player2 && (
-						<Grid item>
-							{player2Deck?.map((deck) => (
-								<Grid key={player1.player.id + '_' + deck.join('-')} direction="row" container>
+					<Grid size={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+						<Chip variant="outlined" label={player1.user_event_status.best_identifier} />
+					</Grid>
+
+					<Grid container spacing={1} size={12} sx={{ justifyContent: 'center' }}>
+						<Box
+							sx={{
+								display: 'flex',
+								gap: 2, // espace entre les decks
+								flexWrap: 'wrap', // permet de passer à la ligne si la largeur est trop petite
+							}}
+						>
+							{player1Deck?.map((deck, deckIndex) => (
+								<Box
+									key={player1.player.id + '_' + deckIndex}
+									sx={{
+										display: 'flex', // pour que les Ink soient côte à côte
+									}}
+								>
 									{deck.map((ink) => (
-										<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
+										<Ink key={player1.player.id + '_' + ink} type={ink} width={40} />
 									))}
-								</Grid>
+								</Box>
 							))}
-						</Grid>
-					)}
+						</Box>
+					</Grid>
 				</Grid>
+
+				<Divider sx={{ my: 1 }} textAlign="center">
+					<Typography color="textPrimary">{showScoreFromMatch(match)}</Typography>
+				</Divider>
+				{player2 ? (
+					<Grid container spacing={1}>
+						<Grid size={6}>
+							<Typography variant="h6">{player2.player.best_identifier}</Typography>
+						</Grid>
+						<Grid size={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+							<Chip variant="outlined" label={player2.user_event_status.best_identifier} />
+						</Grid>
+
+						<Grid container spacing={1} size={12} sx={{ justifyContent: 'center' }}>
+							<Box
+								sx={{
+									display: 'flex',
+									gap: 2, // espace entre les decks
+									flexWrap: 'wrap', // permet de passer à la ligne si la largeur est trop petite
+								}}
+							>
+								{player2Deck?.map((deck, deckIndex) => (
+									<Box
+										key={player2.player.id + '_' + deckIndex}
+										sx={{
+											display: 'flex', // pour que les Ink soient côte à côte
+										}}
+									>
+										{deck.map((ink) => (
+											<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
+										))}
+									</Box>
+								))}
+							</Box>
+						</Grid>
+					</Grid>
+				) : (
+					<Box sx={{ width: '100%', textAlign: 'center', py: 2 }}>
+						<Typography variant="h6" color="textSecondary">
+							BYE
+						</Typography>
+					</Box>
+				)}
 			</CardContent>
 		</Card>
 	);

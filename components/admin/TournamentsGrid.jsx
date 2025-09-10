@@ -1,7 +1,6 @@
 'use client';
-import React from 'react';
-import Link from 'next/link';
-import { Grid, Card, CardMedia, CardContent, Typography, Chip } from '@mui/material';
+
+import { Grid, Link } from '@mui/material';
 import TournamentCard from '@components/TournamentCard';
 
 export default function TournamentGrid({ tournaments }) {
@@ -19,7 +18,7 @@ export default function TournamentGrid({ tournaments }) {
 						},
 					}}
 				>
-					<Link href={`/admin/tournaments/${t.id}`} passHref legacyBehavior>
+					<Link underline="none" href={`/admin/tournaments/${t.id}`}>
 						<TournamentCard tournament={t} />
 					</Link>
 				</Grid>

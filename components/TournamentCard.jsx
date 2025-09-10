@@ -1,10 +1,8 @@
-import React from 'react';
-import { Grid, Card, CardMedia, CardContent, Typography, Chip } from '@mui/material';
+import { Card, CardMedia, CardContent, Typography, Chip } from '@mui/material';
 
 const TournamentCard = ({ tournament }) => {
 	return (
 		<Card
-			component="a"
 			sx={{
 				height: '100%',
 				display: 'flex',

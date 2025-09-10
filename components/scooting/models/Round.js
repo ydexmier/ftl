@@ -62,11 +62,14 @@ const MatchSchema = new mongoose.Schema({
 });
 
 // Schema principal
-const RoundSchema = new mongoose.Schema({
-	id: Number,
-	tournamentId: { type: Number, required: true },
-	results: [MatchSchema],
-}, { timestamps: true });
+const RoundSchema = new mongoose.Schema(
+	{
+		id: Number,
+		tournamentId: { type: Number, required: true },
+		results: [MatchSchema],
+	},
+	{ timestamps: true },
+);
 
 // ⚡ virtual pour lier les decks des joueurs
 RoundSchema.virtual('playersDecks', {
@@ -79,7 +82,7 @@ RoundSchema.virtual('playersDecks', {
 // Virtuals dans toJSON/toObject
 RoundSchema.set('toJSON', { virtuals: true });
 RoundSchema.set('toObject', { virtuals: true });
-
+RoundSchema.index({ tournamentId: 1 });
 // autoIndex en dev
 if (process.env.NODE_ENV === 'development') {
 	RoundSchema.set('autoIndex', true);
