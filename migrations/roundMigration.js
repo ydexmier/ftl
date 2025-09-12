@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import Round from '@models/Round.js'; // ajuste le chemin selon ton projet
 import connectToMongoDB from '@components/scooting/utils/connectToMongoDB.mjs';
 
-dotenv.config(); // charge .env si nécessaire (MONGO_URI)
+dotenv.config(); // charge .env si nécessaire (MONGO_URI, MONGO_DB_NAME)
 
 async function migrate() {
 	try {
