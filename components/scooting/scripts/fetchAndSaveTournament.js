@@ -1,9 +1,8 @@
-import mongoose from 'mongoose';
 import fetchTournement from '../lib/external/fetchTournement.mjs';
-import Tournament from '../models/Tournament.js'; // adapte le chemin
+import Tournament from '@models/Tournament.js'; // adapte le chemin
 import mergeDeep from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
-import { upsertTournamentPlayersDeck } from '../controllers/TournamentPlayersDeck.mjs';
+import { upsertTournamentPlayersDeck } from '@controllers/TournamentPlayersDeck.mjs';
 
 // Fonction pour insérer ou mettre à jour le tournoi
 async function upsertTournament(newData, isRefetch) {

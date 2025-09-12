@@ -1,7 +1,7 @@
 // components/RoundHeader.js
 import { Grid } from '@mui/material';
+
 import FetchButton from '@components/FetchButton';
-import { diffInSeconds } from '../utils/date';
 
 const RoundHeader = ({ updatedAt, onRefresh }) => (
 	<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>

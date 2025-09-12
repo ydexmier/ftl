@@ -1,11 +1,13 @@
 // pages/round.js
-import { Grid, Box, CircularProgress } from '@mui/material';
 import { useRouter } from 'next/router';
-import MatchCard from '@scooting/components/MatchCard';
-import MatchModal from '@scooting/components/MatchModal';
-import RoundHeader from '@scooting/components/RoundHeader';
-import RoundSearch from '@scooting/components/RoundSearch';
-import { useRound } from '@scooting/hooks/useRound';
+
+import { Grid, Box, CircularProgress } from '@mui/material';
+
+import MatchCard from '@components/scooting/MatchCard';
+import MatchModal from '@components/scooting/MatchModal';
+import RoundHeader from '@components/scooting/RoundHeader';
+import RoundSearch from '@components/scooting/RoundSearch';
+import { useRound } from '@components/hooks/useRound';
 
 const Round = ({ roundId }) => {
 	const { tournamentId } = useRouter().query;

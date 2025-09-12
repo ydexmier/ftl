@@ -1,7 +1,7 @@
 // hooks/useRound.js
 import { useState, useEffect } from 'react';
-import { useFetch } from '@scooting/hooks/useFetch';
-import { fetchRound } from '@scooting/lib/api/fetchRound';
+import { useFetch } from '@components/hooks/useFetch';
+import { fetchRound } from 'lib/api/fetchRound';
 import { useDebounce } from '@components/hooks/useDebounce';
 
 export const useRound = (roundId, tournamentId) => {

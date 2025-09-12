@@ -1,5 +1,5 @@
 import connectToMongoDB from '@scooting/utils/connectToMongoDB.mjs';
-import Tournament from '@scooting/models/Tournament.js';
+import Tournament from '@models/Tournament.js';
 
 export default async function handler(req, res) {
 	await connectToMongoDB();

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Box, Button, Alert, Typography } from '@mui/material';
 import { getRoundName } from '@components/scooting/utils/roundToString';
-import { fetchRound } from '@components/scooting/lib/api/fetchRound';
+import { fetchRound } from 'lib/api/fetchRound';
 
 export default function FetchRoundForm({ tournamentId, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);

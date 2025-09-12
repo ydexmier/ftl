@@ -1,4 +1,4 @@
-import { find, findOne, findOneAndUpdate, deleteOne } from '@components/scooting/models/Ranking.mjs';
+import { find, findOne, findOneAndUpdate, deleteOne } from '@models/Ranking.mjs';
 
 // Create or update (upsert)
 export async function upsertRanking(req, res) {

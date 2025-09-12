@@ -10,7 +10,9 @@
 		"baseUrl": ".",
 		"paths": {
 			"@components/*": ["components/*"],
-			"@scooting/*": ["components/scooting/*"]
+			"@scooting/*": ["components/scooting/*"],
+			"@models/*": ["models/*"],
+			"@controllers": ["controllers/*"]
 		}
 	}
 }

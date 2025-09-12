@@ -1,5 +1,5 @@
-import React from 'react';
-import { useFetch } from '@scooting/hooks/useFetch';
+import { useFetch } from '@components/hooks/useFetch';
+
 import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 
 const Match = (props) => {

@@ -1,6 +1,7 @@
-import React from 'react';
 import { Card, CardContent, Typography, Chip, Grid, Box, Divider } from '@mui/material';
+
 import Ink from '@components/Ink';
+
 import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 
 const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {

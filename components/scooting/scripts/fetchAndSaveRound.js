@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import fetchRound from '../services/fetchRound.mjs';
-import Round from '../models/Round.js'; // adapte le chemin
+import Round from '@models/Round.js'; // adapte le chemin
 import mergeDeep from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
-import Tournament from '../models/Tournament.js';
+import Tournament from '@models/Tournament.js';
 
 // Fonction pour insérer ou mettre à jour le tournoi
 async function upsertRound(newData) {

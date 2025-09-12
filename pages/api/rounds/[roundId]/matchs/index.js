@@ -1,5 +1,5 @@
 import connectToMongoDB from '@scooting/utils/connectToMongoDB.mjs';
-import Round from '@scooting/models/Round.js';
+import Round from '@models/Round.js';
 
 export default async function handler(req, res) {
 	await connectToMongoDB();

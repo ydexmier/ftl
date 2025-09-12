@@ -1,62 +1,60 @@
 'use client';
 import { useState } from 'react';
 import { TextField, Button, Alert, Box } from '@mui/material';
-import { fetchTournament } from '@scooting/lib/api/fetchTournament';
+import { fetchTournament } from 'lib/api/fetchTournament';
 
 export default function FetchTournamentForm({ onSubmitCallback, onValidate }) {
-  const [tournamentId, setTournamentId] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+	const [tournamentId, setTournamentId] = useState('');
+	const [error, setError] = useState('');
+	const [success, setSuccess] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+	const handleSubmit = async (e) => {
+		e.preventDefault();
+		setError('');
+		setSuccess('');
 
-    if (!tournamentId) {
-      setError('Veuillez saisir un ID de tournoi');
-      return;
-    }
+		if (!tournamentId) {
+			setError('Veuillez saisir un ID de tournoi');
+			return;
+		}
 
-    // ✅ validation via la fonction parent
-    if (onValidate && !onValidate(Number(tournamentId))) {
-      setError(`Le tournoi ${tournamentId} est déjà présent dans la liste.`);
-      return;
-    }
+		// ✅ validation via la fonction parent
+		if (onValidate && !onValidate(Number(tournamentId))) {
+			setError(`Le tournoi ${tournamentId} est déjà présent dans la liste.`);
+			return;
+		}
 
-    try {
-      const response = await fetchTournament(tournamentId);
+		try {
+			const response = await fetchTournament(tournamentId);
 
-      setSuccess(`Tournoi ${tournamentId} récupéré avec succès !`);
-      setTournamentId(''); // reset champ
-      onSubmitCallback && onSubmitCallback(response.datas);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+			setSuccess(`Tournoi ${tournamentId} récupéré avec succès !`);
+			setTournamentId(''); // reset champ
+			onSubmitCallback && onSubmitCallback(response.datas);
+		} catch (err) {
+			setError(err.message);
+		}
+	};
 
-  return (
-   <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
-  {/* Ligne avec input + bouton */}
-  <Box sx={{ display: 'flex', gap: 2 }}>
-    <TextField
-      label="ID du tournoi"
-      type="number"
-      value={tournamentId}
-      onChange={(e) => setTournamentId(e.target.value)}
-      required
-      sx={{ flex: 1 }} // pour que l'input prenne tout l'espace disponible
-    />
-    <Button type="submit" variant="contained">
-      Récupérer
-    </Button>
-  </Box>
+	return (
+		<Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 4 }}>
+			{/* Ligne avec input + bouton */}
+			<Box sx={{ display: 'flex', gap: 2 }}>
+				<TextField
+					label="ID du tournoi"
+					type="number"
+					value={tournamentId}
+					onChange={(e) => setTournamentId(e.target.value)}
+					required
+					sx={{ flex: 1 }} // pour que l'input prenne tout l'espace disponible
+				/>
+				<Button type="submit" variant="contained">
+					Récupérer
+				</Button>
+			</Box>
 
-  {/* Alerts sous la ligne */}
-  {error && <Alert severity="error">{error}</Alert>}
-  {success && <Alert severity="success">{success}</Alert>}
-</Box>
-
-    
-  );
+			{/* Alerts sous la ligne */}
+			{error && <Alert severity="error">{error}</Alert>}
+			{success && <Alert severity="success">{success}</Alert>}
+		</Box>
+	);
 }

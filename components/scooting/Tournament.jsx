@@ -1,11 +1,15 @@
 // ftl/components/scooting/components/Tournament.jsx
 import { useState, useEffect } from 'react';
-import { useFetch } from '@scooting/hooks/useFetch';
+
 import { FormControl, Select, MenuItem, Box, Typography, Divider } from '@mui/material';
+
 import { getRoundName } from '@scooting/utils/roundToString';
+
 import Round from '@scooting/components/Round';
+import { useFetch } from '@components/hooks/useFetch';
 import FetchButton from '@components/FetchButton';
-import { fetchTournament } from '@scooting/lib/api/fetchTournament';
+
+import { fetchTournament } from 'lib/api/fetchTournament';
 import { diffInSeconds } from '../utils/date';
 
 export default function Tournament(props) {

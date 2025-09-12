@@ -1,10 +1,12 @@
-import React, { useReducer, useEffect, useMemo } from 'react';
+import { useReducer, useEffect, useMemo } from 'react';
 
 import { Modal, Typography, Box, Button, Stack, Chip, Grid, Divider } from '@mui/material';
+import MoveUpIcon from '@mui/icons-material/MoveUp';
+import MoveDownIcon from '@mui/icons-material/MoveDown';
+
 import InkButton, { types } from '@components/InkButton';
 import DeckButton from '@components/DeckButton';
-import MoveDownIcon from '@mui/icons-material/MoveDown';
-import MoveUpIcon from '@mui/icons-material/MoveUp';
+
 const style = {
 	position: 'absolute',
 	top: '50%',

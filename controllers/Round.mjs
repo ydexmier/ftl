@@ -1,4 +1,4 @@
-import Round from '@components/scooting/models/Round.js';
+import Round from '@models/Round.js';
 import connectToMongoDB from '@components/scooting/utils/connectToMongoDB.mjs';
 
 // Create or update (upsert)

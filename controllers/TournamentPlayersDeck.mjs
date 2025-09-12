@@ -1,4 +1,4 @@
-import TournamentPlayersDeck from '@components/scooting/models/TournamentPlayersDeck.js';
+import TournamentPlayersDeck from '@models/TournamentPlayersDeck.js';
 import connectToMongoDB from '@components/scooting/utils/connectToMongoDB.mjs';
 
 // Create or update (upsert)

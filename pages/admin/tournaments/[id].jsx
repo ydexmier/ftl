@@ -18,7 +18,7 @@ import {
 	Tab,
 } from '@mui/material';
 import FetchRoundForm from '@components/admin/FetchRoundForm';
-import DeleteTournamentButton from '@components/scooting/components/DeleteTournamentButton';
+import DeleteTournamentButton from '@components/scooting/DeleteTournamentButton';
 
 export default function TournamentPage() {
 	const router = useRouter();
