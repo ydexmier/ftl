@@ -1,8 +1,7 @@
 // components/scooting/components/RoundSearch.js
-import { memo } from 'react';
 import { TextField } from '@mui/material';
 
-const RoundSearch = memo(({ value, onChange }) => (
+const RoundSearch = ({ value, onChange }) => (
 	<TextField
 		fullWidth
 		variant="outlined"
@@ -10,6 +9,6 @@ const RoundSearch = memo(({ value, onChange }) => (
 		value={value}
 		onChange={(e) => onChange(e.target.value)}
 	/>
-));
+);
 
 export default RoundSearch;

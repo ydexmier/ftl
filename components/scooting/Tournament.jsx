@@ -31,7 +31,7 @@ export default function Tournament(props) {
 	if (loading) return <div>Loading tournament...</div>;
 	if (error) return <div>Error loading tournament: {error.message}</div>;
 	if (!tournament) return <div>No tournament data available.</div>;
-	console.log(diffInSeconds(new Date(tournament.updatedAt), new Date()), new Date(tournament.updatedAt), new Date());
+
 	return (
 		<div>
 			<h1>Tournoi: {tournament.name}</h1>

@@ -25,7 +25,7 @@ export default async function handler(req, res) {
 		if (matchIndex === -1) return res.status(404).json({ error: 'Match not found' });
 
 		const match = round.results[matchIndex];
-
+		const playersModified = [];
 		// On a des playerId → assigner directement aux decks des joueurs correspondants
 		data.decks.forEach((playerDecks) => {
 			const tournamentPlayerDeckIndex = tournamentPlayersDeck.players.findIndex(
@@ -34,11 +34,15 @@ export default async function handler(req, res) {
 			const playerIndex = match.player_match_relationships.findIndex(
 				(pmr) => pmr.player.id === playerDecks.playerId,
 			);
+
+			const playerObject = match.player_match_relationships[playerIndex];
 			if (tournamentPlayerDeckIndex !== -1) {
 				tournamentPlayersDeck.set(`players.${tournamentPlayerDeckIndex}.decks`, playerDecks.decks);
+				playersModified.push({
+					...tournamentPlayersDeck.players[tournamentPlayerDeckIndex].toObject(),
+					decks: playerDecks.decks,
+				});
 			} else {
-				const playerObject = match.player_match_relationships[playerIndex];
-
 				playerObject &&
 					tournamentPlayersDeck.players.push({
 						playerId: playerObject.player.id,
@@ -46,12 +50,18 @@ export default async function handler(req, res) {
 						event_best_identifier: playerObject.user_event_status.best_identifier,
 						decks: playerDecks.decks,
 					});
+				playersModified.push({
+					playerId: playerObject.player.id,
+					best_identifier: playerObject.player.best_identifier,
+					event_best_identifier: playerObject.user_event_status.best_identifier,
+					decks: playerDecks.decks,
+				});
 			}
 		});
 		await round.save();
 		await tournamentPlayersDeck.save();
-
-		return res.status(200).json({ matchs: round.results, playersDecks: tournamentPlayersDeck });
+		console.log(playersModified);
+		return res.status(200).json({ matchs: round.results, playersDecks: { players: playersModified } });
 	} catch (err) {
 		console.error(err);
 		return res.status(500).json({ error: err.message });

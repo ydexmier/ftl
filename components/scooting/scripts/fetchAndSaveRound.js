@@ -1,6 +1,5 @@
-import mongoose from 'mongoose';
-import fetchRound from '../services/fetchRound.mjs';
-import Round from '@models/Round.js'; // adapte le chemin
+import fetchRound from '@lib/external/fetchRound.mjs';
+import Round from '@models/Round.js';
 import mergeDeep from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
 import Tournament from '@models/Tournament.js';
@@ -12,10 +11,10 @@ async function upsertRound(newData) {
 
 		if (existingRound) {
 			if (existingRound.status === 'COMPLETED') {
-				console.log('Mise à jour indisponible, la round a déja été cloturé.');
+				console.log('Mise à jour indisponible, la round a déjà été clôturé.');
 			}
 			if (newData.status === 'UPCOMING') {
-				console.log("La round précédente n'est pas encore cloturé.");
+				console.log("La round précédente n'est pas encore clôturée.");
 				return newData;
 			}
 
@@ -25,7 +24,7 @@ async function upsertRound(newData) {
 					await existingRound.save();
 					console.log(`Round ${newData.id} mis à jour`);
 				} else {
-					console.log('Les pairing ne sont pas encore disponible.');
+					console.log('Les pairings ne sont pas encore disponibles.');
 					return existingRound;
 				}
 			}
@@ -46,21 +45,73 @@ async function upsertRound(newData) {
 }
 
 // Fonction principale : fetch + upsert
-async function fetchAndUpsertRound(idRound, tournamentId) {
+async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 	try {
+		const { page = 1, perPage = 10, search = '' } = options;
+		const currentPage = Math.max(parseInt(page, 10), 1);
+		const limit = Math.max(parseInt(perPage, 10), 1);
+
 		const res = await fetchRound(idRound);
 		if (!res) throw new Error(`Fetch failed`);
 		const response = await upsertRound({ ...res, id: idRound, tournamentId });
-		return response;
+		// 2️⃣ Pagination des matchs
+		let filteredRound = { ...response };
+
+		if (search.trim()) {
+			const isNumeric = !isNaN(search); // ✅ test si c’est un nombre
+			const lowerSearch = search.toLowerCase();
+
+			filteredRound.results = (response.results || []).filter((match) => {
+				if (isNumeric) {
+					// 🔎 filtre sur le numéro de table
+					return String(match.table_number) === search;
+				}
+
+				// 🔎 sinon, filtre sur joueurs
+				return match.player_match_relationships.some(
+					(pmr) =>
+						pmr.player?.best_identifier?.toLowerCase().includes(lowerSearch) ||
+						pmr.user_event_status?.best_identifier?.toLowerCase().includes(lowerSearch),
+				);
+			});
+		}
+		const totalMatches = filteredRound.results.length;
+		const totalPages = Math.ceil(totalMatches / limit);
+		const paginatedResults = filteredRound.results.slice((currentPage - 1) * limit, currentPage * limit);
+
+		// 3️⃣ Récupérer tous les playerIds présents dans la page
+		const playerIdsInPage = paginatedResults.flatMap((match) =>
+			(match.player_match_relationships || []).map((pmr) => pmr.player?.id).filter(Boolean),
+		);
+
+		// 4️⃣ Filtrer les decks pour ne garder que les joueurs présents
+		let filteredPlayersDecks = [];
+		if (filteredRound.playersDecks && filteredRound.playersDecks.players) {
+			filteredPlayersDecks = {
+				tournamentId: filteredRound.playersDecks.tournamentId,
+				players: filteredRound.playersDecks.players.filter((p) => playerIdsInPage.includes(p.playerId)),
+			};
+		}
+
+		return {
+			results: paginatedResults,
+			playersDecks: filteredPlayersDecks,
+			pagination: {
+				page: currentPage,
+				perPage: limit,
+				total: totalMatches,
+				totalPages,
+			},
+			updatedAt: filteredRound.updatedAt,
+		};
 	} catch (error) {
 		throw error;
 	}
 }
 
-export default async function fetchAndSaveRound(tournamentId, idRound) {
+export default async function fetchAndSaveRound(tournamentId, idRound, options = {}) {
 	try {
-		await connectToMongoDB(); // 🔹 ajouter await ici
-
+		await connectToMongoDB();
 		if (!tournamentId || !idRound) {
 			throw new Error('Merci de fournir un tournamentId et idRound en argument, ex: node fetchAndUpsertRound.js');
 		}
@@ -69,14 +120,12 @@ export default async function fetchAndSaveRound(tournamentId, idRound) {
 			throw new Error(`Tournoi ${tournamentId} introuvable en base`);
 		}
 		const roundsInTournament = tournament.tournament_phases.flatMap((phase) => phase.rounds);
-
 		const actualRoundSettings = roundsInTournament.find((round) => round.id === idRound);
 		if (!actualRoundSettings) {
 			throw new Error(`Round ${idRound} introuvable dans le tournoi ${tournamentId}`);
 		}
 
-		const response = await fetchAndUpsertRound(idRound, tournamentId);
-
+		const response = await fetchAndUpsertRound(idRound, tournamentId, options);
 		return response;
 	} catch (err) {
 		console.error('Erreur principale:', err);

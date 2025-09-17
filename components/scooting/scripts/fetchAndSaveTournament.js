@@ -1,4 +1,4 @@
-import fetchTournement from '../lib/external/fetchTournement.mjs';
+import fetchTournement from '@lib/external/fetchTournement.mjs';
 import Tournament from '@models/Tournament.js'; // adapte le chemin
 import mergeDeep from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';

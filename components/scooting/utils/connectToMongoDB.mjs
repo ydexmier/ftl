@@ -18,7 +18,7 @@ export default async function connectToMongoDB() {
 				useUnifiedTopology: true,
 			})
 			.then((mongoose) => {
-				console.log('✅ Connecté à MongoDB sur la bdd ' + MONGO_DB_NAME);
+				console.log('✅ Connecté à MongoDB sur la bdd ' + process.env.MONGO_DB_NAME);
 				return mongoose;
 			})
 			.catch((err) => {

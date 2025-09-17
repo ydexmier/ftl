@@ -5,7 +5,8 @@ export default function handler(req, res) {
 		return res.status(405).json({ error: 'Méthode non autorisée' });
 	}
 
-	const { tournamentId, roundId } = req.body;
+	const { tournamentId, roundId, options = {} } = req.body;
+	const { page = 1, perPage = 10, search = '' } = options;
 
 	if (!tournamentId) {
 		return res.status(400).json({ error: 'TournamentId requis' });
@@ -15,7 +16,7 @@ export default function handler(req, res) {
 	}
 
 	// Chemin absolu vers le script
-	fetchAndSaveRound(tournamentId, roundId)
+	fetchAndSaveRound(tournamentId, roundId, { page, perPage, search })
 		.then((datas) => {
 			return res.status(200).json({ message: 'Round récupéré !', datas });
 		})
