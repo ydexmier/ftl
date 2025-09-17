@@ -156,7 +156,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 			(combination1.decks.length === 1 && combination1.decks[0].length === 2) || combination1.decks.length === 2;
 		let combination2Valid =
 			match?.player_match_relationships.length < 2 ||
-			(combination2.decks.length === 1 && combination1.decks[0].length === 2) ||
+			(combination2.decks.length === 1 && combination2.decks[0].length === 2) ||
 			combination2.decks.length === 2;
 
 		return combination1Valid && combination2Valid;
