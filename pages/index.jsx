@@ -17,12 +17,12 @@ export default function Home() {
 					target="_blank"
 					rel="noopener"
 					component="a"
-					href="https://docs.google.com/spreadsheets/d/1L8JThA3Tomrsq1GjsGV3tvPWpRPdSAYenSUtF6BRBsI/edit?usp=sharing"
+					href="https://profuse-smash-889.notion.site/Scooting-272f07a4069a809f951cc08bf8e116a1?pvs=73"
 				>
 					<ListItemIcon>
 						<FileOpenIcon />
 					</ListItemIcon>
-					<ListItemText primary="Excel de report des matchs" />
+					<ListItemText primary="Tutoriel du scooting (Notion)" />
 				</ListItemButton>
 			</List>
 		</Layout>
