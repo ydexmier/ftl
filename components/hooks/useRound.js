@@ -14,12 +14,14 @@ function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
 	});
 
 	// Map sur les joueurs existants
-	const mergedPlayers = playersDecks.players.map((player) => {
-		if (updatedPlayersById[player.playerId]) {
-			return { ...player, ...updatedPlayersById[player.playerId] };
-		}
-		return player; // sinon on garde l'existant
-	});
+	const mergedPlayers = playersDecks.players.reduce((acc, player) => {
+		if (player.decks.length === 0) return acc;
+
+		const updated = updatedPlayersById[player.playerId];
+		acc.push(updated ? { ...player, ...updated } : player);
+
+		return acc;
+	}, []);
 	// Ajouter les nouveaux joueurs qui n’existent pas encore
 	const existingIds = new Set(playersDecks.players.map((p) => p.playerId));
 	const newPlayers = (updatedPlayersDecks?.players || []).filter((p) => !existingIds.has(p.playerId));

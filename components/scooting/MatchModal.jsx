@@ -152,6 +152,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 
 	const enableValidateButton = useMemo(() => {
 		const { combination1, combination2 } = state;
+		if (!combination1.decks.length && !combination2.decks.length) return true;
 		let combination1Valid =
 			(combination1.decks.length === 1 && combination1.decks[0].length === 2) || combination1.decks.length === 2;
 		let combination2Valid =
@@ -219,7 +220,14 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 							alignItems: 'center',
 						}}
 					>
-						Match settings
+						<Button
+							variant="outlined"
+							size="small"
+							color="warning"
+							onClick={() => dispatch({ type: 'RESET' })}
+						>
+							Réinitialiser
+						</Button>
 						<Chip color="info" label={`Table ${match.table_number}`} />
 					</Grid>
 				</Typography>
