@@ -112,7 +112,8 @@ async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 export default async function fetchAndSaveRound(tournamentId, idRound, options = {}) {
 	try {
 		await connectToMongoDB();
-		if (!tournamentId || !idRound) {
+		const idRoundNumber = Number(idRound);
+		if (!tournamentId || !idRoundNumber) {
 			throw new Error('Merci de fournir un tournamentId et idRound en argument, ex: node fetchAndUpsertRound.js');
 		}
 		const tournament = await Tournament.findOne({ id: tournamentId });
@@ -120,12 +121,14 @@ export default async function fetchAndSaveRound(tournamentId, idRound, options =
 			throw new Error(`Tournoi ${tournamentId} introuvable en base`);
 		}
 		const roundsInTournament = tournament.tournament_phases.flatMap((phase) => phase.rounds);
-		const actualRoundSettings = roundsInTournament.find((round) => round.id === idRound);
+
+		const actualRoundSettings = roundsInTournament.find((round) => round.id === idRoundNumber);
+
 		if (!actualRoundSettings) {
-			throw new Error(`Round ${idRound} introuvable dans le tournoi ${tournamentId}`);
+			throw new Error(`Round ${idRoundNumber} introuvable dans le tournoi ${tournamentId}`);
 		}
 
-		const response = await fetchAndUpsertRound(idRound, tournamentId, options);
+		const response = await fetchAndUpsertRound(idRoundNumber, tournamentId, options);
 		return response;
 	} catch (err) {
 		console.error('Erreur principale:', err);
