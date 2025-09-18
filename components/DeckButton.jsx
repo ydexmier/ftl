@@ -21,7 +21,6 @@ const DeckButton = ({ inks, selected, onClick, ...props }) => {
 	const [isSelected, setIsSelected] = useState(selected || false);
 	const handleOnClick = () => {
 		setIsSelected(!isSelected);
-		console.log(inks);
 		onClick && onClick(inks);
 	};
 	return (

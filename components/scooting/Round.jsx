@@ -1,5 +1,5 @@
 // pages/round.js
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 
 import { Grid, Box, CircularProgress, Pagination, Stack } from '@mui/material';
@@ -10,8 +10,12 @@ import RoundHeader from '@components/scooting/RoundHeader';
 import RoundSearch from '@components/scooting/RoundSearch';
 import { useRound } from '@components/hooks/useRound';
 
-const Round = ({ roundId }) => {
-	const { tournamentId } = useRouter().query;
+const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch }) => {
+	const [page, setPage] = useState(parseInt(initialPage, 10) || 1);
+	const [perPage, setPerPage] = useState(parseInt(initialPerPage, 10) || 10);
+	const [search, setSearch] = useState(initialSearch || '');
+	const router = useRouter();
+	const { tournamentId } = router.query;
 	const {
 		matchs,
 		updatedAt,
@@ -24,43 +28,61 @@ const Round = ({ roundId }) => {
 		getPlayerDecksInk,
 		getMatchPlayerInks,
 		refreshRound,
-		search,
-		setSearch,
-		setPage,
-		setPerPage,
 		pagination,
-	} = useRound(roundId, tournamentId);
-	const { page, totalPages } = pagination;
-	console.log(updatedAt);
+	} = useRound(roundId, tournamentId, { page, perPage, search: initialSearch });
+
 	/* Pagination */
 	const paginationComponent = useMemo(
 		() => (
 			<Stack direction="row" justifyContent="center" sx={{ mt: 2, mb: 2 }}>
 				<Pagination
-					count={totalPages || 1}
+					count={pagination.totalPages || 1}
 					page={page}
-					onChange={(_, value) => {
-						console.log(value);
-						setPage(value);
-					}}
+					onChange={(_, value) => setPage(value)}
 					color="primary"
 					showFirstButton
 					showLastButton
 				/>
 			</Stack>
 		),
-		[page, totalPages],
+		[pagination],
 	);
+
+	// 🔗 Sync état -> URL
+	useEffect(() => {
+		if (!roundId) return;
+
+		const query = {
+			tournamentId,
+			roundId,
+			page,
+			perPage,
+			...(search ? { search } : {}),
+		};
+
+		router.replace(
+			{
+				pathname: router.pathname,
+				query,
+			},
+			undefined,
+			{ shallow: true },
+		);
+	}, [roundId, page, perPage, search]);
 	return (
 		<>
 			{/* Toujours visible */}
 			<RoundHeader updatedAt={updatedAt} onRefresh={refreshRound} />
-
-			<Grid container spacing={2} sx={{ mb: 2 }}>
-				<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
-					<RoundSearch value={search} onChange={setSearch} />
+			{!matchs.length && !loading ? <Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box> : ''}
+			{matchs.length ? (
+				<Grid container spacing={2} sx={{ mb: 2 }}>
+					<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
+						<RoundSearch value={search} onChange={setSearch} />
+					</Grid>
 				</Grid>
-			</Grid>
+			) : (
+				''
+			)}
 
 			{/* Zone de contenu */}
 			{error && error !== 'ROUND_NOT_FOUND' && <Box sx={{ mt: 2 }}>Error: {error}</Box>}
@@ -71,7 +93,7 @@ const Round = ({ roundId }) => {
 						<CircularProgress />
 					</Box>
 				) : (
-					<Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box>
+					''
 				)
 			) : (
 				<>

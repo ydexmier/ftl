@@ -37,25 +37,35 @@ export default async function handler(req, res) {
 
 			const playerObject = match.player_match_relationships[playerIndex];
 			if (tournamentPlayerDeckIndex !== -1) {
-				tournamentPlayersDeck.set(`players.${tournamentPlayerDeckIndex}.decks`, playerDecks.decks);
-				playersModified.push({
-					...tournamentPlayersDeck.players[tournamentPlayerDeckIndex].toObject(),
-					decks: playerDecks.decks,
-				});
+				if (!playerDecks.decks || playerDecks.decks.length === 0) {
+					tournamentPlayersDeck.players.splice(tournamentPlayerDeckIndex, 1);
+					tournamentPlayersDeck.markModified('players');
+					playersModified.push({
+						playerId: playerObject.player.id,
+						decks: playerDecks.decks,
+					});
+				} else {
+					tournamentPlayersDeck.set(`players.${tournamentPlayerDeckIndex}.decks`, playerDecks.decks);
+					playersModified.push({
+						...tournamentPlayersDeck.players[tournamentPlayerDeckIndex].toObject(),
+						decks: playerDecks.decks,
+					});
+				}
 			} else {
-				playerObject &&
+				if (playerObject && playerDecks.decks.length > 0) {
 					tournamentPlayersDeck.players.push({
 						playerId: playerObject.player.id,
 						best_identifier: playerObject.player.best_identifier,
 						event_best_identifier: playerObject.user_event_status.best_identifier,
 						decks: playerDecks.decks,
 					});
-				playersModified.push({
-					playerId: playerObject.player.id,
-					best_identifier: playerObject.player.best_identifier,
-					event_best_identifier: playerObject.user_event_status.best_identifier,
-					decks: playerDecks.decks,
-				});
+					playersModified.push({
+						playerId: playerObject.player.id,
+						best_identifier: playerObject.player.best_identifier,
+						event_best_identifier: playerObject.user_event_status.best_identifier,
+						decks: playerDecks.decks,
+					});
+				}
 			}
 		});
 		await round.save();
