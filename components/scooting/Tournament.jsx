@@ -46,7 +46,7 @@ export default function Tournament(props) {
 		<div>
 			<h1>Tournoi: {tournament.name}</h1>
 			<p>
-				Nombre de joueur: {tournament.registered_user_count}/{tournament.capacity}
+				Nombre de joueur restant: {tournament.registered_user_count}/{tournament.capacity}
 			</p>
 			<FormControl fullWidth>
 				<Select
@@ -56,7 +56,7 @@ export default function Tournament(props) {
 					onChange={handlePhaseChange}
 					displayEmpty
 				>
-					<MenuItem value="">-- Please choose a phase --</MenuItem>
+					<MenuItem value="">-- sélectionnée une round --</MenuItem>
 					{tournament.tournament_phases.map((phase) =>
 						phase.rounds.map((round) => (
 							<MenuItem key={round.id} value={round.id}>

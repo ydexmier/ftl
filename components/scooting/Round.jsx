@@ -73,12 +73,16 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		<>
 			{/* Toujours visible */}
 			<RoundHeader updatedAt={updatedAt} onRefresh={refreshRound} />
-
-			<Grid container spacing={2} sx={{ mb: 2 }}>
-				<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
-					<RoundSearch value={search} onChange={setSearch} />
+			{!matchs.length && !loading ? <Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box> : ''}
+			{matchs.length ? (
+				<Grid container spacing={2} sx={{ mb: 2 }}>
+					<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
+						<RoundSearch value={search} onChange={setSearch} />
+					</Grid>
 				</Grid>
-			</Grid>
+			) : (
+				''
+			)}
 
 			{/* Zone de contenu */}
 			{error && error !== 'ROUND_NOT_FOUND' && <Box sx={{ mt: 2 }}>Error: {error}</Box>}
@@ -89,7 +93,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 						<CircularProgress />
 					</Box>
 				) : (
-					<Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box>
+					''
 				)
 			) : (
 				<>
