@@ -52,19 +52,20 @@ export default async function handler(req, res) {
 					});
 				}
 			} else {
-				playerObject &&
+				if (playerObject && playerDecks.decks.length > 0) {
 					tournamentPlayersDeck.players.push({
 						playerId: playerObject.player.id,
 						best_identifier: playerObject.player.best_identifier,
 						event_best_identifier: playerObject.user_event_status.best_identifier,
 						decks: playerDecks.decks,
 					});
-				playersModified.push({
-					playerId: playerObject.player.id,
-					best_identifier: playerObject.player.best_identifier,
-					event_best_identifier: playerObject.user_event_status.best_identifier,
-					decks: playerDecks.decks,
-				});
+					playersModified.push({
+						playerId: playerObject.player.id,
+						best_identifier: playerObject.player.best_identifier,
+						event_best_identifier: playerObject.user_event_status.best_identifier,
+						decks: playerDecks.decks,
+					});
+				}
 			}
 		});
 		await round.save();

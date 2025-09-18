@@ -15,9 +15,8 @@ function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
 
 	// Map sur les joueurs existants
 	const mergedPlayers = playersDecks.players.reduce((acc, player) => {
-		if (player.decks.length === 0) return acc;
-
 		const updated = updatedPlayersById[player.playerId];
+		if (updated?.decks.length === 0) return acc;
 		acc.push(updated ? { ...player, ...updated } : player);
 
 		return acc;
