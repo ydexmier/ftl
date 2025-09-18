@@ -27,11 +27,9 @@ function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
 	return { ...playersDecks, players: [...mergedPlayers, ...newPlayers] };
 }
 
-export const useRound = (roundId, tournamentId) => {
+export const useRound = (roundId, tournamentId, options = {}) => {
 	const [matchToShow, setMatchToShow] = useState(null);
-	const [search, setSearch] = useState(''); // 🔍 nouveau state pour la recherche
-	const [page, setPage] = useState(1);
-	const [perPage, setPerPage] = useState(10);
+	const { page, perPage, search } = options;
 	const debouncedSearch = useDebounce(search, 300);
 
 	// mettre search comme dépendance
@@ -101,10 +99,6 @@ export const useRound = (roundId, tournamentId) => {
 		getPlayerDecksInk,
 		getMatchPlayerInks,
 		refreshRound,
-		search,
-		setSearch, // expose la recherche
-		setPage,
-		setPerPage,
 		pagination,
 	};
 };

@@ -1,5 +1,6 @@
 // ftl/components/scooting/components/Tournament.jsx
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 import { FormControl, Select, MenuItem, Box, Typography, Divider } from '@mui/material';
 
@@ -10,11 +11,20 @@ import { useFetch } from '@components/hooks/useFetch';
 import FetchButton from '@components/FetchButton';
 
 import { fetchTournament } from 'lib/api/fetchTournament';
-import { diffInSeconds } from '@components/scooting/utils/date';
 
 export default function Tournament(props) {
 	const { id } = props; // récupère l'id de l'URL
-	const [roundId, setRoundId] = useState('');
+	const router = useRouter();
+	// ⚡ On lit roundId, page, perPage depuis l'URL
+	const {
+		roundId: queryRoundId,
+		page: queryPage = 1,
+		perPage: queryPerPage = 10,
+		search: querySearch = '',
+	} = router.query;
+
+	const [roundId, setRoundId] = useState(queryRoundId || '');
+
 	const [tournament, setTournament] = useState(null);
 	const { data, loading, error } = useFetch(`/api/tournaments/${id}`);
 
@@ -56,7 +66,7 @@ export default function Tournament(props) {
 					)}
 				</Select>
 			</FormControl>
-			{roundId && <Round roundId={roundId} />}
+			{roundId && <Round roundId={roundId} page={queryPage} perPage={queryPerPage} search={querySearch} />}
 			{tournament.settings.event_lifecycle_status === 'REGISTRATION_OPEN' && (
 				<>
 					<Divider sx={{ mt: 4 }} />
