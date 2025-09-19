@@ -2,7 +2,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/router';
 
-import { Grid, Box, CircularProgress, Pagination, Stack } from '@mui/material';
+import {
+	Grid,
+	Box,
+	CircularProgress,
+	Pagination,
+	Stack,
+	FormControl,
+	Select,
+	MenuItem,
+	InputLabel,
+} from '@mui/material';
 
 import MatchCard from '@components/scooting/MatchCard';
 import MatchModal from '@components/scooting/MatchModal';
@@ -16,6 +26,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const [search, setSearch] = useState(initialSearch || '');
 	const router = useRouter();
 	const { tournamentId } = router.query;
+
 	const {
 		matchs,
 		updatedAt,
@@ -29,12 +40,22 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		getMatchPlayerInks,
 		refreshRound,
 		pagination,
-	} = useRound(roundId, tournamentId, { page, perPage, search: initialSearch });
+	} = useRound(roundId, tournamentId, { page, perPage, search });
 
 	/* Pagination */
 	const paginationComponent = useMemo(
 		() => (
-			<Stack direction="row" justifyContent="center" sx={{ mt: 2, mb: 2 }}>
+			<Box
+				sx={{
+					display: 'flex',
+					justifyContent: 'center',
+					alignItems: 'center',
+					position: 'relative',
+					mt: 2,
+					mb: 2,
+				}}
+			>
+				{/* Pagination au centre */}
 				<Pagination
 					count={pagination.totalPages || 1}
 					page={page}
@@ -43,9 +64,27 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 					showFirstButton
 					showLastButton
 				/>
-			</Stack>
+
+				{/* Select aligné à droite */}
+				<Box sx={{ position: 'absolute', right: 0 }}>
+					<FormControl size="small" sx={{ minWidth: 120 }}>
+						<Select
+							value={perPage}
+							onChange={(e) => {
+								setPerPage(Number(e.target.value));
+								setPage(1); // reset page quand on change le nombre par page
+							}}
+						>
+							<MenuItem value={10}>10 matchs</MenuItem>
+							<MenuItem value={25}>25 matchs</MenuItem>
+							<MenuItem value={50}>50 matchs</MenuItem>
+							<MenuItem value={100}>100 matchs</MenuItem>
+						</Select>
+					</FormControl>
+				</Box>
+			</Box>
 		),
-		[pagination],
+		[pagination, page, perPage],
 	);
 
 	// 🔗 Sync état -> URL
@@ -69,9 +108,9 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 			{ shallow: true },
 		);
 	}, [roundId, page, perPage, search]);
+
 	return (
 		<>
-			{/* Toujours visible */}
 			<RoundHeader updatedAt={updatedAt} onRefresh={refreshRound} />
 			{!matchs.length && !loading ? <Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box> : ''}
 			{matchs.length ? (
@@ -80,11 +119,8 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 						<RoundSearch value={search} onChange={setSearch} />
 					</Grid>
 				</Grid>
-			) : (
-				''
-			)}
+			) : null}
 
-			{/* Zone de contenu */}
 			{error && error !== 'ROUND_NOT_FOUND' && <Box sx={{ mt: 2 }}>Error: {error}</Box>}
 
 			{!matchs.length ? (
@@ -92,9 +128,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 					<Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
 						<CircularProgress />
 					</Box>
-				) : (
-					''
-				)
+				) : null
 			) : (
 				<>
 					{paginationComponent}
