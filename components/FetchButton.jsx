@@ -9,14 +9,12 @@ export default function FetchButton({ defaultLabel = 'Rafraîchir', onFetch, las
 	const [cooldown, setCooldown] = useState(0); // secondes restantes
 
 	const [openSnackbar, setOpenSnackbar] = useState(false);
-
 	useEffect(() => {
-		lastUpdate &&
-			setCooldown(
-				Math.min(diffInSeconds(new Date(lastUpdate), new Date()), refreshDelay) === refreshDelay
-					? 0
-					: refreshDelay - diffInSeconds(new Date(lastUpdate), new Date()),
-			);
+		setCooldown(
+			!lastUpdate || Math.min(diffInSeconds(new Date(lastUpdate), new Date()), refreshDelay) === refreshDelay
+				? 0
+				: refreshDelay - diffInSeconds(new Date(lastUpdate), new Date()),
+		);
 	}, [lastUpdate]);
 	// décrémente le cooldown toutes les secondes
 	useEffect(() => {
