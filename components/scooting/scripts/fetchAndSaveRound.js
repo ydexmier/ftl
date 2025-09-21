@@ -8,7 +8,6 @@ import Tournament from '@models/Tournament.js';
 async function upsertRound(newData) {
 	try {
 		const existingRound = await Round.findOne({ id: newData.id });
-		console.log('existingRound.status', existingRound.status);
 		if (existingRound) {
 			mergeDeep(existingRound, newData);
 			await existingRound.save();
