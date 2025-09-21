@@ -8,26 +8,11 @@ import Tournament from '@models/Tournament.js';
 async function upsertRound(newData) {
 	try {
 		const existingRound = await Round.findOne({ id: newData.id });
-
+		console.log('existingRound.status', existingRound.status);
 		if (existingRound) {
-			if (existingRound.status === 'COMPLETED') {
-				console.log('Mise à jour indisponible, la round a déjà été clôturé.');
-			}
-			if (newData.status === 'UPCOMING') {
-				console.log("La round précédente n'est pas encore clôturée.");
-				return newData;
-			}
-
-			if (existingRound.status === 'IN_PROGRESS') {
-				if (newData.pairings_status === 'GENERATED') {
-					mergeDeep(existingRound, { ...newData, last_fetch: new Date() });
-					await existingRound.save();
-					console.log(`Round ${newData.id} mis à jour`);
-				} else {
-					console.log('Les pairings ne sont pas encore disponibles.');
-					return existingRound;
-				}
-			}
+			mergeDeep(existingRound, newData);
+			await existingRound.save();
+			console.log(`Round ${newData.id} mis à jour`);
 		} else {
 			const round = new Round(newData);
 			await round.save();

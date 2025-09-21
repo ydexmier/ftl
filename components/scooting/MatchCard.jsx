@@ -59,7 +59,15 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 				</Grid>
 
 				<Divider sx={{ my: 1 }} textAlign="center">
-					<Typography color="textPrimary">{showScoreFromMatch(match)}</Typography>
+					<Typography color="textPrimary">
+						{player2 ? (
+							showScoreFromMatch(match)
+						) : (
+							<Typography variant="h6" color="textSecondary">
+								BYE
+							</Typography>
+						)}
+					</Typography>
 				</Divider>
 				{player2 ? (
 					<Grid container spacing={1}>
@@ -94,11 +102,7 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 						</Grid>
 					</Grid>
 				) : (
-					<Box sx={{ width: '100%', textAlign: 'center', py: 2 }}>
-						<Typography variant="h6" color="textSecondary">
-							BYE
-						</Typography>
-					</Box>
+					''
 				)}
 			</CardContent>
 		</Card>
