@@ -150,19 +150,6 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 		));
 	};
 
-	const enableValidateButton = useMemo(() => {
-		const { combination1, combination2 } = state;
-		if (!combination1.decks.length && !combination2.decks.length) return true;
-		let combination1Valid =
-			(combination1.decks.length === 1 && combination1.decks[0].length === 2) || combination1.decks.length === 2;
-		let combination2Valid =
-			match?.player_match_relationships.length < 2 ||
-			(combination2.decks.length === 1 && combination2.decks[0].length === 2) ||
-			combination2.decks.length === 2;
-
-		return combination1Valid && combination2Valid;
-	}, [state.combination1, state.combination2]);
-
 	useEffect(() => {
 		if (combinationsInitial) {
 			let player2 = combinationsInitial[0]?.playerId && getOtherPlayer(combinationsInitial[0].playerId);
@@ -301,12 +288,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 					<Button variant="outlined" onClick={handleCancel}>
 						Annuler
 					</Button>
-					<Button
-						disabled={!enableValidateButton}
-						color="success"
-						variant="contained"
-						onClick={handleValidate}
-					>
+					<Button color="success" variant="contained" onClick={handleValidate}>
 						Valider
 					</Button>
 				</Stack>
