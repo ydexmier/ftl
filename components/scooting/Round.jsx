@@ -48,25 +48,35 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 			<Box
 				sx={{
 					display: 'flex',
-					justifyContent: 'center',
+					flexDirection: {
+						xs: 'column', // en mobile : colonne
+					},
+					justifyContent: {
+						xs: 'center', // mobile : centré
+						sm: 'space-between', // desktop : pagination à gauche, select à droite
+					},
 					alignItems: 'center',
-					position: 'relative',
+					gap: 2, // espace entre les composants
 					mt: 2,
 					mb: 2,
 				}}
 			>
-				{/* Pagination au centre */}
-				<Pagination
-					count={pagination.totalPages || 1}
-					page={page}
-					onChange={(_, value) => setPage(value)}
-					color="primary"
-					showFirstButton
-					showLastButton
-				/>
-
-				{/* Select aligné à droite */}
-				<Box sx={{ position: 'absolute', right: 0 }}>
+				{/* Select */}
+				<Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+					<FormControl disabled={pagination.totalPages === 1} size="small" sx={{ minWidth: 120 }}>
+						<Select
+							value={page}
+							onChange={(e) => {
+								setPage(Number(e.target.value));
+							}}
+						>
+							{Array.from({ length: pagination.totalPages }, (_, i) => (
+								<MenuItem key={i + 1} value={i + 1}>
+									Page {i + 1}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 					<FormControl size="small" sx={{ minWidth: 120 }}>
 						<Select
 							value={perPage}
@@ -82,6 +92,15 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 						</Select>
 					</FormControl>
 				</Box>
+				{/* Pagination */}
+				<Pagination
+					count={pagination.totalPages || 1}
+					page={page}
+					onChange={(_, value) => setPage(value)}
+					color="primary"
+					showFirstButton
+					showLastButton
+				/>
 			</Box>
 		),
 		[pagination, page, perPage],
