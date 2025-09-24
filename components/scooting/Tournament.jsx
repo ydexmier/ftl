@@ -44,7 +44,7 @@ export default function Tournament(props) {
 					Nombre de joueur restant: {tournament.registered_user_count}/{tournament.capacity}
 				</p>
 
-				<Box container>
+				<Box sx={{ mb: 2 }} container>
 					<FetchButton
 						defaultLabel="MAJ Tournoi"
 						onFetch={refreshTournament}
