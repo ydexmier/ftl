@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, Typography, Chip, Grid, Box, Divider } from '@mui/material';
 
 import Ink from '@components/Ink';
@@ -43,16 +44,19 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 							}}
 						>
 							{player1Deck?.map((deck, deckIndex) => (
-								<Box
-									key={player1.player.id + '_' + deckIndex}
-									sx={{
-										display: 'flex', // pour que les Ink soient côte à côte
-									}}
-								>
-									{deck.map((ink) => (
-										<Ink key={player1.player.id + '_' + ink} type={ink} width={40} />
-									))}
-								</Box>
+								<React.Fragment key={player1.player.id + '_' + deckIndex}>
+									{deckIndex > 0 && <Typography sx={{ alignSelf: 'center' }}>OU</Typography>}
+									<Box
+										sx={{
+											display: 'flex', // pour que les Ink soient côte à côte
+										}}
+									>
+										{deck.map((ink) => (
+											<Ink key={player1.player.id + '_' + ink} type={ink} width={40} />
+										))}
+										{deck.length === 1 && <Ink width={40} />}
+									</Box>
+								</React.Fragment>
 							))}
 						</Box>
 					</Grid>
@@ -87,16 +91,19 @@ const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 								}}
 							>
 								{player2Deck?.map((deck, deckIndex) => (
-									<Box
-										key={player2.player.id + '_' + deckIndex}
-										sx={{
-											display: 'flex', // pour que les Ink soient côte à côte
-										}}
-									>
-										{deck.map((ink) => (
-											<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
-										))}
-									</Box>
+									<React.Fragment key={player2.player.id + '_' + deckIndex}>
+										{deckIndex > 0 && <Typography sx={{ alignSelf: 'center' }}>OU</Typography>}
+										<Box
+											sx={{
+												display: 'flex', // pour que les Ink soient côte à côte
+											}}
+										>
+											{deck.map((ink) => (
+												<Ink key={player2.player.id + '_' + ink} type={ink} width={40} />
+											))}
+											{deck.length === 1 && <Ink width={40} />}
+										</Box>
+									</React.Fragment>
 								))}
 							</Box>
 						</Grid>
