@@ -178,11 +178,12 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 									}}
 									player1Deck={getPlayerDecksInk(
 										match.player_match_relationships.find(
-											(p) => p.player_order === 1 || match.match_is_bye,
+											(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
 										).player.id,
 									)}
 									player2Deck={
 										!match.match_is_bye &&
+										!match.match_is_loss &&
 										getPlayerDecksInk(
 											match.player_match_relationships.find((p) => p.player_order === 2).player
 												.id,
