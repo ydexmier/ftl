@@ -8,7 +8,7 @@ import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 const MatchCard = ({ match, player1Deck, player2Deck, ...props }) => {
 	const status = getStatusFromMatch(match);
 	const [player1, player2] = [
-		match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye),
+		match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss),
 		player2Deck && match.player_match_relationships.find((p) => p.player_order === 2),
 	];
 
