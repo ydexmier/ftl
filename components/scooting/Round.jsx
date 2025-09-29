@@ -40,7 +40,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		getMatchPlayerInks,
 		refreshRound,
 		pagination,
-	} = useRound(roundId, tournamentId, { page, perPage, search });
+	} = useRound(roundId, tournamentId, { page, perPage, search, excludeOnePlayerMatches: true });
 
 	/* Pagination */
 	const paginationComponent = useMemo(

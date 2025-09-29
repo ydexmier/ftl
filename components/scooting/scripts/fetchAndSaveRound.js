@@ -1,15 +1,28 @@
 import fetchRound from '@lib/external/fetchRound.mjs';
 import Round from '@models/Round.js';
-import mergeDeep from '../utils/mergeDeep.mjs';
+import mergeDeep, { mergeArrayById } from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
 import Tournament from '@models/Tournament.js';
 
+function mergeTournamentData(target, source) {
+	for (const key in source) {
+		if (key === 'results') {
+			mergeArrayById(target.results || (target.results = []), source.results);
+		} else if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+			if (!target[key]) target[key] = {};
+			mergeDeep(target[key], source[key]);
+		} else {
+			target[key] = source[key];
+		}
+	}
+	return target;
+}
 // Fonction pour insérer ou mettre à jour le tournoi
 async function upsertRound(newData) {
 	try {
 		const existingRound = await Round.findOne({ id: newData.id });
 		if (existingRound) {
-			mergeDeep(existingRound, newData);
+			mergeTournamentData(existingRound, newData);
 			await existingRound.save();
 			console.log(`Round ${newData.id} mis à jour`);
 		} else {
@@ -34,8 +47,10 @@ async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 		const { page = 1, perPage = 10, search = '' } = options;
 		const currentPage = Math.max(parseInt(page, 10), 1);
 		const limit = Math.max(parseInt(perPage, 10), 1);
-
-		const res = await fetchRound(idRound);
+		console.log(
+			`Fetching round ${idRound} for tournament ${tournamentId}, page ${currentPage}, perPage ${limit}, search "${search}"`,
+		);
+		const res = await fetchRound(idRound, page, perPage);
 		if (!res) throw new Error(`Fetch failed`);
 		const response = await upsertRound({ ...res, id: idRound, tournamentId });
 		// 2️⃣ Pagination des matchs
@@ -86,6 +101,7 @@ async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 				total: totalMatches,
 				totalPages,
 			},
+			totalExternalAPIcount: res.total || 0,
 			updatedAt: filteredRound.updatedAt,
 		};
 	} catch (error) {

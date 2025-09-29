@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
 	if (req.method === 'GET') {
 		try {
-			const { roundId, page = 1, perPage = 10, search = '' } = req.query;
+			const { roundId, page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false } = req.query;
 			const currentPage = Math.max(parseInt(page, 10), 1);
 			const limit = Math.max(parseInt(perPage, 10), 1);
 
@@ -22,12 +22,15 @@ export default async function handler(req, res) {
 
 			let filteredRound = { ...round };
 
-			if (search.trim()) {
+			if (search.trim() || excludeOnePlayerMatches) {
 				const isNumeric = !isNaN(search); // ✅ test si c’est un nombre
 				const lowerSearch = search.toLowerCase();
 
 				filteredRound.results = (round.results || []).filter((match) => {
-					if (isNumeric) {
+					if (excludeOnePlayerMatches && match.player_match_relationships.length < 2) {
+						return false;
+					}
+					if (search.trim() && isNumeric) {
 						// 🔎 filtre sur le numéro de table
 						return String(match.table_number) === search;
 					}

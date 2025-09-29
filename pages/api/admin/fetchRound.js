@@ -6,7 +6,7 @@ export default function handler(req, res) {
 	}
 
 	const { tournamentId, roundId, options = {} } = req.body;
-	const { page = 1, perPage = 10, search = '' } = options;
+	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false } = options;
 
 	if (!tournamentId) {
 		return res.status(400).json({ error: 'TournamentId requis' });
@@ -18,7 +18,15 @@ export default function handler(req, res) {
 	// Chemin absolu vers le script
 	fetchAndSaveRound(tournamentId, roundId, { page, perPage, search })
 		.then((datas) => {
-			return res.status(200).json({ message: 'Round récupéré !', datas });
+			return excludeOnePlayerMatches
+				? res.status(200).json({
+						message: 'Round récupéré !',
+						datas: {
+							...datas,
+							results: datas.results.filter((match) => match.player_match_relationships.length === 2),
+						},
+					})
+				: res.status(200).json({ message: 'Round récupéré !', datas });
 		})
 		.catch((error) => {
 			console.error('Erreur fetchAndSaveRound:', error);
