@@ -123,7 +123,7 @@ export default function TournamentPage() {
 						<Typography variant="h6" gutterBottom>
 							Lancer un script pour un round
 						</Typography>
-						{<FetchRoundForm tournamentId={tournament.id} phases={tournament.tournament_phases || []} />}
+						{<FetchRoundForm tournament={tournament} phases={tournament.tournament_phases || []} />}
 					</Box>
 				)}
 			</Paper>

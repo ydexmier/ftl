@@ -30,7 +30,7 @@ function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
 
 export const useRound = (roundId, tournamentId, options = {}) => {
 	const [matchToShow, setMatchToShow] = useState(null);
-	const { page, perPage, search } = options;
+	const { page, perPage, search, excludeOnePlayerMatches } = options;
 	const debouncedSearch = useDebounce(search, 300);
 
 	// mettre search comme dépendance
@@ -40,7 +40,7 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 		error,
 		setData,
 	} = useFetch(
-		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}`,
+		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}`,
 	);
 
 	const {
@@ -84,7 +84,7 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 	};
 
 	const refreshRound = useCallback(async () => {
-		const res = await fetchRound(tournamentId, roundId, { page, perPage, search });
+		const res = await fetchRound(tournamentId, roundId, { page, perPage, search, excludeOnePlayerMatches });
 		setData(res.datas);
 	}, [tournamentId, roundId, search]);
 

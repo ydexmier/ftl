@@ -25,7 +25,8 @@ const Tournaments = () => {
 					throw new Error(`HTTP error! status: ${response.status}`);
 				}
 				const data = await response.json();
-				setTournaments(data);
+				const sortedTournanent = data.sort((a, b) => new Date(b.start_datetime) - new Date(a.start_datetime));
+				setTournaments(sortedTournanent);
 			} catch (err) {
 				setError(err.message || 'Unknown error');
 			} finally {
