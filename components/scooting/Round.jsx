@@ -95,7 +95,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 				{/* Pagination */}
 				<Pagination
 					count={pagination.totalPages || 1}
-					page={page}
+					page={pagination.page}
 					onChange={(_, value) => setPage(value)}
 					color="primary"
 					showFirstButton
@@ -131,15 +131,13 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	return (
 		<>
 			<RoundHeader updatedAt={updatedAt} onRefresh={refreshRound} />
-			{!matchs.length && !loading ? <Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box> : ''}
-			{matchs.length ? (
-				<Grid container spacing={2} sx={{ mb: 2 }}>
-					<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
-						<RoundSearch value={search} onChange={setSearch} />
-					</Grid>
-				</Grid>
-			) : null}
 
+			<Grid container spacing={2} sx={{ mb: 2 }}>
+				<Grid item xs={12} sm={6} md={4} size={{ xs: 12, sm: 6, md: 4 }}>
+					<RoundSearch value={search} onChange={setSearch} />
+				</Grid>
+			</Grid>
+			{!matchs.length && !loading ? <Box>La round n'est pas encore lancé ou n'a pas été MAJ</Box> : ''}
 			{error && error !== 'ROUND_NOT_FOUND' && <Box sx={{ mt: 2 }}>Error: {error}</Box>}
 
 			{!matchs.length ? (
