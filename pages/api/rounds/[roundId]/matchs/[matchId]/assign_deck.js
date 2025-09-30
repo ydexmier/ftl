@@ -70,7 +70,6 @@ export default async function handler(req, res) {
 		});
 		await round.save();
 		await tournamentPlayersDeck.save();
-		console.log(playersModified);
 		return res.status(200).json({ matchs: round.results, playersDecks: { players: playersModified } });
 	} catch (err) {
 		console.error(err);

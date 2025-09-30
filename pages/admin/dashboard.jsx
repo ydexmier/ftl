@@ -26,7 +26,6 @@ export default function DashboardPage() {
 			if (!res.ok) throw new Error('Erreur lors de la récupération des tournois');
 
 			const data = await res.json();
-			console.log('Tournois récupérés:', data);
 			setTournaments(data || []);
 		} catch (err) {
 			setError(err.message);
