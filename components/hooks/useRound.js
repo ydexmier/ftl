@@ -3,6 +3,9 @@ import { useState, useCallback } from 'react';
 import { useFetch } from '@components/hooks/useFetch';
 import { fetchRound } from 'lib/api/fetchRound';
 import { useDebounce } from '@components/hooks/useDebounce';
+import { FETCH_ALL_ASYNC } from 'constants/index.js';
+
+const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
 function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
 	if (!playersDecks || !Array.isArray(playersDecks.players)) return playersDecks;
@@ -84,7 +87,14 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 	};
 
 	const refreshRound = useCallback(async () => {
-		const res = await fetchRound(tournamentId, roundId, { page, perPage, search, excludeOnePlayerMatches });
+		console.log(process.env.NEXT_PUBLIC_USE_ASYNC_FETCH);
+		const res = await fetchRound(tournamentId, roundId, {
+			page,
+			perPage,
+			search,
+			excludeOnePlayerMatches,
+			mode: useAsyncFetch && FETCH_ALL_ASYNC.mode,
+		});
 		setData(res.datas);
 	}, [tournamentId, roundId, search]);
 

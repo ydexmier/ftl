@@ -1,10 +1,12 @@
 'use client';
 import { useState } from 'react';
-import { Box, Button, Alert, Typography, Select, FormControl, MenuItem, Divider } from '@mui/material';
+import { Box, Button, Alert, Typography, Select, FormControl, MenuItem } from '@mui/material';
 import { getRoundName } from '@components/scooting/utils/roundToString';
 import { fetchRound } from 'lib/api/fetchRound';
+import { FETCH_ALL_ASYNC } from 'constants/index.js';
 
-const ITEM_PER_PAGE = 200;
+const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
+
 export default function FetchRoundForm({ tournament, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);
 	const [message, setMessage] = useState('');
@@ -15,7 +17,7 @@ export default function FetchRoundForm({ tournament, phases = [] }) {
 		setMessage('');
 
 		try {
-			const res = await fetchRound(tournament.id, round, { page, perPage });
+			await fetchRound(tournament.id, round, { page, perPage });
 			setMessage(`✅ Script exécuté pour le round ${round}`);
 		} catch (err) {
 			setMessage(`❌ ${err.message}`);
@@ -30,21 +32,11 @@ export default function FetchRoundForm({ tournament, phases = [] }) {
 		setMessage('');
 
 		try {
-			let page = 1;
-			let totalFetched = 0;
-			let totalMatches = 0;
-			let fetchedCount = 0;
-			do {
-				setMessage(`Fetching ${fetchedCount} matches, total fetched: ${totalFetched}/${totalMatches || '?'}`);
-				const res = await fetchRound(tournament.id, round, { page, perPage: ITEM_PER_PAGE });
-				if (page === 1 && res.datas.totalExternalAPIcount) {
-					totalMatches = res.datas.totalExternalAPIcount;
-				}
-				fetchedCount = res.datas.results ? res.datas.results.length : 0;
-				totalFetched += fetchedCount;
-				page += 1;
-			} while (totalFetched < totalMatches && totalMatches > 0);
-			setMessage(`✅ Tous les matchs du round ${round} ont été fetchés (${totalFetched} au total)`);
+			await fetchRound(tournament.id, round, {
+				perPage: useAsyncFetch ? FETCH_ALL_ASYNC.perPage : 2000,
+				mode: useAsyncFetch && FETCH_ALL_ASYNC.mode,
+			});
+			setMessage(`✅ Tous les matchs ont été fetchés`);
 		} catch (err) {
 			setMessage(`❌ ${err.message}`);
 		} finally {
@@ -94,14 +86,16 @@ export default function FetchRoundForm({ tournament, phases = [] }) {
 								</FormControl>
 								{round && (
 									<Box>
-										{[...Array(Math.floor(tournament.registered_user_count / ITEM_PER_PAGE))].map(
-											(_, page) => (
-												<Button onClick={() => handleRunRound(page + 1, ITEM_PER_PAGE)}>
-													match {page * ITEM_PER_PAGE + 1} -{' '}
-													{page * ITEM_PER_PAGE + ITEM_PER_PAGE}
-												</Button>
+										{[
+											...Array(
+												Math.floor(tournament.registered_user_count / FETCH_ALL_ASYNC.perPage),
 											),
-										)}
+										].map((_, page) => (
+											<Button onClick={() => handleRunRound(page + 1, FETCH_ALL_ASYNC.perPage)}>
+												match {page * FETCH_ALL_ASYNC.perPage + 1} -{' '}
+												{page * FETCH_ALL_ASYNC.perPage + FETCH_ALL_ASYNC.perPage}
+											</Button>
+										))}
 									</Box>
 								)}
 							</>
