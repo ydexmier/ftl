@@ -3,6 +3,9 @@ import Round from '@models/Round.js';
 import mergeDeep, { mergeArrayById } from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
 import Tournament from '@models/Tournament.js';
+import { FETCH_ALL_ASYNC } from 'constants/index.js';
+
+const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
 function mergeTournamentData(target, source) {
 	for (const key in source) {
@@ -44,15 +47,45 @@ async function upsertRound(newData) {
 // Fonction principale : fetch + upsert
 async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 	try {
-		const { page = 1, perPage = 10, search = '' } = options;
+		const { page = 1, perPage = 10, search = '', mode } = options;
 		const currentPage = Math.max(parseInt(page, 10), 1);
 		const limit = Math.max(parseInt(perPage, 10), 1);
-		console.log(
-			`Fetching round ${idRound} for tournament ${tournamentId}, page ${currentPage}, perPage ${limit}, search "${search}"`,
-		);
-		const res = await fetchRound(idRound, page, perPage);
-		if (!res) throw new Error(`Fetch failed`);
+
+		const shouldFetchAllAsync = useAsyncFetch && mode === FETCH_ALL_ASYNC.mode;
+		let pageToFetch = mode === FETCH_ALL_ASYNC.mode ? 1 : page;
+		let totalFetched = 0;
+		let totalMatches = 0;
+		let fetchedCount = 0;
+		let res = null;
+		const promiseToExecute = [];
+		res = await fetchRound(idRound, pageToFetch, shouldFetchAllAsync ? FETCH_ALL_ASYNC.perPage : perPage);
+		if (pageToFetch === 1 && res.total) {
+			totalMatches = res.total;
+		}
+		fetchedCount = res.results ? res.results.length : 0;
+		totalFetched += fetchedCount;
+		console.log(`✅ Page ${pageToFetch} fetchée, ${fetchedCount} matchs (${totalFetched}/${totalMatches || '?'})`);
+		while (totalFetched < totalMatches && totalMatches > 0 && shouldFetchAllAsync) {
+			pageToFetch += 1;
+			promiseToExecute.push(
+				new Promise((resolve, reject) =>
+					fetchRound(idRound, pageToFetch, FETCH_ALL_ASYNC.perPage).then(resolve).catch(reject),
+				),
+			);
+			totalFetched += perPage;
+		}
+		if (promiseToExecute.length > 0) {
+			const results = await Promise.all(promiseToExecute);
+			results.forEach((result) => {
+				if (result && result.results) {
+					res.results.push(...result.results);
+				}
+			});
+		}
+		console.log(`✅ Tous les matchs du round ${idRound} ont été fetchés (${totalMatches} au total)`);
 		const response = await upsertRound({ ...res, id: idRound, tournamentId });
+		console.log(`✅ Tous les matchs du round ${idRound} ont été enregistré en base de données`);
+
 		// 2️⃣ Pagination des matchs
 		let filteredRound = { ...response };
 
@@ -74,7 +107,7 @@ async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 				);
 			});
 		}
-		const totalMatches = filteredRound.results.length;
+		totalMatches = filteredRound.results.length;
 		const totalPages = Math.ceil(totalMatches / limit);
 		const paginatedResults = filteredRound.results.slice((currentPage - 1) * limit, currentPage * limit);
 
@@ -109,7 +142,7 @@ async function fetchAndUpsertRound(idRound, tournamentId, options = {}) {
 	}
 }
 
-export default async function fetchAndSaveRound(tournamentId, idRound, options = {}) {
+const fetchAndSaveRound = async (tournamentId, idRound, options = {}) => {
 	try {
 		await connectToMongoDB();
 		const idRoundNumber = Number(idRound);
@@ -134,4 +167,6 @@ export default async function fetchAndSaveRound(tournamentId, idRound, options =
 		console.error('Erreur principale:', err);
 		throw err;
 	}
-}
+};
+
+export default fetchAndSaveRound;

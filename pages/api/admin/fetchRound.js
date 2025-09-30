@@ -6,7 +6,7 @@ export default function handler(req, res) {
 	}
 
 	const { tournamentId, roundId, options = {} } = req.body;
-	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false } = options;
+	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, mode } = options;
 
 	if (!tournamentId) {
 		return res.status(400).json({ error: 'TournamentId requis' });
@@ -16,7 +16,7 @@ export default function handler(req, res) {
 	}
 
 	// Chemin absolu vers le script
-	fetchAndSaveRound(tournamentId, roundId, { page, perPage, search })
+	fetchAndSaveRound(tournamentId, roundId, { page, perPage, search, mode })
 		.then((datas) => {
 			return excludeOnePlayerMatches
 				? res.status(200).json({
