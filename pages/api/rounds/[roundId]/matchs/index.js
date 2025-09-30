@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 	if (req.method === 'GET') {
 		try {
 			const { roundId, page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false } = req.query;
-			const currentPage = Math.max(parseInt(page, 10), 1);
+			const currentPage = Math.max(parseInt(search.trim() ? 1 : page, 10), 1);
 			const limit = Math.max(parseInt(perPage, 10), 1);
 
 			// 1️⃣ Récupération de la round

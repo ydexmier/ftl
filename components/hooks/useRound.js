@@ -87,7 +87,6 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 	};
 
 	const refreshRound = useCallback(async () => {
-		console.log(process.env.NEXT_PUBLIC_USE_ASYNC_FETCH);
 		const res = await fetchRound(tournamentId, roundId, {
 			page,
 			perPage,
