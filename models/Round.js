@@ -11,25 +11,29 @@ const PlayerSchema = new mongoose.Schema({
 	game_user_profile_picture_url: String,
 });
 
-const PlayerMatchRelationshipSchema = new mongoose.Schema({
-	player_order: Number,
-	player: PlayerSchema,
-	user_event_status: {
-		id: Number,
-		best_identifier: String,
-		registration_status: String,
-		matches_won: Number,
-		matches_lost: Number,
-		matches_drawn: Number,
-		total_match_points: Number,
-		user: {
+const PlayerMatchRelationshipSchema = new mongoose.Schema(
+	{
+		_id: Number, // 👈 IMPORTANT
+		player_order: Number,
+		player: PlayerSchema,
+		user_event_status: {
 			id: Number,
-			pronouns: { type: String, default: null },
 			best_identifier: String,
-			game_user_profile_picture_url: String,
+			registration_status: String,
+			matches_won: Number,
+			matches_lost: Number,
+			matches_drawn: Number,
+			total_match_points: Number,
+			user: {
+				id: Number,
+				pronouns: { type: String, default: null },
+				best_identifier: String,
+				game_user_profile_picture_url: String,
+			},
 		},
 	},
-});
+	{ _id: false },
+);
 
 const MatchSchema = new mongoose.Schema({
 	id: { type: Number, unique: true },
