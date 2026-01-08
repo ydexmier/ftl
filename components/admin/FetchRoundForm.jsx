@@ -35,6 +35,7 @@ export default function FetchRoundForm({ tournament, phases = [] }) {
 			await fetchRound(tournament.id, round, {
 				perPage: useAsyncFetch ? FETCH_ALL_ASYNC.perPage : 2000,
 				mode: useAsyncFetch && FETCH_ALL_ASYNC.mode,
+				excludeOnePlayerMatches: true,
 			});
 			setMessage(`✅ Tous les matchs ont été fetchés`);
 		} catch (err) {

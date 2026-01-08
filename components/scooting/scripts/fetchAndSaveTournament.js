@@ -8,7 +8,6 @@ import { upsertTournamentPlayersDeck } from '@controllers/TournamentPlayersDeck.
 async function upsertTournament(newData, isRefetch) {
 	try {
 		const existingTournament = await Tournament.findOne({ id: newData.id });
-		console.log(existingTournament && !isRefetch);
 		if (!isRefetch && existingTournament) throw new Error('Le tournoi existe déjà');
 		if (existingTournament) {
 			mergeDeep(existingTournament, newData);
@@ -33,7 +32,6 @@ async function fetchAndUpsertTournament(id, isRefetch) {
 
 		if (res?.id !== Number(id)) throw new Error(`Fetch failed`);
 		const response = await upsertTournament(res, isRefetch);
-		console.log(`Appel upsertTournamentPlayersDeck pour le tournoi ${JSON.stringify(res.id)}`);
 		if (!isRefetch) await upsertTournamentPlayersDeck({ id: res.id, players: [] });
 		return response;
 	} catch (error) {

@@ -23,7 +23,6 @@ export default function FetchTournamentForm({ onSubmitCallback, onValidate }) {
 		e.preventDefault();
 		setError('');
 		setSuccess('');
-		console.log(inputRef);
 		const normalizedId = extractTournamentId(inputRef.current.value);
 		if (!normalizedId) {
 			setError('Veuillez saisir un ID valide ou une URL de tournoi');
