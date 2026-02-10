@@ -13,7 +13,6 @@
 			"@scooting/*": ["components/scooting/*"],
 			"@models/*": ["models/*"],
 			"@controllers/*": ["controllers/*"],
-			"@utils/*": ["utils/*"],
 			"@lib/*": ["lib/*"]
 		}
 	}

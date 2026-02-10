@@ -5,7 +5,7 @@ import MoveUpIcon from '@mui/icons-material/MoveUp';
 import MoveDownIcon from '@mui/icons-material/MoveDown';
 
 import InkButton, { types } from '@components/InkButton';
-import DeckButton from '@components/DeckButton';
+import DeckSelection from '@components/DeckSelection';
 
 const style = {
 	position: 'absolute',
@@ -120,7 +120,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }) =
 					{/* Boutons à gauche */}
 					<Box sx={{ display: 'flex', gap: 1 }}>
 						{decks.map((deckInk) => (
-							<DeckButton
+							<DeckSelection
 								key={combination + '_' + deckInk.join('-')}
 								inks={deckInk}
 								onClick={(deck) => dispatch({ type: 'SELECT_DECK', combo: combination, deck })}
