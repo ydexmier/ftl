@@ -1,21 +1,13 @@
-import connectToMongoDB from '@scooting/utils/connectToMongoDB.mjs';
-import Round from '@models/Round.js';
+import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 
 export default async function handler(req, res) {
-	await connectToMongoDB();
+	const roundId = Number(req.query.roundId);
+	const matchId = Number(req.query.matchId);
 
 	if (req.method === 'GET') {
 		try {
-			const data = req.query;
-
-			const round = await Round.findOne({ id: Number(data.roundId) });
-			if (!round) {
-				return res.status(404).json({ error: 'Round not found' });
-			}
-			const match = round.results.find((m) => m.id === Number(data.matchId));
-			if (!match) {
-				return res.status(404).json({ error: 'Match not found' });
-			}
+			const match = await RoundRepository.findMatch(roundId, matchId);
+			if (match === null) return res.status(404).json({ error: 'Match not found' });
 			return res.status(200).json(match);
 		} catch (err) {
 			return res.status(500).json({ error: err.message });
@@ -24,8 +16,7 @@ export default async function handler(req, res) {
 
 	if (req.method === 'POST') {
 		try {
-			const data = req.body;
-			const round = await Round.findOneAndUpdate({ id: Number(data.roundId) }, data, { new: true, upsert: true });
+			const round = await RoundRepository.upsert({ id: roundId, ...req.body });
 			return res.status(200).json(round);
 		} catch (err) {
 			return res.status(500).json({ error: err.message });
