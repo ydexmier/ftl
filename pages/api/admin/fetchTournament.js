@@ -1,4 +1,4 @@
-import fetchAndSaveTournament from '@scooting/scripts/fetchAndSaveTournament.js';
+import { TournamentService } from '@/src/services/TournamentService';
 
 export default async function handler(req, res) {
 	if (req.method !== 'POST') {
@@ -11,12 +11,11 @@ export default async function handler(req, res) {
 		return res.status(400).json({ error: 'TournamentId requis' });
 	}
 
-	await fetchAndSaveTournament(tournamentId, isRefetch)
-		.then((datas) => {
-			return res.status(200).json({ message: 'Tournoi récupéré !', datas });
-		})
-		.catch((error) => {
-			console.error('Erreur fetchAndSaveTournament:', error);
-			return res.status(500).json({ error: error.message });
-		});
+	try {
+		const datas = await TournamentService.fetchAndSave(Number(tournamentId), isRefetch);
+		return res.status(200).json({ message: 'Tournoi récupéré !', datas });
+	} catch (error) {
+		console.error('Erreur fetchAndSaveTournament:', error);
+		return res.status(500).json({ error: error.message });
+	}
 }

@@ -1,35 +1,16 @@
 // hooks/useRound.js
-import { useState, useCallback } from 'react';
-import { useFetch } from '@components/hooks/useFetch';
-import { fetchRound } from 'lib/api/fetchRound';
-import { useDebounce } from '@components/hooks/useDebounce';
-import { FETCH_ALL_ASYNC } from 'constants/index.js';
+import { useState, useCallback } from ‘react’;
+import { useFetch } from ‘@components/hooks/useFetch’;
+import { fetchRound } from ‘lib/api/fetchRound’;
+import { useDebounce } from ‘@components/hooks/useDebounce’;
+import { FETCH_ALL_ASYNC } from ‘constants/index.js’;
+import {
+	mergePlayersDecks,
+	getPlayerDecksInk,
+	getMatchPlayerInks,
+} from ‘@/src/services/ScoutingService’;
 
-const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
-
-function mergePlayersDecks(playersDecks, updatedPlayersDecks) {
-	if (!playersDecks || !Array.isArray(playersDecks.players)) return playersDecks;
-
-	// Création d'un lookup des joueurs à mettre à jour
-	const updatedPlayersById = {};
-	(updatedPlayersDecks?.players || []).forEach((player) => {
-		updatedPlayersById[player.playerId] = player;
-	});
-
-	// Map sur les joueurs existants
-	const mergedPlayers = playersDecks.players.reduce((acc, player) => {
-		const updated = updatedPlayersById[player.playerId];
-		if (updated?.decks.length === 0) return acc;
-		acc.push(updated ? { ...player, ...updated } : player);
-
-		return acc;
-	}, []);
-	// Ajouter les nouveaux joueurs qui n’existent pas encore
-	const existingIds = new Set(playersDecks.players.map((p) => p.playerId));
-	const newPlayers = (updatedPlayersDecks?.players || []).filter((p) => !existingIds.has(p.playerId));
-
-	return { ...playersDecks, players: [...mergedPlayers, ...newPlayers] };
-}
+const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === ‘true’;
 
 export const useRound = (roundId, tournamentId, options = {}) => {
 	const [matchToShow, setMatchToShow] = useState(null);
@@ -76,15 +57,8 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 		}
 	};
 
-	const getPlayerDecksInk = (playerId) => playersDecks.players.find((p) => p.playerId === playerId)?.decks || [];
-
-	const getMatchPlayerInks = (match) => {
-		const matchPlayerInks = match.player_match_relationships
-			.map((pmr) => playersDecks.players.find((p) => p.playerId === pmr.player.id))
-			.filter(Boolean);
-
-		return matchPlayerInks.length ? matchPlayerInks : undefined;
-	};
+	const getPlayerDecksInkForPlayer = (playerId) => getPlayerDecksInk({ players: playersDecks.players }, playerId);
+	const getMatchPlayerInksForMatch = (match) => getMatchPlayerInks(match, { players: playersDecks.players });
 
 	const refreshRound = useCallback(async () => {
 		const res = await fetchRound(tournamentId, roundId, {
@@ -106,8 +80,8 @@ export const useRound = (roundId, tournamentId, options = {}) => {
 		openMatchModal,
 		closeMatchModal,
 		onValidateAssignDeck,
-		getPlayerDecksInk,
-		getMatchPlayerInks,
+		getPlayerDecksInk: getPlayerDecksInkForPlayer,
+		getMatchPlayerInks: getMatchPlayerInksForMatch,
 		refreshRound,
 		pagination,
 	};

@@ -1,12 +1,11 @@
-import fetchAndSaveRound from '@scooting/scripts/fetchAndSaveRound.js';
+import { RoundService } from '@/src/services/RoundService';
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
 	if (req.method !== 'POST') {
 		return res.status(405).json({ error: 'Méthode non autorisée' });
 	}
 
 	const { tournamentId, roundId, options = {} } = req.body;
-	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, mode } = options;
 
 	if (!tournamentId) {
 		return res.status(400).json({ error: 'TournamentId requis' });
@@ -15,21 +14,11 @@ export default function handler(req, res) {
 		return res.status(400).json({ error: 'RoundId requis' });
 	}
 
-	// Chemin absolu vers le script
-	fetchAndSaveRound(tournamentId, roundId, { page, perPage, search, mode })
-		.then((datas) => {
-			return excludeOnePlayerMatches
-				? res.status(200).json({
-						message: 'Round récupéré !',
-						datas: {
-							...datas,
-							results: datas.results.filter((match) => match.player_match_relationships.length === 2),
-						},
-					})
-				: res.status(200).json({ message: 'Round récupéré !', datas });
-		})
-		.catch((error) => {
-			console.error('Erreur fetchAndSaveRound:', error);
-			return res.status(500).json({ error: error.message });
-		});
+	try {
+		const datas = await RoundService.fetchAndSave(Number(tournamentId), Number(roundId), options);
+		return res.status(200).json({ message: 'Round récupéré !', datas });
+	} catch (error) {
+		console.error('Erreur fetchAndSaveRound:', error);
+		return res.status(500).json({ error: error.message });
+	}
 }

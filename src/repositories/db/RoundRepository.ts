@@ -1,5 +1,6 @@
 import Round from '@models/Round.js';
 import connectToMongoDB from '@/src/lib/db';
+import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
 
 export interface MatchQueryOptions {
 	page?: number;
@@ -87,5 +88,30 @@ export const RoundRepository = {
 		const round = await Round.findOne({ id: roundId }).lean();
 		if (!round) return null;
 		return round.results?.find((m) => m.id === matchId) ?? null;
+	},
+
+	async mergeAndSave(id: number, tournamentId: number, newData: Record<string, unknown>) {
+		await connectToMongoDB();
+		const existing = await Round.findOne({ id });
+		if (existing) {
+			for (const key in newData) {
+				if (key === 'results') {
+					mergeArrayById(
+						existing.results as unknown as { id: number }[],
+						(newData.results as { id: number }[]) ?? [],
+					);
+					existing.markModified('results');
+				} else if (newData[key] && typeof newData[key] === 'object' && !Array.isArray(newData[key])) {
+					if (!existing.get(key)) existing.set(key, {});
+					mergeDeep(existing.get(key) as Record<string, unknown>, newData[key] as Record<string, unknown>);
+				} else {
+					existing.set(key, newData[key]);
+				}
+			}
+			await existing.save();
+		} else {
+			await Round.create({ ...newData, id, tournamentId });
+		}
+		return Round.findOne({ id }).populate('playersDecks').lean();
 	},
 };
