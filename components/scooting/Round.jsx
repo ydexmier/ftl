@@ -18,7 +18,7 @@ import MatchCard from '@components/scooting/MatchCard';
 import MatchModal from '@components/scooting/MatchModal';
 import RoundHeader from '@components/scooting/RoundHeader';
 import RoundSearch from '@components/scooting/RoundSearch';
-import { useRound } from '@components/hooks/useRound';
+import { useRound } from '@/src/hooks/useRound';
 
 const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch }) => {
 	const [page, setPage] = useState(parseInt(initialPage, 10) || 1);

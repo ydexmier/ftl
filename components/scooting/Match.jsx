@@ -1,4 +1,4 @@
-import { useFetch } from '@components/hooks/useFetch';
+import { useFetch } from '@/src/hooks/useFetch';
 
 import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
 

@@ -1,0 +1,24 @@
+import { useCallback } from 'react';
+import { useFetch } from '@/src/hooks/useFetch';
+import type { Tournament } from '@/src/types/tournament';
+
+async function fetchTournament(tournamentId: number, isRefetch = false): Promise<{ datas: Tournament }> {
+	const res = await fetch('/api/admin/fetchTournament', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ tournamentId, isRefetch }),
+	});
+	if (!res.ok) throw new Error('Erreur lors de la récupération du tournoi');
+	return res.json();
+}
+
+export function useTournament(tournamentId: number) {
+	const { data: tournament, loading, error, setData } = useFetch<Tournament>(`/api/tournaments/${tournamentId}`);
+
+	const refreshTournament = useCallback(async () => {
+		const res = await fetchTournament(tournamentId, true);
+		setData(res.datas);
+	}, [tournamentId]);
+
+	return { tournament, loading, error, refreshTournament };
+}

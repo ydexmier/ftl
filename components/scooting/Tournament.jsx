@@ -7,7 +7,7 @@ import { FormControl, Select, MenuItem, Box, Grid } from '@mui/material';
 import { getRoundName } from '@components/scooting/utils/roundToString';
 
 import Round from '@components/scooting/Round';
-import { useTournament } from '@components/hooks/useTournament';
+import { useTournament } from '@/src/hooks/useTournament';
 import FetchButton from '@components/FetchButton';
 
 export default function Tournament(props) {
