@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from '@emotion/styled';
 import { ButtonBase } from '@mui/material';
-import Ink, { types } from '@components/Ink';
+import Ink, { types } from '@components/ui/Ink';
 export { types };
 
 const StyledInkButton = styled(ButtonBase, {

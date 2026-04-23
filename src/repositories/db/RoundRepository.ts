@@ -1,6 +1,17 @@
 import Round from '@models/Round.js';
 import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
+import type { Match } from '@/src/types/match';
+import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
+
+export interface RoundDocument {
+	id: number;
+	tournamentId: number;
+	results: Match[];
+	playersDecks?: PlayersDecksMap | null;
+	updatedAt?: string;
+	createdAt?: string;
+}
 
 export interface MatchQueryOptions {
 	page?: number;
@@ -10,14 +21,14 @@ export interface MatchQueryOptions {
 }
 
 export const RoundRepository = {
-	async findById(id: number) {
+	async findById(id: number): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).lean();
+		return Round.findOne({ id }).lean() as Promise<RoundDocument | null>;
 	},
 
-	async findByIdWithDecks(id: number) {
+	async findByIdWithDecks(id: number): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).populate('playersDecks').lean();
+		return Round.findOne({ id }).populate('playersDecks').lean() as Promise<RoundDocument | null>;
 	},
 
 	async upsert(data: Record<string, unknown>) {
@@ -34,7 +45,7 @@ export const RoundRepository = {
 		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
 		await connectToMongoDB();
 
-		const round = await Round.findOne({ id: roundId }).populate('playersDecks').lean();
+		const round = (await Round.findOne({ id: roundId }).populate('playersDecks').lean()) as RoundDocument | null;
 		if (!round) return null;
 
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
@@ -85,7 +96,7 @@ export const RoundRepository = {
 
 	async findMatch(roundId: number, matchId: number) {
 		await connectToMongoDB();
-		const round = await Round.findOne({ id: roundId }).lean();
+		const round = (await Round.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 		return round.results?.find((m) => m.id === matchId) ?? null;
 	},

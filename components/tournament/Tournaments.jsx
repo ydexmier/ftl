@@ -5,8 +5,8 @@ import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 
-import TournamentCard from '@components/TournamentCard';
-import FetchTournamentForm from '@components/FetchTournamentForm';
+import TournamentCard from '@components/tournament/TournamentCard';
+import FetchTournamentForm from '@components/tournament/FetchTournamentForm';
 
 const Tournaments = () => {
 	const router = useRouter();

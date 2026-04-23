@@ -2,7 +2,7 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 
-import FetchButton from '@components/FetchButton';
+import FetchButton from '@components/ui/FetchButton';
 
 const RoundHeader = ({ updatedAt, onRefresh }) => (
 	<Grid container spacing={1} sx={{ my: 2, justifyContent: 'space-between', alignItems: 'center' }}>

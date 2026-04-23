@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Button, CircularProgress, Snackbar, Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { diffInSeconds } from '@components/scooting/utils/date';
+import { diffInSeconds } from '@/src/lib/date';
 
 export default function FetchButton({ defaultLabel = 'Rafraîchir', onFetch, lastUpdate = null, refreshDelay = 60 }) {
 	const [loading, setLoading] = useState(false);

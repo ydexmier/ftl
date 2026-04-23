@@ -1,12 +1,15 @@
 'use client';
 import { useState } from 'react';
 import { Box, Button, Alert, Typography, Select, FormControl, MenuItem } from '@mui/material';
-import { getRoundName } from '@components/scooting/utils/roundToString';
+import { getRoundName } from '@/src/domain/rules/roundRules';
 import { fetchRound } from 'lib/api/fetchRound';
-import { FETCH_ALL_ASYNC } from 'constants/index.js';
+import { FETCH_ALL_ASYNC } from '@/src/lib/constants';
 
 const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
+/**
+ * @param {{ tournament: import('@/src/types/tournament').Tournament, phases: import('@/src/types/tournament').TournamentPhase[] }} props
+ */
 export default function FetchRoundForm({ tournament, phases = [] }) {
 	const [loadingId, setLoadingId] = useState(null);
 	const [message, setMessage] = useState('');

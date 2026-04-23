@@ -1,6 +1,6 @@
 'use client';
 import { useParams } from 'next/navigation';
-import MatchComponent from '@components/scooting/Match';
+import MatchComponent from '@components/match/Match';
 
 export default function MatchPage() {
 	const { tournamentId, roundId, matchId } = useParams<{

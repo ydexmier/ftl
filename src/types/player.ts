@@ -2,33 +2,33 @@ import type { Deck } from './ink';
 
 export interface Player {
 	id: number;
-	bestIdentifier: string;
+	best_identifier: string;
 	pronouns: string | null;
-	profilePictureUrl: string | null;
+	game_user_profile_picture_url: string | null;
 }
 
 export interface UserEventStatus {
 	id: number;
-	bestIdentifier: string;
-	registrationStatus: string;
-	matchesWon: number;
-	matchesLost: number;
-	matchesDrawn: number;
-	totalMatchPoints: number;
+	best_identifier: string;
+	registration_status: string;
+	matches_won: number;
+	matches_lost: number;
+	matches_drawn: number;
+	total_match_points: number;
 	user?: Player;
 }
 
 export interface PlayerMatchRelationship {
-	playerOrder: 1 | 2;
+	player_order: 1 | 2;
 	player: Player;
-	userEventStatus: UserEventStatus;
+	user_event_status: UserEventStatus;
 }
 
 export interface PlayerDeck {
 	playerId: number;
-	bestIdentifier: string;
+	best_identifier: string;
 	pronouns: string | null;
-	profilePictureUrl: string | null;
+	game_user_profile_picture_url: string | null;
 	decks: Deck[];
 }
 

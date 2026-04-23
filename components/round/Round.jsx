@@ -14,10 +14,10 @@ import {
 	InputLabel,
 } from '@mui/material';
 
-import MatchCard from '@components/scooting/MatchCard';
-import MatchModal from '@components/scooting/MatchModal';
-import RoundHeader from '@components/scooting/RoundHeader';
-import RoundSearch from '@components/scooting/RoundSearch';
+import MatchCard from '@components/match/MatchCard';
+import MatchModal from '@components/match/MatchModal';
+import RoundHeader from '@components/round/RoundHeader';
+import RoundSearch from '@components/round/RoundSearch';
 import { useRound } from '@/src/hooks/useRound';
 
 const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch }) => {

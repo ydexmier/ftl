@@ -1,4 +1,4 @@
-import type { DeckAssignment, PlayersDecksMap } from '@/src/services/ScoutingService';
+import type { DeckAssignment, PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
 import type { Match } from '@/src/types/match';
 
 export interface AssignDecksResult {

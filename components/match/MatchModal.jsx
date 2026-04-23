@@ -4,8 +4,8 @@ import { Modal, Typography, Box, Button, Stack, Chip, Grid, Divider } from '@mui
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import MoveDownIcon from '@mui/icons-material/MoveDown';
 
-import InkButton, { types } from '@components/InkButton';
-import DeckSelection from '@components/DeckSelection';
+import InkButton, { types } from '@components/ui/InkButton';
+import DeckSelection from '@components/ui/DeckSelection';
 
 const style = {
 	position: 'absolute',

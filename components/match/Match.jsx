@@ -1,6 +1,6 @@
 import { useFetch } from '@/src/hooks/useFetch';
 
-import { getStatusFromMatch, showScoreFromMatch } from '@scooting/utils/match';
+import { getStatusFromMatch, showScoreFromMatch } from '@/src/domain/rules/matchRules';
 
 const Match = (props) => {
 	const { id, tournamentId, roundId } = props; // récupère l'id de l'URL

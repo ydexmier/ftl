@@ -4,11 +4,11 @@ import { useSearchParams } from 'next/navigation';
 
 import { FormControl, Select, MenuItem, Box, Grid } from '@mui/material';
 
-import { getRoundName } from '@components/scooting/utils/roundToString';
+import { getRoundName } from '@/src/domain/rules/roundRules';
 
-import Round from '@components/scooting/Round';
+import Round from '@components/round/Round';
 import { useTournament } from '@/src/hooks/useTournament';
-import FetchButton from '@components/FetchButton';
+import FetchButton from '@components/ui/FetchButton';
 
 export default function Tournament(props) {
 	const { id } = props; // récupère l'id de l'URL

@@ -2,11 +2,11 @@ import { useState, useCallback } from 'react';
 import { useFetch } from '@/src/hooks/useFetch';
 import { useDeckAssignment } from '@/src/hooks/useDeckAssignment';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { mergePlayersDecks, getPlayerDecksInk, getMatchPlayerInks } from '@/src/services/ScoutingService';
+import { mergePlayersDecks, getPlayerDecksInk, getMatchPlayerInks } from '@/src/domain/rules/scoutingRules';
 import { FETCH_ALL_ASYNC } from '@/src/lib/constants';
 import type { PaginatedMatches } from '@/src/types/round';
 import type { Match } from '@/src/types/match';
-import type { DeckAssignment } from '@/src/services/ScoutingService';
+import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
 
 const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
@@ -49,9 +49,9 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 	const {
 		results: matchs = [],
 		updatedAt,
-		playersDecks = { players: [] },
 		pagination = { page: 1, perPage: 10, total: 0, totalPages: 1 },
 	} = round ?? {};
+	const playersDecks = round?.playersDecks ?? { players: [] };
 
 	const closeMatchModal = () => setMatchToShow(null);
 	const openMatchModal = (match: Match) => () => setMatchToShow(match);

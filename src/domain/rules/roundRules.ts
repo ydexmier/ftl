@@ -2,9 +2,9 @@ import type { TournamentPhase } from '@/src/types/tournament';
 import type { RoundRef } from '@/src/types/round';
 
 export function getRoundName(phase: TournamentPhase, round: RoundRef): string {
-	switch (phase.roundType) {
+	switch (phase.round_type) {
 		case 'SWISS':
-			return `Round ${round.roundNumber}`;
+			return `Round ${round.round_number}`;
 		case 'ELIMINATION':
 			return 'Éliminatoire';
 		case 'RANKED_SINGLE_ELIMINATION': {

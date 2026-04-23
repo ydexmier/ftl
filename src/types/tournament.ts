@@ -3,8 +3,8 @@ import type { RoundRef, RoundType } from './round';
 export interface Store {
 	id: number;
 	name: string;
-	fullAddress: string;
-	administrativeAreaLevel1Short: string;
+	full_address: string;
+	administrative_area_level_1_short: string;
 	country: string;
 	website: string;
 	latitude: number;
@@ -13,16 +13,16 @@ export interface Store {
 
 export interface TournamentSettings {
 	id: number;
-	decklistStatus: string;
-	eventLifecycleStatus: string;
-	showRegistrationButton: boolean;
-	roundDurationInMinutes: number;
-	paymentInStore: boolean;
-	paymentOnSpicerack: boolean;
-	maximumNumberOfGameWinsPerMatch: number;
-	maximumNumberOfDrawsPerMatch: number | null;
-	checkinMethods: string[];
-	stripePriceId: string | null;
+	decklist_status: string;
+	event_lifecycle_status: string;
+	show_registration_button: boolean;
+	round_duration_in_minutes: number;
+	payment_in_store: boolean;
+	payment_on_spicerack: boolean;
+	maximum_number_of_game_wins_per_match: number;
+	maximum_number_of_draws_per_match: number | null;
+	checkin_methods: string[];
+	stripe_price_id: string | null;
 }
 
 export interface GameplayFormat {
@@ -33,12 +33,13 @@ export interface GameplayFormat {
 
 export interface TournamentPhase {
 	id: number;
-	firstRoundType: string | null;
+	name?: string;
+	first_round_type: string | null;
 	status: string;
-	orderInPhases: number;
-	numberOfRounds: number;
-	roundType: RoundType;
-	rankRequiredToEnterPhase: string | null;
+	order_in_phases: number;
+	number_of_rounds: number;
+	round_type: RoundType;
+	rank_required_to_enter_phase: string | null;
 	rounds: RoundRef[];
 }
 
@@ -46,29 +47,29 @@ export interface Tournament {
 	id: number;
 	name: string;
 	description: string;
-	fullHeaderImageUrl: string;
-	startDatetime: string;
-	endDatetime: string | null;
-	timerEndDatetime: string | null;
-	timerPausedAtDatetime: string | null;
-	timerIsRunning: boolean;
-	registeredUserCount: number;
-	fullAddress: string;
+	full_header_image_url: string;
+	start_datetime: string;
+	end_datetime: string | null;
+	timer_end_datetime: string | null;
+	timer_paused_at_datetime: string | null;
+	timer_is_running: boolean;
+	registered_user_count: number;
+	full_address: string;
 	latitude: number;
 	longitude: number;
-	gameType: string;
-	eventStatus: string;
-	eventFormat: string;
-	eventType: string;
-	rulesEnforcementLevel: string;
+	game_type: string;
+	event_status: string;
+	event_format: string;
+	event_type: string;
+	rules_enforcement_level: string;
 	store: Store;
 	settings: TournamentSettings;
-	tournamentPhases: TournamentPhase[];
-	gameplayFormat: GameplayFormat;
-	costInCents: number;
+	tournament_phases: TournamentPhase[];
+	gameplay_format: GameplayFormat;
+	cost_in_cents: number;
 	currency: string;
 	capacity: number;
-	numberOfDays: number;
+	number_of_days: number;
 	url: string | null;
 	timezone: string | null;
 	createdAt: string;

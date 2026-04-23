@@ -1,4 +1,5 @@
 import type { Match } from './match';
+import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
 
 export type RoundType =
 	| 'SWISS'
@@ -9,11 +10,11 @@ export type RoundType =
 
 export interface RoundRef {
 	id: number;
-	roundNumber: number;
-	finalRoundInEvent: boolean;
-	pairingsStatus: string;
-	standingsStatus: string;
-	roundType: RoundType;
+	round_number: number;
+	final_round_in_event: boolean;
+	pairings_status: string;
+	standings_status: string;
+	round_type: RoundType;
 	status: string;
 }
 
@@ -35,4 +36,6 @@ export interface PaginationMeta {
 export interface PaginatedMatches {
 	results: Match[];
 	pagination: PaginationMeta;
+	playersDecks: PlayersDecksMap | null;
+	updatedAt?: string;
 }

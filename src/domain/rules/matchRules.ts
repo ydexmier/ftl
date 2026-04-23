@@ -1,14 +1,14 @@
 import type { Match, MatchStatusResult } from '@/src/types/match';
 
 export function getStatusFromMatch(match: Match): MatchStatusResult {
-	if (match.gamesDrawn) return { label: 'Draw', color: 'primary' };
-	const winningPlayerId = match.winningPlayer ?? null;
+	if (match.games_drawn) return { label: 'Draw', color: 'primary' };
+	const winningPlayerId = match.winning_player ?? null;
 	if (!winningPlayerId) return { label: 'Score not reported', color: 'warning' };
-	if (match.isBye) return { label: 'Bye', color: 'secondary' };
-	if (match.isLoss) return { label: 'Loss', color: 'error' };
-	if (match.isIntentionalDraw) return { label: 'Intentional Draw', color: 'primary' };
-	if (match.isUnintentionalDraw) return { label: 'Unintentional Draw', color: 'primary' };
-	if (match.reportsInConflict) return { label: 'Conflict in reports', color: 'error' };
+	if (match.match_is_bye) return { label: 'Bye', color: 'secondary' };
+	if (match.match_is_loss) return { label: 'Loss', color: 'error' };
+	if (match.match_is_intentional_draw) return { label: 'Intentional Draw', color: 'primary' };
+	if (match.match_is_unintentional_draw) return { label: 'Unintentional Draw', color: 'primary' };
+	if (match.reports_are_in_conflict) return { label: 'Conflict in reports', color: 'error' };
 
 	switch (match.status) {
 		case 'SCHEDULED':
@@ -25,11 +25,11 @@ export function getStatusFromMatch(match: Match): MatchStatusResult {
 }
 
 export function showScoreFromMatch(match: Match): string {
-	if (match.gamesDrawn) return `${match.gamesWonByLoser} - ${match.gamesWonByWinner}`;
-	const winningPlayerId = match.winningPlayer ?? null;
+	if (match.games_drawn) return `${match.games_won_by_loser} - ${match.games_won_by_winner}`;
+	const winningPlayerId = match.winning_player ?? null;
 	if (!winningPlayerId) return '0 - 0';
-	if (winningPlayerId === match.playerMatchRelationships[0]?.player.id) {
-		return `${match.gamesWonByWinner} - ${match.gamesWonByLoser}`;
+	if (winningPlayerId === match.player_match_relationships[0]?.player.id) {
+		return `${match.games_won_by_winner} - ${match.games_won_by_loser}`;
 	}
-	return `${match.gamesWonByLoser} - ${match.gamesWonByWinner}`;
+	return `${match.games_won_by_loser} - ${match.games_won_by_winner}`;
 }

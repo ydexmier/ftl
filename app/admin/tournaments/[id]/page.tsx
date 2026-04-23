@@ -16,13 +16,14 @@ import {
 	Tab,
 } from '@mui/material';
 import FetchRoundForm from '@components/admin/FetchRoundForm';
-import DeleteTournamentButton from '@components/scooting/DeleteTournamentButton';
+import DeleteTournamentButton from '@components/tournament/DeleteTournamentButton';
+import type { Tournament } from '@/src/types/tournament';
 
 export default function TournamentPage() {
 	const { id } = useParams<{ id: string }>();
 	const router = useRouter();
 
-	const [tournament, setTournament] = useState(null);
+	const [tournament, setTournament] = useState<Tournament | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [message, setMessage] = useState('');
 	const [tabIndex, setTabIndex] = useState(0);
@@ -89,7 +90,7 @@ export default function TournamentPage() {
 						</Card>
 
 						<Grid container spacing={2} sx={{ mb: 3 }}>
-							<Grid item xs={12} sm={6}>
+							<Grid size={{ xs: 12, sm: 6 }}>
 								<Typography variant="subtitle1">
 									📍 {tournament.store?.name || 'Lieu inconnu'}
 								</Typography>
@@ -97,7 +98,7 @@ export default function TournamentPage() {
 									{tournament.full_address}
 								</Typography>
 							</Grid>
-							<Grid item xs={12} sm={6}>
+							<Grid size={{ xs: 12, sm: 6 }}>
 								<Typography variant="subtitle1">
 									👥 {tournament.registered_user_count} joueurs
 								</Typography>
