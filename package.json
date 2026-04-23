@@ -2,7 +2,7 @@
 	"name": "nextjs-mongoose-docker-app",
 	"version": "1.0.0",
 	"scripts": {
-		"dev": "next dev -p 3000 && mongod --dbpath /opt/homebrew/var/mongodb --replSet rs0 --bind_ip localhost",
+		"dev": "next dev -p 3000",
 		"build": "next build",
 		"start": "next start"
 	},
