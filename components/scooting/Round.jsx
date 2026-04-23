@@ -1,6 +1,6 @@
-// pages/round.js
+// components/scooting/Round.jsx
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 
 import {
 	Grid,
@@ -25,7 +25,8 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const [perPage, setPerPage] = useState(parseInt(initialPerPage, 10) || 10);
 	const [search, setSearch] = useState(initialSearch || '');
 	const router = useRouter();
-	const { tournamentId } = router.query;
+	const pathname = usePathname();
+	const { tournamentId } = useParams();
 
 	const {
 		matchs,
@@ -118,14 +119,10 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 			...(search ? { search } : {}),
 		};
 
-		router.replace(
-			{
-				pathname: router.pathname,
-				query,
-			},
-			undefined,
-			{ shallow: true },
+		const sp = new URLSearchParams(
+			Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
 		);
+		router.replace(`${pathname}?${sp.toString()}`, { scroll: false });
 	}, [roundId, page, perPage, search]);
 
 	return (

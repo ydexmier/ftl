@@ -1,6 +1,6 @@
 // ftl/components/scooting/components/Tournament.jsx
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { useSearchParams } from 'next/navigation';
 
 import { FormControl, Select, MenuItem, Box, Grid } from '@mui/material';
 
@@ -12,14 +12,12 @@ import FetchButton from '@components/FetchButton';
 
 export default function Tournament(props) {
 	const { id } = props; // récupère l'id de l'URL
-	const router = useRouter();
+	const searchParams = useSearchParams();
 	// ⚡ On lit roundId, page, perPage depuis l'URL
-	const {
-		roundId: queryRoundId,
-		page: queryPage = 1,
-		perPage: queryPerPage = 10,
-		search: querySearch = '',
-	} = router.query;
+	const queryRoundId = searchParams.get('roundId') ?? '';
+	const queryPage = searchParams.get('page') ?? 1;
+	const queryPerPage = searchParams.get('perPage') ?? 10;
+	const querySearch = searchParams.get('search') ?? '';
 
 	const [roundId, setRoundId] = useState(queryRoundId || '');
 
