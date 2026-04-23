@@ -1,8 +1,8 @@
 import fetchTournement from '@lib/external/fetchTournement.mjs';
-import Tournament from '@models/Tournament.js'; // adapte le chemin
+import Tournament from '@models/Tournament.js';
+import TournamentPlayersDeck from '@models/TournamentPlayersDeck.js';
 import mergeDeep from '../utils/mergeDeep.mjs';
 import connectToMongoDB from '../utils/connectToMongoDB.mjs';
-import { upsertTournamentPlayersDeck } from '@controllers/TournamentPlayersDeck.mjs';
 
 // Fonction pour insérer ou mettre à jour le tournoi
 async function upsertTournament(newData, isRefetch) {
@@ -32,7 +32,13 @@ async function fetchAndUpsertTournament(id, isRefetch) {
 
 		if (res?.id !== Number(id)) throw new Error(`Fetch failed`);
 		const response = await upsertTournament(res, isRefetch);
-		if (!isRefetch) await upsertTournamentPlayersDeck({ id: res.id, players: [] });
+		if (!isRefetch) {
+			await TournamentPlayersDeck.findOneAndUpdate(
+				{ tournamentId: res.id },
+				{ tournamentId: res.id, players: [] },
+				{ new: true, upsert: true },
+			);
+		}
 		return response;
 	} catch (error) {
 		throw error;

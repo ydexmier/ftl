@@ -12,8 +12,8 @@
 			"@components/*": ["components/*"],
 			"@scooting/*": ["components/scooting/*"],
 			"@models/*": ["models/*"],
-			"@controllers/*": ["controllers/*"],
-			"@lib/*": ["lib/*"]
+			"@lib/*": ["lib/*"],
+			"@/src/*": ["src/*"]
 		}
 	}
 }
