@@ -56,7 +56,24 @@ npm install
 
 ---
 
-## Step 1 — Migrate `components/ui/Layout.jsx` → `components/ui/Layout.tsx`
+## Step 1 — Ensure `cn` utility exists
+
+Check if `components/ui/cn.ts` exists. If it does not exist (PR2 not yet merged), create it:
+
+```ts
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+If the file already exists, skip this step.
+
+---
+
+## Step 2 — Migrate `components/ui/Layout.jsx` → `components/ui/Layout.tsx`
 
 **Delete** `components/ui/Layout.jsx` and **create** `components/ui/Layout.tsx`.
 
@@ -139,7 +156,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 ---
 
-## Step 2 — Simplify `app/providers.tsx`
+## Step 3 — Simplify `app/providers.tsx`
 
 Dark mode is now handled by `class="dark"` on `<html>` in `app/layout.tsx` (set in PR1). The MUI ThemeProvider and CssBaseline are no longer needed.
 
@@ -155,7 +172,7 @@ If `app/providers.tsx` already has other non-MUI providers (React Query, Zustand
 
 ---
 
-## Step 3 — Verify no regressions
+## Step 4 — Verify no regressions
 
 ```bash
 npm run build
@@ -165,10 +182,10 @@ Fix any TypeScript errors that appear. Do **not** modify files outside the scope
 
 ---
 
-## Step 4 — Git workflow
+## Step 5 — Git workflow
 
 ```bash
-git add components/ui/Layout.tsx components/ui/Layout.jsx app/providers.tsx
+git add components/ui/Layout.tsx components/ui/Layout.jsx app/providers.tsx components/ui/cn.ts
 git commit -m "feat(pr3): migrate Layout and navigation from MUI to Tailwind
 
 - Replace AppBar/Toolbar/Container/Box/MenuItem/IconButton with Tailwind nav
