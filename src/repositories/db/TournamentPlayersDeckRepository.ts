@@ -33,7 +33,7 @@ export const TournamentPlayersDeckRepository = {
 		const modified: unknown[] = [];
 
 		for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
-			const idx = doc.players.findIndex((p) => p.playerId === playerId);
+			const idx = doc.players.findIndex((p: { playerId: number }) => p.playerId === playerId);
 
 			if (idx !== -1) {
 				if (!decks || decks.length === 0) {

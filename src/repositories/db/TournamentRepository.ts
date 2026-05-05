@@ -1,16 +1,17 @@
 import Tournament from '@models/Tournament.js';
 import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep } from '@/src/lib/mergeDeep';
+import type { Tournament as TournamentType } from '@/src/types/tournament';
 
 export const TournamentRepository = {
-	async findAll() {
+	async findAll(): Promise<TournamentType[]> {
 		await connectToMongoDB();
-		return Tournament.find().lean();
+		return Tournament.find().lean() as Promise<TournamentType[]>;
 	},
 
-	async findById(id: number) {
+	async findById(id: number): Promise<TournamentType | null> {
 		await connectToMongoDB();
-		return Tournament.findOne({ id }).lean();
+		return Tournament.findOne({ id }).lean() as Promise<TournamentType | null>;
 	},
 
 	async upsert(data: Record<string, unknown>) {
