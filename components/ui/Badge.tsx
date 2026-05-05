@@ -11,6 +11,8 @@ const badgeVariants = cva(
 				success: 'bg-green-900/40 text-green-400 border border-green-800',
 				info: 'bg-blue-900/40 text-blue-400 border border-blue-800',
 				error: 'bg-red-900/40 text-destructive border border-red-800',
+				warning: 'bg-yellow-900/40 text-yellow-400 border border-yellow-800',
+				secondary: 'bg-secondary text-muted-foreground',
 			},
 			variant: {
 				filled: '',
