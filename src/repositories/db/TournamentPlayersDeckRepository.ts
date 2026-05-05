@@ -27,13 +27,14 @@ export const TournamentPlayersDeckRepository = {
 		assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
 	) {
 		await connectToMongoDB();
-		const doc = await TournamentPlayersDeck.findOne({ tournamentId });
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const doc = await TournamentPlayersDeck.findOne({ tournamentId }) as any;
 		if (!doc) throw new Error(`TournamentPlayersDeck not found for tournament ${tournamentId}`);
 
 		const modified: unknown[] = [];
 
 		for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
-			const idx = doc.players.findIndex((p) => p.playerId === playerId);
+			const idx = doc.players.findIndex((p: { playerId: number }) => p.playerId === playerId);
 
 			if (idx !== -1) {
 				if (!decks || decks.length === 0) {
