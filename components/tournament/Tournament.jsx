@@ -1,0 +1,76 @@
+// ftl/components/scooting/components/Tournament.jsx
+import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+
+import { FormControl, Select, MenuItem, Box, Grid } from '@mui/material';
+
+import { getRoundName } from '@/src/domain/rules/roundRules';
+
+import Round from '@components/round/Round';
+import { useTournament } from '@/src/hooks/useTournament';
+import FetchButton from '@components/ui/FetchButton';
+
+export default function Tournament(props) {
+	const { id } = props; // récupère l'id de l'URL
+	const searchParams = useSearchParams();
+	// ⚡ On lit roundId, page, perPage depuis l'URL
+	const queryRoundId = searchParams.get('roundId') ?? '';
+	const queryPage = searchParams.get('page') ?? 1;
+	const queryPerPage = searchParams.get('perPage') ?? 10;
+	const querySearch = searchParams.get('search') ?? '';
+
+	const [roundId, setRoundId] = useState(queryRoundId || '');
+
+	const { tournament, loading, error, refreshTournament } = useTournament(id);
+	const { updatedAt } = tournament || {};
+	const handlePhaseChange = (event) => {
+		const selectedRoundId = event.target.value;
+		if (!selectedRoundId) return; // ignore placeholder
+		setRoundId(selectedRoundId);
+	};
+
+	if (loading) return <div>Loading tournament...</div>;
+	if (error) return <div>Error loading tournament: {error.message}</div>;
+	if (!tournament) return <div>No tournament data available.</div>;
+
+	return (
+		<div>
+			<h1>Tournoi: {tournament.name}</h1>
+
+			<Grid container spacing={2} justifyContent="space-between">
+				<p>
+					Nombre de joueur restant: {tournament.registered_user_count}/{tournament.capacity}
+				</p>
+
+				<Box sx={{ mb: 2 }} container>
+					<FetchButton
+						defaultLabel="MAJ Tournoi"
+						onFetch={refreshTournament}
+						refreshDelay={60}
+						lastUpdate={updatedAt}
+					/>
+				</Box>
+			</Grid>
+
+			<FormControl fullWidth>
+				<Select
+					labelId="phases-label"
+					id="phases"
+					value={roundId} // valeur sélectionnée
+					onChange={handlePhaseChange}
+					displayEmpty
+				>
+					<MenuItem value="">-- sélectionnée une round --</MenuItem>
+					{tournament.tournament_phases.map((phase) =>
+						phase.rounds.map((round) => (
+							<MenuItem key={round.id} value={round.id}>
+								{getRoundName(phase, round)}
+							</MenuItem>
+						)),
+					)}
+				</Select>
+			</FormControl>
+			{roundId && <Round roundId={roundId} page={queryPage} perPage={queryPerPage} search={querySearch} />}
+		</div>
+	);
+}

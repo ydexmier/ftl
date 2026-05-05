@@ -1,0 +1,6 @@
+export type RoundType =
+	| 'SWISS'
+	| 'ELIMINATION'
+	| 'RANKED_SINGLE_ELIMINATION'
+	| 'FINAL'
+	| 'PLAY_VS_OPPONENT';

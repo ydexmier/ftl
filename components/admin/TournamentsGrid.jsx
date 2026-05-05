@@ -1,7 +1,7 @@
 'use client';
 
 import { Grid, Link } from '@mui/material';
-import TournamentCard from '@components/TournamentCard';
+import TournamentCard from '@components/tournament/TournamentCard';
 
 export default function TournamentGrid({ tournaments }) {
 	return (

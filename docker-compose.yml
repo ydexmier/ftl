@@ -8,7 +8,8 @@ services:
       - .:/app
       - /app/node_modules
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/mydb
+      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_DB_NAME=ftl
     depends_on:
       - mongo
 
