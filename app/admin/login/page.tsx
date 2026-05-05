@@ -2,8 +2,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { Box, Button, Container, TextField, Typography, Paper, Alert, IconButton, Tooltip } from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
+import { Home } from 'lucide-react';
+import { Button } from '@components/ui/Button';
+import { Input } from '@components/ui/Input';
+import { Alert } from '@components/ui/Alert';
+import { Tooltip } from '@components/ui/Tooltip';
 
 export default function AdminLogin() {
 	const [username, setUsername] = useState('');
@@ -31,53 +34,43 @@ export default function AdminLogin() {
 	};
 
 	return (
-		<Container maxWidth="sm">
-			<Paper elevation={3} sx={{ mt: 8, p: 4, position: 'relative' }}>
-				<Tooltip title="Retour à l'accueil">
-					<IconButton
-						color="primary"
-						sx={{ position: 'absolute', top: 16, right: 16 }}
-						onClick={() => router.push('/')}
-					>
-						<HomeIcon />
-					</IconButton>
-				</Tooltip>
+		<div className="flex items-center justify-center min-h-[calc(100vh-56px)]">
+			<div className="relative w-full max-w-sm bg-card border border-border rounded-xl p-8 shadow-xl">
+				<div className="absolute top-4 right-4">
+					<Tooltip title="Retour à l'accueil">
+						<Button variant="ghost" size="sm" onClick={() => router.push('/')}>
+							<Home className="h-4 w-4" />
+						</Button>
+					</Tooltip>
+				</div>
 
-				<Typography variant="h4" align="center" gutterBottom>
-					Admin Login
-				</Typography>
+				<h1 className="text-2xl font-bold text-foreground text-center mb-6">Admin Login</h1>
 
 				{error && (
-					<Alert severity="error" sx={{ mb: 2 }}>
-						{error}
-					</Alert>
+					<div className="mb-4">
+						<Alert severity="error">{error}</Alert>
+					</div>
 				)}
 
-				<Box
-					component="form"
-					onSubmit={handleSubmit}
-					sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-				>
-					<TextField
+				<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+					<Input
 						label="Username"
-						variant="outlined"
 						value={username}
 						onChange={(e) => setUsername(e.target.value)}
 						required
 					/>
-					<TextField
+					<Input
 						label="Password"
-						variant="outlined"
 						type="password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
 						required
 					/>
-					<Button type="submit" variant="contained" color="primary">
+					<Button type="submit" variant="default" className="w-full">
 						Se connecter
 					</Button>
-				</Box>
-			</Paper>
-		</Container>
+				</form>
+			</div>
+		</div>
 	);
 }

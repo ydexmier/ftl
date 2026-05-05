@@ -20,8 +20,10 @@ export const RoundService = {
 		const tournament = await TournamentRepository.findById(tournamentId);
 		if (!tournament) throw new Error(`Tournoi ${tournamentId} introuvable en base`);
 
-		const allRounds = (tournament.tournament_phases ?? []).flatMap((p) => p.rounds ?? []);
-		if (!allRounds.find((r) => r.id === roundId)) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const doc = tournament as any;
+		const allRounds = (doc.tournament_phases ?? []).flatMap((p: any) => p.rounds ?? []);
+		if (!allRounds.find((r: any) => r.id === roundId)) {
 			throw new Error(`Round ${roundId} introuvable dans le tournoi ${tournamentId}`);
 		}
 

@@ -27,7 +27,8 @@ export const TournamentPlayersDeckRepository = {
 		assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
 	) {
 		await connectToMongoDB();
-		const doc = await TournamentPlayersDeck.findOne({ tournamentId });
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const doc = await TournamentPlayersDeck.findOne({ tournamentId }) as any;
 		if (!doc) throw new Error(`TournamentPlayersDeck not found for tournament ${tournamentId}`);
 
 		const modified: unknown[] = [];
