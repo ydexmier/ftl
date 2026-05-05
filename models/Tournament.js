@@ -97,12 +97,6 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // ⚡ compile après config
-let Tournament;
-
-try {
-	Tournament = mongoose.model('Tournament');
-} catch {
-	Tournament = mongoose.model('Tournament', TournamentSchema);
-}
+const Tournament = mongoose.models.Tournament || mongoose.model('Tournament', TournamentSchema);
 
 export default Tournament;
