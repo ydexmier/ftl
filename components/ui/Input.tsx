@@ -18,7 +18,7 @@ export function Input({ label, fullWidth, className, id, ...props }: InputProps)
 			<input
 				id={inputId}
 				className={cn(
-					'h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm text-foreground placeholder:text-muted-foreground',
+					'h-9 rounded-md border border-white/25 bg-card px-3 py-1 text-sm text-foreground placeholder:text-muted-foreground',
 					'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
 					'disabled:opacity-50 disabled:cursor-not-allowed',
 					fullWidth && 'w-full',
