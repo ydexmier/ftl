@@ -25,7 +25,7 @@ export function Select({ label, options, fullWidth, placeholder, className, id, 
 			<select
 				id={selectId}
 				className={cn(
-					'h-9 rounded-md border border-input bg-card px-3 py-1 text-sm text-foreground',
+					'h-9 rounded-md border border-white/25 bg-card px-3 py-1 text-sm text-foreground',
 					'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
 					'disabled:opacity-50 disabled:cursor-not-allowed',
 					fullWidth && 'w-full',
