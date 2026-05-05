@@ -12,7 +12,7 @@ const RoundHeader = ({ updatedAt, onRefresh }: RoundHeaderProps) => (
 			defaultLabel="MAJ Round"
 			onFetch={onRefresh}
 			refreshDelay={60}
-			lastUpdate={updatedAt as unknown as null}
+			lastUpdate={updatedAt}
 		/>
 	</div>
 );

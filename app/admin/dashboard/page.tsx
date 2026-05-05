@@ -2,13 +2,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
-import { Box, Button, Container, Typography, Paper, Alert } from '@mui/material';
-import TournamentGrid from '@components/admin/TournamentsGrid';
+import { Button } from '@components/ui/Button';
+import { Alert } from '@components/ui/Alert';
+import { Spinner } from '@components/ui/Spinner';
+import TournamentsGrid from '@components/admin/TournamentsGrid';
 import FetchTournamentForm from '@components/tournament/FetchTournamentForm';
+import type { Tournament } from '@/src/types/tournament';
 
 export default function DashboardPage() {
 	const router = useRouter();
-	const [tournaments, setTournaments] = useState([]);
+	const [tournaments, setTournaments] = useState<Tournament[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
@@ -37,35 +40,37 @@ export default function DashboardPage() {
 	}, []);
 
 	return (
-		<Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-			<Paper sx={{ p: 4, mb: 4 }}>
-				<Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-					<Typography variant="h4">Admin Dashboard</Typography>
-					<Button variant="contained" color="error" onClick={handleLogout}>
+		<div className="max-w-5xl mx-auto flex flex-col gap-6">
+			<div className="bg-card border border-border rounded-xl p-6">
+				<div className="flex items-center justify-between mb-6">
+					<h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+					<Button variant="destructive" onClick={handleLogout}>
 						Déconnexion
 					</Button>
-				</Box>
+				</div>
 
-				<Paper sx={{ p: 3, mb: 4 }} elevation={2}>
-					<Typography variant="h6" gutterBottom>
-						Récupérer un tournoi
-					</Typography>
+				<div className="bg-background border border-border rounded-lg p-4 mb-4">
+					<h2 className="text-base font-semibold text-foreground mb-3">Récupérer un tournoi</h2>
 					<FetchTournamentForm
-						onValidate={(id: number) => !tournaments.some((t: { id: number }) => t.id === id)}
+						onValidate={(id: number) => !tournaments.some((t) => t.id === id)}
 						onSubmitCallback={(data: { id: number }) => router.push(`/admin/tournaments/${data.id}`)}
 					/>
-				</Paper>
+				</div>
 
-				<Paper sx={{ p: 3 }} elevation={2}>
-					<Typography variant="h6" gutterBottom>
-						Tournois stockés
-					</Typography>
-					{loading && <Typography>Chargement...</Typography>}
+				<div className="bg-background border border-border rounded-lg p-4">
+					<h2 className="text-base font-semibold text-foreground mb-3">Tournois stockés</h2>
+					{loading && (
+						<div className="flex justify-center py-6">
+							<Spinner size="md" />
+						</div>
+					)}
 					{error && <Alert severity="error">{error}</Alert>}
-					{!loading && tournaments.length === 0 && <Typography>Aucun tournoi trouvé</Typography>}
-					<TournamentGrid tournaments={tournaments} />
-				</Paper>
-			</Paper>
-		</Container>
+					{!loading && tournaments.length === 0 && (
+						<p className="text-sm text-muted-foreground">Aucun tournoi trouvé</p>
+					)}
+					<TournamentsGrid tournaments={tournaments} />
+				</div>
+			</div>
+		</div>
 	);
 }
