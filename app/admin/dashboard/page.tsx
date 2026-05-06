@@ -1,7 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Cookies from 'js-cookie';
 import { Button } from '@components/ui/Button';
 import { Alert } from '@components/ui/Alert';
 import { Spinner } from '@components/ui/Spinner';
@@ -15,10 +14,7 @@ export default function DashboardPage() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 
-	const handleLogout = () => {
-		Cookies.remove('adminAuth');
-		router.push('/admin/login');
-	};
+	const handleLogout = async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/login'); };
 
 	const fetchTournaments = async () => {
 		setLoading(true);
