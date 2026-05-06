@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Swords, ShieldCheck } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Swords, ShieldCheck, LogOut } from 'lucide-react';
 import { cn } from './cn';
 
 const navLinks = [
@@ -11,6 +11,12 @@ const navLinks = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
+	const router = useRouter();
+
+	const logout = async () => {
+		await fetch('/api/auth/logout', { method: 'POST' });
+		router.push('/login');
+	};
 
 	return (
 		<>
@@ -50,6 +56,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					>
 						<ShieldCheck className="h-5 w-5" />
 					</Link>
+
+					<button
+						onClick={logout}
+						className="text-muted-foreground hover:text-destructive hover:bg-accent p-2 rounded-md transition-colors"
+						aria-label="Déconnexion"
+					>
+						<LogOut className="h-5 w-5" />
+					</button>
 				</div>
 			</header>
 
