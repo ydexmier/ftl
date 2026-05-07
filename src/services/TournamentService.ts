@@ -10,13 +10,7 @@ export const TournamentService = {
 		const raw = await RavensburgerClient.fetchTournament(id);
 		if (raw?.id !== id) throw new Error('Fetch failed: id mismatch');
 
-		const tournament = await TournamentRepository.mergeAndSave(raw as Record<string, unknown>, isRefetch);
-
-		if (!isRefetch) {
-			await TournamentPlayersDeckRepository.upsert(id, []);
-		}
-
-		return tournament;
+		return TournamentRepository.mergeAndSave(raw as Record<string, unknown>, isRefetch);
 	},
 
 	async getAll() {

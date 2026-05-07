@@ -11,21 +11,24 @@ const PlayerSchema = new mongoose.Schema(
 	{ _id: false },
 );
 
-// Schema principal
+// Schema principal — scoped par groupId (groupe) OU userId (personnel)
 const TournamentPlayersDeckSchema = new mongoose.Schema(
 	{
-		tournamentId: { type: Number, unique: true },
+		tournamentId: { type: Number, required: true },
+		groupId: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', default: null },
+		userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
 		players: [PlayerSchema],
 	},
 	{ timestamps: true },
 );
-TournamentPlayersDeckSchema.index({ tournamentId: 1 });
-// ⚡ autoIndex en dev
+
+// Index de recherche rapide par scope
+TournamentPlayersDeckSchema.index({ tournamentId: 1, groupId: 1, userId: 1 });
+
 if (process.env.NODE_ENV === 'development') {
 	TournamentPlayersDeckSchema.set('autoIndex', true);
 }
 
-// Compile le modèle (sécurisé pour éviter double compilation)
 const TournamentPlayersDeck =
 	mongoose.models.TournamentPlayersDeck || mongoose.model('TournamentPlayersDeck', TournamentPlayersDeckSchema);
 

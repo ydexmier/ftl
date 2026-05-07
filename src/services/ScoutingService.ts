@@ -1,12 +1,12 @@
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
-import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import { TournamentPlayersDeckRepository, type DeckScope } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
 
 export type { PlayerDecksEntry, PlayersDecksMap, DeckAssignment } from '@/src/domain/rules/scoutingRules';
 export { getPlayerDecksInk, getMatchPlayerInks, mergePlayersDecks } from '@/src/domain/rules/scoutingRules';
 
 export const ScoutingService = {
-	async assignDecks(roundId: number, matchId: number, assignments: DeckAssignment[]) {
+	async assignDecks(roundId: number, matchId: number, assignments: DeckAssignment[], scope: DeckScope) {
 		const round = await RoundRepository.findById(roundId);
 		if (!round) throw new Error('Round not found');
 
@@ -26,6 +26,7 @@ export const ScoutingService = {
 		const playersModified = await TournamentPlayersDeckRepository.assignDecks(
 			round.tournamentId,
 			fullAssignments,
+			scope,
 		);
 
 		return { matchs: round.results, playersDecks: { players: playersModified } };
