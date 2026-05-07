@@ -6,12 +6,12 @@ export interface AssignDecksResult {
 	playersDecks: PlayersDecksMap;
 }
 
-export function useDeckAssignment(roundId: number) {
+export function useDeckAssignment(roundId: number, groupId?: string | null) {
 	const assignDecks = async (matchId: number, assignments: DeckAssignment[]): Promise<AssignDecksResult> => {
 		const response = await fetch(`/api/rounds/${roundId}/matchs/${matchId}/assign_deck`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ decks: assignments }),
+			body: JSON.stringify({ decks: assignments, groupId: groupId ?? null }),
 		});
 		if (!response.ok) throw new Error('Network error');
 		return response.json();

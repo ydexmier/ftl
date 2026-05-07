@@ -2,6 +2,7 @@ import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
 import { RavensburgerClient } from '@/src/repositories/external/RavensburgerClient';
 import { FETCH_ALL_ASYNC } from '@/src/lib/constants';
+import type { DeckScope } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 
 const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
@@ -14,7 +15,7 @@ export interface FetchRoundOptions {
 }
 
 export const RoundService = {
-	async fetchAndSave(tournamentId: number, roundId: number, options: FetchRoundOptions = {}) {
+	async fetchAndSave(tournamentId: number, roundId: number, options: FetchRoundOptions = {}, scope: DeckScope) {
 		const { page = 1, perPage = 10, search = '', mode, excludeOnePlayerMatches = false } = options;
 
 		const tournament = await TournamentRepository.findById(tournamentId);
@@ -51,16 +52,16 @@ export const RoundService = {
 			perPage: Number(perPage),
 			search,
 			excludeOnePlayer: excludeOnePlayerMatches,
-		});
+		}, scope);
 	},
 
-	async getMatchesPaginated(roundId: number, options: FetchRoundOptions = {}) {
+	async getMatchesPaginated(roundId: number, options: FetchRoundOptions = {}, scope: DeckScope) {
 		const data = await RoundRepository.findMatchesPaginated(roundId, {
 			page: options.page,
 			perPage: options.perPage,
 			search: options.search,
 			excludeOnePlayer: options.excludeOnePlayerMatches,
-		});
+		}, scope);
 		if (!data) throw new Error('ROUND_NOT_FOUND');
 		return data;
 	},

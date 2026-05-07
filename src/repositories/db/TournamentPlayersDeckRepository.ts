@@ -2,56 +2,75 @@ import TournamentPlayersDeck from '@models/TournamentPlayersDeck.js';
 import connectToMongoDB from '@/src/lib/db';
 import type { Deck } from '@/src/types/ink';
 
+// Exactly one of groupId or userId must be set
+export interface DeckScope {
+  groupId?: string | null;
+  userId?: string | null;
+}
+
+function scopeQuery(scope: DeckScope) {
+  return {
+    groupId: scope.groupId ?? null,
+    userId: scope.userId ?? null,
+  };
+}
+
 export const TournamentPlayersDeckRepository = {
-	async findByTournamentId(tournamentId: number) {
-		await connectToMongoDB();
-		return TournamentPlayersDeck.findOne({ tournamentId });
-	},
+  async findByScope(tournamentId: number, scope: DeckScope) {
+    await connectToMongoDB();
+    return TournamentPlayersDeck.findOne({ tournamentId, ...scopeQuery(scope) }).lean();
+  },
 
-	async upsert(tournamentId: number, players: unknown[] = []) {
-		await connectToMongoDB();
-		return TournamentPlayersDeck.findOneAndUpdate(
-			{ tournamentId },
-			{ tournamentId, players },
-			{ new: true, upsert: true },
-		);
-	},
+  async upsert(tournamentId: number, players: unknown[], scope: DeckScope) {
+    await connectToMongoDB();
+    const query = { tournamentId, ...scopeQuery(scope) };
+    return TournamentPlayersDeck.findOneAndUpdate(
+      query,
+      { ...query, players },
+      { new: true, upsert: true },
+    );
+  },
 
-	async deleteMany(tournamentId: number) {
-		await connectToMongoDB();
-		return TournamentPlayersDeck.deleteMany({ tournamentId });
-	},
+  async deleteMany(tournamentId: number) {
+    await connectToMongoDB();
+    return TournamentPlayersDeck.deleteMany({ tournamentId });
+  },
 
-	async assignDecks(
-		tournamentId: number,
-		assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
-	) {
-		await connectToMongoDB();
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const doc = await TournamentPlayersDeck.findOne({ tournamentId }) as any;
-		if (!doc) throw new Error(`TournamentPlayersDeck not found for tournament ${tournamentId}`);
+  async assignDecks(
+    tournamentId: number,
+    assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
+    scope: DeckScope,
+  ) {
+    await connectToMongoDB();
+    const query = { tournamentId, ...scopeQuery(scope) };
 
-		const modified: unknown[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let doc = await TournamentPlayersDeck.findOne(query) as any;
+    if (!doc) {
+      doc = await TournamentPlayersDeck.create({ ...query, players: [] });
+    }
 
-		for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
-			const idx = doc.players.findIndex((p: { playerId: number }) => p.playerId === playerId);
+    const modified: unknown[] = [];
 
-			if (idx !== -1) {
-				if (!decks || decks.length === 0) {
-					doc.players.splice(idx, 1);
-					doc.markModified('players');
-					modified.push({ playerId, decks });
-				} else {
-					doc.set(`players.${idx}.decks`, decks);
-					modified.push({ ...doc.players[idx].toObject(), decks });
-				}
-			} else if (decks.length > 0) {
-				doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
-				modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
-			}
-		}
+    for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
+      const idx = doc.players.findIndex((p: { playerId: number }) => p.playerId === playerId);
 
-		await doc.save();
-		return modified;
-	},
+      if (idx !== -1) {
+        if (!decks || decks.length === 0) {
+          doc.players.splice(idx, 1);
+          doc.markModified('players');
+          modified.push({ playerId, decks });
+        } else {
+          doc.set(`players.${idx}.decks`, decks);
+          modified.push({ ...doc.players[idx].toObject(), decks });
+        }
+      } else if (decks.length > 0) {
+        doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
+        modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
+      }
+    }
+
+    await doc.save();
+    return modified;
+  },
 };

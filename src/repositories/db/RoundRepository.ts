@@ -3,6 +3,7 @@ import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
 import type { Match } from '@/src/types/match';
 import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
+import { TournamentPlayersDeckRepository, type DeckScope } from './TournamentPlayersDeckRepository';
 
 export interface RoundDocument {
 	id: number;
@@ -26,9 +27,12 @@ export const RoundRepository = {
 		return Round.findOne({ id }).lean() as Promise<RoundDocument | null>;
 	},
 
-	async findByIdWithDecks(id: number): Promise<RoundDocument | null> {
+	async findByIdWithDecks(id: number, scope: DeckScope): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).populate('playersDecks').lean() as Promise<RoundDocument | null>;
+		const round = (await Round.findOne({ id }).lean()) as RoundDocument | null;
+		if (!round) return null;
+		const playersDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
+		return { ...round, playersDecks: (playersDecks as PlayersDecksMap | null) ?? null };
 	},
 
 	async upsert(data: Record<string, unknown>) {
@@ -41,11 +45,11 @@ export const RoundRepository = {
 		return Round.deleteMany({ tournamentId });
 	},
 
-	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}) {
+	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}, scope: DeckScope) {
 		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
 		await connectToMongoDB();
 
-		const round = (await Round.findOne({ id: roundId }).populate('playersDecks').lean()) as RoundDocument | null;
+		const round = (await Round.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
@@ -77,7 +81,8 @@ export const RoundRepository = {
 			(match.player_match_relationships ?? []).map((pmr) => pmr.player?.id).filter(Boolean),
 		);
 
-		const playersDecks = round.playersDecks ?? null;
+		const rawDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
+		const playersDecks = rawDecks as PlayersDecksMap | null;
 		const filteredPlayersDecks =
 			playersDecks && playersDecks.players
 				? {
@@ -123,6 +128,6 @@ export const RoundRepository = {
 		} else {
 			await Round.create({ ...newData, id, tournamentId });
 		}
-		return Round.findOne({ id }).populate('playersDecks').lean();
+		return Round.findOne({ id }).lean();
 	},
 };

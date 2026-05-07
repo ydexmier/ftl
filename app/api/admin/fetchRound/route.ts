@@ -8,7 +8,8 @@ export async function POST(request: NextRequest) {
 	if (!roundId) return NextResponse.json({ error: 'RoundId requis' }, { status: 400 });
 
 	try {
-		const datas = await RoundService.fetchAndSave(Number(tournamentId), Number(roundId), options);
+		// Admin fetch: no user scope — decks are empty until scouted in context (group or personal)
+		const datas = await RoundService.fetchAndSave(Number(tournamentId), Number(roundId), options, { groupId: null, userId: null });
 		return NextResponse.json({ message: 'Round récupéré !', datas });
 	} catch (err) {
 		console.error('Erreur fetchAndSaveRound:', err);

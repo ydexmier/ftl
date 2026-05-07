@@ -34,5 +34,7 @@ export interface PlayerDeck {
 
 export interface TournamentPlayersDeck {
 	tournamentId: number;
+	groupId?: string | null;
+	userId?: string | null;
 	players: PlayerDeck[];
 }
