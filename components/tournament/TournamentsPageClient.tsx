@@ -135,19 +135,17 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
     <div className="flex flex-col gap-10 mt-6">
 
       {/* ── Section 1 : Tous les tournois ── */}
-      <section>
-        <SectionHeader
-          icon={Globe}
-          title="Tous les tournois"
-          count={publicTournaments.length}
-          subtitle="Scooting personnel, visible uniquement par vous."
-        />
-        <FetchTournamentForm
-          onSubmitCallback={(data) => router.push(`/tournaments/${data.id}`)}
-        />
-        {publicTournaments.length === 0 ? (
-          <EmptyState text="Aucun tournoi disponible pour le moment." />
-        ) : (
+      {publicTournaments.length > 0 && (
+        <section>
+          <SectionHeader
+            icon={Globe}
+            title="Tous les tournois"
+            count={publicTournaments.length}
+            subtitle="Scooting personnel, visible uniquement par vous."
+          />
+          <FetchTournamentForm
+            onSubmitCallback={(data) => router.push(`/tournaments/${data.id}`)}
+          />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {publicTournaments.map((t) => (
               <Link key={t.id} href={`/tournaments/${t.id}`} className="block">
@@ -155,8 +153,8 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
               </Link>
             ))}
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* ── Section 2 : Par groupe ── */}
       {groupSections.length > 0 && (
