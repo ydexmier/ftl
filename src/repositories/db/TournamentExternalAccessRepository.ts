@@ -25,6 +25,15 @@ export const TournamentExternalAccessRepository = {
     }).lean();
   },
 
+  async findAcceptedByUser(userId: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.find({
+      userId,
+      status: 'ACCEPTED',
+      expiresAt: { $gt: new Date() },
+    }).lean();
+  },
+
   async findPendingByUser(userId: string) {
     await connectToMongoDB();
     return TournamentExternalAccessModel.find({
