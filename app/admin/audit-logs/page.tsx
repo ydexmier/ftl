@@ -41,6 +41,7 @@ const ACTION_STYLES: Record<AuditAction, string> = {
 	LOGIN_FAIL: 'bg-destructive/15 text-destructive border-destructive/30',
 	LOGOUT: 'bg-muted text-muted-foreground border-border',
 	USER_CREATED: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+	USER_UPDATED: 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30',
 	USER_DELETED: 'bg-destructive/15 text-destructive border-destructive/30',
 	PASSWORD_CHANGED: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
 	ADMIN_ACTION: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
