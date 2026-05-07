@@ -1,6 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-export type AuditAction = 'LOGIN_SUCCESS' | 'LOGIN_FAIL' | 'LOGOUT' | 'USER_CREATED' | 'USER_DELETED' | 'PASSWORD_CHANGED' | 'ADMIN_ACTION';
+export type AuditAction = 'LOGIN_SUCCESS' | 'LOGIN_FAIL' | 'LOGOUT' | 'USER_CREATED' | 'USER_UPDATED' | 'USER_DELETED' | 'PASSWORD_CHANGED' | 'ADMIN_ACTION';
 
 export interface IAuditLog extends Document {
   action: AuditAction;
