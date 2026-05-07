@@ -27,7 +27,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 						className="flex items-center gap-2 font-bold text-xl tracking-tight text-foreground shrink-0"
 					>
 						<Swords className="h-5 w-5" />
-						FTL
+						Companion
 					</Link>
 
 					<nav className="flex items-center gap-1">
@@ -67,9 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				</div>
 			</header>
 
-			<main className="max-w-7xl mx-auto px-4 py-6">
-				{children}
-			</main>
+			<main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
 		</>
 	);
 }

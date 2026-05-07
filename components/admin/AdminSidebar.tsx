@@ -35,11 +35,19 @@ function NavItems({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 	);
 }
 
-function SidebarContent({ pathname, onNavigate, onLogout }: { pathname: string; onNavigate?: () => void; onLogout: () => void }) {
+function SidebarContent({
+	pathname,
+	onNavigate,
+	onLogout,
+}: {
+	pathname: string;
+	onNavigate?: () => void;
+	onLogout: () => void;
+}) {
 	return (
 		<div className="flex flex-col h-full border-r border-border bg-card">
 			<div className="h-14 flex items-center px-5 border-b border-border shrink-0">
-				<span className="font-bold text-foreground tracking-tight">FTL Admin</span>
+				<span className="font-bold text-foreground tracking-tight">Companion Admin</span>
 			</div>
 			<NavItems pathname={pathname} onNavigate={onNavigate} />
 			<div className="p-3 border-t border-border shrink-0">
@@ -81,16 +89,13 @@ export function AdminSidebar() {
 				>
 					<Menu className="h-5 w-5" />
 				</button>
-				<span className="ml-3 font-bold text-foreground">FTL Admin</span>
+				<span className="ml-3 font-bold text-foreground">Companion Admin</span>
 			</header>
 
 			{/* Mobile drawer */}
 			{mobileOpen && (
 				<>
-					<div
-						className="lg:hidden fixed inset-0 bg-black/50 z-40"
-						onClick={() => setMobileOpen(false)}
-					/>
+					<div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setMobileOpen(false)} />
 					<aside className="lg:hidden fixed inset-y-0 left-0 w-60 z-50">
 						<div className="absolute top-3 right-3 z-10">
 							<button
@@ -101,11 +106,7 @@ export function AdminSidebar() {
 								<X className="h-4 w-4" />
 							</button>
 						</div>
-						<SidebarContent
-							pathname={pathname}
-							onNavigate={() => setMobileOpen(false)}
-							onLogout={logout}
-						/>
+						<SidebarContent pathname={pathname} onNavigate={() => setMobileOpen(false)} onLogout={logout} />
 					</aside>
 				</>
 			)}
