@@ -7,6 +7,7 @@ import { cn } from './cn';
 const navLinks = [
 	{ href: '/', label: 'Accueil' },
 	{ href: '/tournaments', label: 'Tournois' },
+	{ href: '/groups', label: 'Groupes' },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {
