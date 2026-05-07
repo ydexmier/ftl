@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Globe, Users, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { Globe, Users, UserCheck, ChevronDown, ChevronRight, UserRoundPlus } from 'lucide-react';
 import TournamentCard from './TournamentCard';
 import FetchTournamentForm from './FetchTournamentForm';
+import { GroupAssignPopover } from './GroupAssignPopover';
 
 interface TournamentSummary {
   id: number;
@@ -30,10 +31,17 @@ interface InvitedEntry {
   tournament: TournamentSummary;
 }
 
+interface AdminGroup {
+  groupId: string;
+  groupName: string;
+}
+
 interface Props {
   publicTournaments: TournamentSummary[];
   groupSections: GroupSection[];
   invitedTournaments: InvitedEntry[];
+  adminGroups?: AdminGroup[];
+  initialAssignments?: Record<number, string[]>;
 }
 
 function CollapsibleSection({
@@ -79,7 +87,6 @@ function CollapsibleSection({
           <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
       </button>
-
       {open && <div className="p-5 bg-background/50">{children}</div>}
     </section>
   );
@@ -116,7 +123,6 @@ function GroupSubSection({ section }: { section: GroupSection }) {
           )}
         </div>
       </button>
-
       {open && (
         <div className="p-4">
           {section.tournaments.length === 0 ? (
@@ -126,11 +132,7 @@ function GroupSubSection({ section }: { section: GroupSection }) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {section.tournaments.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/tournaments/${t.id}?groupId=${section.groupId}`}
-                  className="block"
-                >
+                <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
                   <TournamentCard tournament={t as never} contextLabel={section.groupName} />
                 </Link>
               ))}
@@ -142,8 +144,55 @@ function GroupSubSection({ section }: { section: GroupSection }) {
   );
 }
 
-export function TournamentsPageClient({ publicTournaments, groupSections, invitedTournaments }: Props) {
+export function TournamentsPageClient({
+  publicTournaments,
+  groupSections,
+  invitedTournaments,
+  adminGroups = [],
+  initialAssignments = {},
+}: Props) {
   const router = useRouter();
+  const [assignments, setAssignments] = useState<Record<number, string[]>>(initialAssignments);
+  const [openPopover, setOpenPopover] = useState<number | null>(null);
+
+  const getAssignedGroups = (tournamentId: number): AdminGroup[] => {
+    const ids = assignments[tournamentId] ?? [];
+    return adminGroups.filter((g) => ids.includes(g.groupId));
+  };
+
+  const handleToggleGroup = async (tournamentId: number, groupId: string, assign: boolean) => {
+    // Optimistic update
+    setAssignments((prev) => ({
+      ...prev,
+      [tournamentId]: assign
+        ? [...(prev[tournamentId] ?? []), groupId]
+        : (prev[tournamentId] ?? []).filter((id) => id !== groupId),
+    }));
+
+    try {
+      if (assign) {
+        const res = await fetch(`/api/groups/${groupId}/tournaments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tournamentId }),
+        });
+        if (!res.ok) throw new Error();
+      } else {
+        const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) throw new Error();
+      }
+    } catch {
+      // Revert on error
+      setAssignments((prev) => ({
+        ...prev,
+        [tournamentId]: assign
+          ? (prev[tournamentId] ?? []).filter((id) => id !== groupId)
+          : [...(prev[tournamentId] ?? []), groupId],
+      }));
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 mt-6">
@@ -162,11 +211,49 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
           subtitle="Scooting personnel, visible uniquement par vous."
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {publicTournaments.map((t) => (
-              <Link key={t.id} href={`/tournaments/${t.id}`} className="block">
-                <TournamentCard tournament={t as never} />
-              </Link>
-            ))}
+            {publicTournaments.map((t) => {
+              const assignedGroups = getAssignedGroups(t.id);
+              const hasAdminGroups = adminGroups.length > 0;
+              return (
+                <div key={t.id} className="relative group/card">
+                  <Link href={`/tournaments/${t.id}`} className="block">
+                    <TournamentCard
+                      tournament={t as never}
+                      assignedGroups={assignedGroups}
+                    />
+                  </Link>
+
+                  {hasAdminGroups && (
+                    <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOpenPopover((p) => (p === t.id ? null : t.id));
+                      }}
+                      title="Associer à un groupe"
+                      className={`absolute bottom-3 right-3 h-7 w-7 rounded-md border border-border bg-card flex items-center justify-center transition-all hover:bg-accent z-10 ${
+                        assignedGroups.length > 0
+                          ? 'opacity-100 border-primary/50 text-primary'
+                          : 'opacity-0 group-hover/card:opacity-100 text-muted-foreground'
+                      }`}
+                    >
+                      <UserRoundPlus className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+
+                  {openPopover === t.id && (
+                    <GroupAssignPopover
+                      tournamentId={t.id}
+                      adminGroups={adminGroups}
+                      assignedGroupIds={assignments[t.id] ?? []}
+                      onToggle={(groupId, assign) => handleToggleGroup(t.id, groupId, assign)}
+                      onClose={() => setOpenPopover(null)}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </CollapsibleSection>
       )}

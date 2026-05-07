@@ -75,11 +75,25 @@ export default async function TournamentsPage() {
     }),
   );
 
+  const adminGroups = groupSections
+    .filter((s) => s.myRole === 'ADMIN')
+    .map((s) => ({ groupId: s.groupId, groupName: s.groupName }));
+
+  const initialAssignments: Record<number, string[]> = {};
+  for (const section of groupSections) {
+    for (const t of section.tournaments) {
+      if (!initialAssignments[t.id]) initialAssignments[t.id] = [];
+      initialAssignments[t.id].push(section.groupId);
+    }
+  }
+
   return (
     <TournamentsPageClient
       publicTournaments={publicTournaments}
       groupSections={groupSections.filter((s) => s.tournaments.length > 0 || groups.length > 0)}
       invitedTournaments={invitedTournaments.filter((i): i is typeof i & { tournament: NonNullable<typeof i.tournament> } => i.tournament !== null)}
+      adminGroups={adminGroups}
+      initialAssignments={initialAssignments}
     />
   );
 }
