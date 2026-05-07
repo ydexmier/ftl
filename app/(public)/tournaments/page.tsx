@@ -11,10 +11,13 @@ function serializeTournament(t: Tournament) {
   return {
     id: t.id,
     name: t.name,
-    full_header_image_url: t.full_header_image_url,
     start_datetime: t.start_datetime,
+    end_datetime: t.end_datetime ?? null,
     event_status: t.event_status,
+    registered_user_count: t.registered_user_count ?? 0,
+    capacity: t.capacity ?? 0,
     store: t.store ? { name: t.store.name } : null,
+    gameplay_format: t.gameplay_format ? { id: t.gameplay_format.id, name: t.gameplay_format.name } : null,
   };
 }
 

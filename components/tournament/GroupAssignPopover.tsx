@@ -9,14 +9,13 @@ interface AdminGroup {
 }
 
 interface Props {
-  tournamentId: number;
   adminGroups: AdminGroup[];
   assignedGroupIds: string[];
   onToggle: (groupId: string, assign: boolean) => Promise<void>;
   onClose: () => void;
 }
 
-export function GroupAssignPopover({ tournamentId, adminGroups, assignedGroupIds, onToggle, onClose }: Props) {
+export function GroupAssignPopover({ adminGroups, assignedGroupIds, onToggle, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -40,7 +39,7 @@ export function GroupAssignPopover({ tournamentId, adminGroups, assignedGroupIds
   return (
     <div
       ref={ref}
-      className="absolute bottom-full right-0 mb-2 z-50 bg-card border border-border rounded-lg shadow-xl py-1.5 min-w-48 w-max"
+      className="absolute bottom-full right-0 mb-1.5 z-50 bg-card border border-border rounded-lg shadow-xl py-1.5 min-w-48 w-max"
     >
       <p className="text-xs font-medium text-muted-foreground px-3 py-1">
         Associer à un groupe
