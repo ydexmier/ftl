@@ -1,25 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { GroupService } from '@/src/services/GroupService';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 type Params = { params: Promise<{ accessId: string }> };
 
 export async function PUT(request: NextRequest, { params }: Params) {
   const auth = await getAuthSession(request);
-  if (!auth) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!auth) return ApiResponse.unauthorized();
 
   try {
     const { accessId } = await params;
     const { status } = await request.json();
     if (status !== 'ACCEPTED' && status !== 'REJECTED') {
-      return NextResponse.json({ error: 'Statut invalide (ACCEPTED ou REJECTED)' }, { status: 400 });
+      return ApiResponse.badRequest('Statut invalide (ACCEPTED ou REJECTED)');
     }
     const result = await GroupService.respondToExternalAccess(accessId, auth.userId, status);
-    return NextResponse.json(result);
+    return ApiResponse.ok(result);
   } catch (err) {
     const msg = (err as Error).message;
-    if (msg === 'NOT_FOUND') return NextResponse.json({ error: 'Accès introuvable' }, { status: 404 });
-    if (msg === 'FORBIDDEN') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    return NextResponse.json({ error: msg }, { status: 400 });
+    if (msg === 'NOT_FOUND') return ApiResponse.notFound('Accès introuvable');
+    if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
+    return ApiResponse.badRequest(msg);
   }
 }

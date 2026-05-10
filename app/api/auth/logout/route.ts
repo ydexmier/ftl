@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import AuditLogModel from '@models/AuditLog';
 import { invalidateSession } from '@/src/lib/auth/session';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function POST(request: NextRequest) {
   const val = request.cookies.get('session')?.value;
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
       await AuditLogModel.create({ action: 'LOGOUT', ipAddress: 'unknown', userAgent: request.headers.get('user-agent') ?? '' });
     }
   }
-  const res = NextResponse.json({ ok: true });
+  const res = ApiResponse.ok({ ok: true });
   res.cookies.set('session', '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

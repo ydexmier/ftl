@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { TournamentService } from '@/src/services/TournamentService';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function POST(request: NextRequest) {
 	const { tournamentId, isRefetch } = await request.json();
 
-	if (!tournamentId) return NextResponse.json({ error: 'TournamentId requis' }, { status: 400 });
+	if (!tournamentId) return ApiResponse.badRequest('TournamentId requis');
 
 	try {
 		const datas = await TournamentService.fetchAndSave(Number(tournamentId), isRefetch);
-		return NextResponse.json({ message: 'Tournoi récupéré !', datas });
+		return ApiResponse.ok({ message: 'Tournoi récupéré !', datas });
 	} catch (err) {
-		console.error('Erreur fetchAndSaveTournament:', err);
-		return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+		return ApiResponse.serverError(err);
 	}
 }

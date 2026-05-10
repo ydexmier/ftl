@@ -114,7 +114,6 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 			dataToSend.combination2 = combination2;
 		}
 		onValidate(dataToSend);
-		onClose();
 	};
 
 	const getPlayerNameById = (id: number | null) => {

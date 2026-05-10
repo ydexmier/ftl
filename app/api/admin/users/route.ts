@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
 import AuditLogModel from '@models/AuditLog';
@@ -7,6 +7,7 @@ import { getSession } from '@/src/lib/auth/session';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
 import { hasRole } from '@/src/lib/auth/rbac';
 import type { UserRole } from '@models/User';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 async function getAdminSession(request: NextRequest) {
   const val = request.cookies.get('session')?.value;
@@ -21,7 +22,7 @@ async function getAdminSession(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const auth = await getAdminSession(request);
-  if (!auth) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!auth) return ApiResponse.unauthorized();
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     UserModel.countDocuments(query),
   ]);
 
-  return NextResponse.json({
+  return ApiResponse.ok({
     users: users.map((u) => ({ ...u, _id: String(u._id) })),
     total,
     pages: Math.ceil(total / limit),
@@ -58,22 +59,22 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const auth = await getAdminSession(request);
-  if (!auth) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!auth) return ApiResponse.unauthorized();
 
   const { username, email, password, role = 'USER' } = await request.json();
 
   const check = validatePasswordStrength(password ?? '');
-  if (!check.valid) return NextResponse.json({ error: check.message }, { status: 400 });
+  if (!check.valid) return ApiResponse.badRequest(check.message!);
 
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
+    return ApiResponse.badRequest('Email invalide');
   }
 
   if (await UserModel.findOne({ username: username?.toLowerCase() })) {
-    return NextResponse.json({ error: 'Ce nom d\'utilisateur est déjà pris' }, { status: 409 });
+    return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
   }
   if (await UserModel.findOne({ email: email?.toLowerCase() })) {
-    return NextResponse.json({ error: 'Cet email est déjà utilisé' }, { status: 409 });
+    return ApiResponse.conflict('Cet email est déjà utilisé');
   }
 
   const passwordHash = await hashPassword(password);
@@ -92,8 +93,5 @@ export async function POST(request: NextRequest) {
     metadata: { createdUsername: username, createdRole: role },
   });
 
-  return NextResponse.json(
-    { id: String(user._id), username: user.username, email: user.email, role: user.role },
-    { status: 201 },
-  );
+  return ApiResponse.created({ id: String(user._id), username: user.username, email: user.email, role: user.role });
 }

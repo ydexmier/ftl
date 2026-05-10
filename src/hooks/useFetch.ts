@@ -1,4 +1,5 @@
 import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { apiFetch, ApiError } from '@/src/lib/api/apiFetch';
 
 export interface UseFetchResult<T> {
 	data: T | null;
@@ -18,13 +19,15 @@ export function useFetch<T>(url: string | null): UseFetchResult<T> {
 			setLoading(true);
 			setError(null);
 			try {
-				const response = await fetch(url);
-				const json = await response.json();
-				if (!response.ok) throw new Error(json.error);
-				setData(json);
+				const response = await apiFetch(url);
+				setData(await response.json());
 			} catch (err) {
 				setData(null);
-				setError(err instanceof Error ? err.message : 'Unknown error');
+				if (err instanceof ApiError) {
+					setError(err.message);
+				} else {
+					setError(err instanceof Error ? err.message : 'Unknown error');
+				}
 			} finally {
 				setLoading(false);
 			}

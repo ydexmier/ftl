@@ -47,7 +47,18 @@ export const TournamentPlayersDeckRepository = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let doc = await TournamentPlayersDeck.findOne(query) as any;
     if (!doc) {
-      doc = await TournamentPlayersDeck.create({ ...query, players: [] });
+      try {
+        doc = await TournamentPlayersDeck.create({ ...query, players: [] });
+      } catch (err: unknown) {
+        // MongoDB E11000: old unique index on tournamentId still exists from before group scoping.
+        // Drop it with: db.tournamentplayersdecks.dropIndex("tournamentId_1")
+        if ((err as { code?: number }).code === 11000) {
+          doc = await TournamentPlayersDeck.findOne({ tournamentId });
+          if (!doc) throw err;
+        } else {
+          throw err;
+        }
+      }
     }
 
     const modified: unknown[] = [];

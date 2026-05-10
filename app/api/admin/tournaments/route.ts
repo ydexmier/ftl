@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { TournamentService } from '@/src/services/TournamentService';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function DELETE(request: NextRequest) {
 	const { id } = await request.json();
-	if (!id) return NextResponse.json({ error: 'Tournament id requis' }, { status: 400 });
+	if (!id) return ApiResponse.badRequest('Tournament id requis');
 
 	try {
 		const result = await TournamentService.delete(Number(id));
-		return NextResponse.json({
+		return ApiResponse.ok({
 			message: `Tournament ${id} et ses données associées supprimés avec succès`,
 			...result,
 		});
 	} catch (err) {
 		const msg = (err as Error).message;
-		if (msg.includes('not found')) return NextResponse.json({ error: msg }, { status: 404 });
-		console.error('Erreur API tournaments:', err);
-		return NextResponse.json({ error: msg }, { status: 500 });
+		if (msg.includes('not found')) return ApiResponse.notFound(msg);
+		return ApiResponse.serverError(err);
 	}
 }
