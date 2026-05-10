@@ -1,32 +1,33 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { GroupService } from '@/src/services/GroupService';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 type Params = { params: Promise<{ id: string; tid: string }> };
 
 export async function GET(request: NextRequest, { params }: Params) {
   const auth = await getAuthSession(request);
-  if (!auth) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!auth) return ApiResponse.unauthorized();
 
   try {
     const { id, tid } = await params;
     const accesses = await GroupService.getExternalAccessList(id, auth.userId, Number(tid));
-    return NextResponse.json({ accesses });
+    return ApiResponse.ok({ accesses });
   } catch (err) {
     const msg = (err as Error).message;
-    if (msg === 'FORBIDDEN') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    return NextResponse.json({ error: msg }, { status: 500 });
+    if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
+    return ApiResponse.serverError(err);
   }
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
   const auth = await getAuthSession(request);
-  if (!auth) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!auth) return ApiResponse.unauthorized();
 
   try {
     const { id, tid } = await params;
     const { userId, expiresAt } = await request.json();
-    if (!userId) return NextResponse.json({ error: 'userId requis' }, { status: 400 });
+    if (!userId) return ApiResponse.badRequest('userId requis');
 
     const access = await GroupService.inviteExternal(
       id,
@@ -35,10 +36,10 @@ export async function POST(request: NextRequest, { params }: Params) {
       Number(tid),
       expiresAt ? new Date(expiresAt) : undefined,
     );
-    return NextResponse.json(access, { status: 201 });
+    return ApiResponse.created(access);
   } catch (err) {
     const msg = (err as Error).message;
-    if (msg === 'FORBIDDEN') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    return NextResponse.json({ error: msg }, { status: 400 });
+    if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
+    return ApiResponse.badRequest(msg);
   }
 }

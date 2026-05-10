@@ -6,6 +6,7 @@ import { verifyPassword } from '@/src/lib/auth/password';
 import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/src/lib/auth/rateLimit';
 import { signCookie } from '@/src/lib/auth/cookieSign';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 function getIp(req: NextRequest) {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
   const cookieValue = await signCookie(sessionId, user.role);
   await AuditLogModel.create({ action: 'LOGIN_SUCCESS', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
 
-  const res = NextResponse.json({ role: user.role });
+  const res = ApiResponse.ok({ role: user.role });
   res.cookies.set('session', cookieValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
