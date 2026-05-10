@@ -1,6 +1,7 @@
 import { render } from '@react-email/render';
 import { InvitationEmail } from './emails/InvitationEmail';
 import { WelcomeEmail } from './emails/WelcomeEmail';
+import { PasswordResetEmail } from './emails/PasswordResetEmail';
 
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companionlorcana.dev';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -32,4 +33,10 @@ export async function sendInvitationEmail(to: string, token: string) {
 export async function sendWelcomeEmail(to: string, username: string) {
   const html = await render(WelcomeEmail({ username, loginUrl: `${APP_URL}/login` }));
   await sendEmail(to, 'Bienvenue sur Companion Lorcana !', html);
+}
+
+export async function sendPasswordResetEmail(to: string, token: string) {
+  const link = `${APP_URL}/reset-password/${token}`;
+  const html = await render(PasswordResetEmail({ link }));
+  await sendEmail(to, 'Réinitialisation de ton mot de passe', html);
 }

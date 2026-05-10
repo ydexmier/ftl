@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
@@ -68,6 +69,9 @@ export default function LoginPage() {
 						<Button type="submit" variant="default" className="w-full mt-2" loading={loading}>
 							Se connecter
 						</Button>
+						<Link href="/forgot-password" className="text-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+							Mot de passe oublié ?
+						</Link>
 					</form>
 				</div>
 			</div>
