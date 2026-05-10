@@ -1,18 +1,15 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Globe, Users, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
-import TournamentCard from './TournamentCard';
+import TournamentCard, { type TournamentCardData } from './TournamentCard';
 import FetchTournamentForm from './FetchTournamentForm';
+import { GroupAssignPopover } from './GroupAssignPopover';
 
-interface TournamentSummary {
-  id: number;
-  name: string;
-  full_header_image_url: string;
-  start_datetime: string;
-  event_status: string;
-  store: { name: string } | null;
+interface TournamentSummary extends TournamentCardData {
+  // TournamentCardData already covers all fields needed
 }
 
 interface GroupSection {
@@ -30,10 +27,17 @@ interface InvitedEntry {
   tournament: TournamentSummary;
 }
 
+interface AdminGroup {
+  groupId: string;
+  groupName: string;
+}
+
 interface Props {
   publicTournaments: TournamentSummary[];
   groupSections: GroupSection[];
   invitedTournaments: InvitedEntry[];
+  adminGroups?: AdminGroup[];
+  initialAssignments?: Record<number, string[]>;
 }
 
 function CollapsibleSection({
@@ -79,7 +83,6 @@ function CollapsibleSection({
           <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
         )}
       </button>
-
       {open && <div className="p-5 bg-background/50">{children}</div>}
     </section>
   );
@@ -116,7 +119,6 @@ function GroupSubSection({ section }: { section: GroupSection }) {
           )}
         </div>
       </button>
-
       {open && (
         <div className="p-4">
           {section.tournaments.length === 0 ? (
@@ -126,12 +128,8 @@ function GroupSubSection({ section }: { section: GroupSection }) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {section.tournaments.map((t) => (
-                <Link
-                  key={t.id}
-                  href={`/tournaments/${t.id}?groupId=${section.groupId}`}
-                  className="block"
-                >
-                  <TournamentCard tournament={t as never} contextLabel={section.groupName} />
+                <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
+                  <TournamentCard tournament={t} contextLabel={section.groupName} />
                 </Link>
               ))}
             </div>
@@ -142,18 +140,136 @@ function GroupSubSection({ section }: { section: GroupSection }) {
   );
 }
 
-export function TournamentsPageClient({ publicTournaments, groupSections, invitedTournaments }: Props) {
+interface FlyingCard {
+  tournament: TournamentSummary;
+  fromRect: DOMRect;
+}
+
+export function TournamentsPageClient({
+  publicTournaments,
+  groupSections,
+  invitedTournaments,
+  adminGroups = [],
+  initialAssignments = {},
+}: Props) {
   const router = useRouter();
+  const [assignments, setAssignments] = useState<Record<number, string[]>>(initialAssignments);
+  const [openPopover, setOpenPopover] = useState<number | null>(null);
+  const [successId, setSuccessId] = useState<number | null>(null);
+  const [localGroupSections, setLocalGroupSections] = useState<GroupSection[]>(groupSections);
+  const [flyingCard, setFlyingCard] = useState<FlyingCard | null>(null);
+  const [isFlying, setIsFlying] = useState(false);
+  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
+    if (el) cardRefs.current.set(id, el);
+    else cardRefs.current.delete(id);
+  }, []);
+
+  const getAssignedGroups = (tournamentId: number): AdminGroup[] => {
+    const ids = assignments[tournamentId] ?? [];
+    return adminGroups.filter((g) => ids.includes(g.groupId));
+  };
+
+  const handleToggleGroup = async (tournamentId: number, groupId: string, assign: boolean) => {
+    setAssignments((prev) => ({
+      ...prev,
+      [tournamentId]: assign
+        ? [...(prev[tournamentId] ?? []), groupId]
+        : (prev[tournamentId] ?? []).filter((id) => id !== groupId),
+    }));
+
+    if (assign) {
+      // Show success on button
+      setSuccessId(tournamentId);
+      setOpenPopover(null);
+
+      // Start ghost card animation after a short delay
+      const cardEl = cardRefs.current.get(tournamentId);
+      if (cardEl) {
+        const fromRect = cardEl.getBoundingClientRect();
+        const tournament = publicTournaments.find((t) => t.id === tournamentId);
+        if (tournament) {
+          setFlyingCard({ tournament, fromRect });
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              setIsFlying(true);
+            });
+          });
+
+          // After animation: update local sections + clear ghost
+          setTimeout(() => {
+            setLocalGroupSections((prev) =>
+              prev.map((s) =>
+                s.groupId === groupId && !s.tournaments.find((t) => t.id === tournamentId)
+                  ? { ...s, tournaments: [tournament, ...s.tournaments] }
+                  : s,
+              ),
+            );
+            setFlyingCard(null);
+            setIsFlying(false);
+          }, 650);
+        }
+      }
+
+      // Clear success state
+      setTimeout(() => setSuccessId(null), 1500);
+    } else {
+      setLocalGroupSections((prev) =>
+        prev.map((s) =>
+          s.groupId === groupId
+            ? { ...s, tournaments: s.tournaments.filter((t) => t.id !== tournamentId) }
+            : s,
+        ),
+      );
+    }
+
+    try {
+      if (assign) {
+        const res = await fetch(`/api/groups/${groupId}/tournaments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tournamentId }),
+        });
+        if (!res.ok) throw new Error();
+      } else {
+        const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) throw new Error();
+      }
+    } catch {
+      // Revert on error
+      setAssignments((prev) => ({
+        ...prev,
+        [tournamentId]: assign
+          ? (prev[tournamentId] ?? []).filter((id) => id !== groupId)
+          : [...(prev[tournamentId] ?? []), groupId],
+      }));
+      if (assign) {
+        setLocalGroupSections((prev) =>
+          prev.map((s) =>
+            s.groupId === groupId
+              ? { ...s, tournaments: s.tournaments.filter((t) => t.id !== tournamentId) }
+              : s,
+          ),
+        );
+      }
+    }
+  };
 
   return (
     <div className="flex flex-col gap-6 mt-6">
-
-      {/* ── Recherche / ajout d'un tournoi ── */}
       <FetchTournamentForm
         onSubmitCallback={(data) => router.push(`/tournaments/${data.id}`)}
       />
 
-      {/* ── Section 1 : Tous les tournois ── */}
+      {/* Section 1 : Tous les tournois */}
       {publicTournaments.length > 0 && (
         <CollapsibleSection
           icon={Globe}
@@ -162,31 +278,56 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
           subtitle="Scooting personnel, visible uniquement par vous."
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {publicTournaments.map((t) => (
-              <Link key={t.id} href={`/tournaments/${t.id}`} className="block">
-                <TournamentCard tournament={t as never} />
-              </Link>
-            ))}
+            {publicTournaments.map((t) => {
+              const assignedGroups = getAssignedGroups(t.id);
+              const hasAdminGroups = adminGroups.length > 0;
+              return (
+                <div key={t.id} ref={setCardRef(t.id)}>
+                  <Link href={`/tournaments/${t.id}`} className="block">
+                    <TournamentCard
+                      tournament={t}
+                      assignedGroups={assignedGroups}
+                      showAssignButton={hasAdminGroups}
+                      isAssignSuccess={successId === t.id}
+                      isPopoverOpen={openPopover === t.id}
+                      onAssignClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOpenPopover((p) => (p === t.id ? null : t.id));
+                      }}
+                      popoverSlot={
+                        <GroupAssignPopover
+                          adminGroups={adminGroups}
+                          assignedGroupIds={assignments[t.id] ?? []}
+                          onToggle={(groupId, assign) => handleToggleGroup(t.id, groupId, assign)}
+                          onClose={() => setOpenPopover(null)}
+                        />
+                      }
+                    />
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </CollapsibleSection>
       )}
 
-      {/* ── Section 2 : Par groupe ── */}
-      {groupSections.length > 0 && (
+      {/* Section 2 : Par groupe */}
+      {localGroupSections.length > 0 && (
         <CollapsibleSection
           icon={Users}
           title="Par groupe"
           subtitle="Scooting partagé avec les membres de chaque groupe."
         >
           <div className="flex flex-col gap-3">
-            {groupSections.map((s) => (
+            {localGroupSections.map((s) => (
               <GroupSubSection key={s.groupId} section={s} />
             ))}
           </div>
         </CollapsibleSection>
       )}
 
-      {/* ── Section 3 : Invitations temporaires ── */}
+      {/* Section 3 : Invitations temporaires */}
       {invitedTournaments.length > 0 && (
         <CollapsibleSection
           icon={UserCheck}
@@ -202,7 +343,7 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
                 className="block"
               >
                 <TournamentCard
-                  tournament={entry.tournament as never}
+                  tournament={entry.tournament}
                   contextLabel={`Invité — ${entry.groupName}`}
                   contextColor="info"
                   expiresAt={entry.expiresAt}
@@ -212,6 +353,28 @@ export function TournamentsPageClient({ publicTournaments, groupSections, invite
           </div>
         </CollapsibleSection>
       )}
+
+      {/* Ghost card animation portal */}
+      {isMounted && flyingCard &&
+        createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              top: flyingCard.fromRect.top,
+              left: flyingCard.fromRect.left,
+              width: flyingCard.fromRect.width,
+              height: flyingCard.fromRect.height,
+              transition: isFlying ? 'transform 600ms cubic-bezier(0.4, 0, 0.2, 1), opacity 600ms ease' : 'none',
+              transform: isFlying ? 'translateY(80px) scale(0.85)' : 'translateY(0) scale(1)',
+              opacity: isFlying ? 0 : 1,
+              pointerEvents: 'none',
+              zIndex: 9999,
+            }}
+          >
+            <TournamentCard tournament={flyingCard.tournament} />
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }

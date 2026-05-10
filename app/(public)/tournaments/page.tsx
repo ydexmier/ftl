@@ -11,10 +11,13 @@ function serializeTournament(t: Tournament) {
   return {
     id: t.id,
     name: t.name,
-    full_header_image_url: t.full_header_image_url,
     start_datetime: t.start_datetime,
+    end_datetime: t.end_datetime ?? null,
     event_status: t.event_status,
+    registered_user_count: t.registered_user_count ?? 0,
+    capacity: t.capacity ?? 0,
     store: t.store ? { name: t.store.name } : null,
+    gameplay_format: t.gameplay_format ? { id: t.gameplay_format.id, name: t.gameplay_format.name } : null,
   };
 }
 
@@ -75,11 +78,25 @@ export default async function TournamentsPage() {
     }),
   );
 
+  const adminGroups = groupSections
+    .filter((s) => s.myRole === 'ADMIN')
+    .map((s) => ({ groupId: s.groupId, groupName: s.groupName }));
+
+  const initialAssignments: Record<number, string[]> = {};
+  for (const section of groupSections) {
+    for (const t of section.tournaments) {
+      if (!initialAssignments[t.id]) initialAssignments[t.id] = [];
+      initialAssignments[t.id].push(section.groupId);
+    }
+  }
+
   return (
     <TournamentsPageClient
       publicTournaments={publicTournaments}
       groupSections={groupSections.filter((s) => s.tournaments.length > 0 || groups.length > 0)}
       invitedTournaments={invitedTournaments.filter((i): i is typeof i & { tournament: NonNullable<typeof i.tournament> } => i.tournament !== null)}
+      adminGroups={adminGroups}
+      initialAssignments={initialAssignments}
     />
   );
 }
