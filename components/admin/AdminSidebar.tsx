@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Trophy, Shield, Users, Menu, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shield, Users, Mail, Menu, X, LogOut } from 'lucide-react';
 import { cn } from '@components/ui/cn';
 
 const NAV = [
 	{ href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 	{ href: '/admin/tournaments', label: 'Tournois', icon: Trophy },
 	{ href: '/admin/users', label: 'Utilisateurs', icon: Users },
+	{ href: '/admin/invitations', label: 'Invitations', icon: Mail },
 	{ href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
 ];
 
