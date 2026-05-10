@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Swords, ShieldCheck, LogOut } from 'lucide-react';
+import { Swords, LogOut } from 'lucide-react';
 import { cn } from './cn';
 
 const navLinks = [
@@ -49,14 +49,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 					</nav>
 
 					<div className="ml-auto" />
-
-					<Link
-						href="/admin/dashboard"
-						className="text-muted-foreground hover:text-foreground hover:bg-accent p-2 rounded-md transition-colors"
-						aria-label="Administration"
-					>
-						<ShieldCheck className="h-5 w-5" />
-					</Link>
 
 					<button
 						onClick={logout}
