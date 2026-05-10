@@ -3,10 +3,11 @@ import type { NextRequest } from 'next/server';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
 
 const PUBLIC = ['/login', '/api/auth/login', '/api/auth/logout'];
+const PUBLIC_PREFIXES = ['/register/', '/api/invitations/'];
 const STATIC = ['/_next', '/favicon.ico', '/svg', '/images'];
 
 function isPublic(p: string) {
-  return STATIC.some(s => p.startsWith(s)) || PUBLIC.includes(p);
+  return STATIC.some(s => p.startsWith(s)) || PUBLIC.includes(p) || PUBLIC_PREFIXES.some(s => p.startsWith(s));
 }
 
 export async function middleware(request: NextRequest) {
