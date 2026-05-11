@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import mongoose from 'mongoose';
 import UserModel from '@models/User';
 import SessionModel from '@models/Session';
+import GroupModel from '@models/Group';
 import { hashPassword } from '@/src/lib/auth/password';
 import { signCookie } from '@/src/lib/auth/cookieSign';
 import type { UserRole } from '@models/User';
@@ -37,6 +38,19 @@ export async function createAuthCookie(userId: string | mongoose.Types.ObjectId,
     lastActivityAt: new Date(),
   });
   return signCookie(sessionId, role);
+}
+
+export async function createTestGroup(
+  adminId: mongoose.Types.ObjectId | string,
+  overrides: Partial<{ name: string; description: string }> = {},
+) {
+  const id = new mongoose.Types.ObjectId(String(adminId));
+  return GroupModel.create({
+    name: overrides.name ?? `group-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    description: overrides.description ?? '',
+    createdBy: id,
+    members: [{ userId: id, role: 'ADMIN', joinedAt: new Date(), invitedBy: id }],
+  });
 }
 
 export function makeRequest(
