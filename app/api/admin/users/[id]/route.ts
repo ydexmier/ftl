@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import UserModel from '@models/User';
 import SessionModel from '@models/Session';
 import AuditLogModel from '@models/AuditLog';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 type Params = { params: Promise<{ id: string }> };
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest, { params }: Params) {
   if (!auth) return ApiResponse.unauthorized();
 
   const { id } = await params;
-  const user = await UserModel.findById(id).select('-passwordHash').lean();
+  const user = await UserRepository.findById(id);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
   const [activeSessions, recentLogs] = await Promise.all([
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!auth) return ApiResponse.unauthorized();
 
   const { id } = await params;
-  const user = await UserModel.findById(id);
+  const user = await UserRepository.findById(id);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
   const body = await request.json();
@@ -44,21 +44,23 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const updates: Record<string, unknown> = {};
 
   if (username !== undefined) {
-    const existing = await UserModel.findOne({ username: username.toLowerCase(), _id: { $ne: id } });
-    if (existing) return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
+    if (await UserRepository.existsByUsername(username.toLowerCase(), id)) {
+      return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
+    }
     updates.username = username.toLowerCase();
   }
 
   if (email !== undefined) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return ApiResponse.badRequest('Email invalide');
-    const existing = await UserModel.findOne({ email: email.toLowerCase(), _id: { $ne: id } });
-    if (existing) return ApiResponse.conflict('Cet email est déjà utilisé');
+    if (await UserRepository.existsByEmail(email.toLowerCase(), id)) {
+      return ApiResponse.conflict('Cet email est déjà utilisé');
+    }
     updates.email = email.toLowerCase();
   }
 
   if (role !== undefined) updates.role = role;
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
   const adminUsername = adminUser?.username ?? '';
 
   if (password) {
@@ -73,17 +75,27 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     });
   }
 
-  Object.assign(user, updates);
-  await user.save();
+  const updatedUser = await UserRepository.update(id, updates);
 
   await AuditLogModel.create({
     action: 'USER_UPDATED',
     userId: auth.session.userId,
     username: adminUsername,
-    metadata: { targetUserId: id, targetUsername: user.username, fields: Object.keys(updates).filter((k) => k !== 'passwordHash') },
+    metadata: {
+      targetUserId: id,
+      targetUsername: user.username,
+      fields: Object.keys(updates).filter((k) => k !== 'passwordHash'),
+    },
   });
 
-  return ApiResponse.ok({ user: { _id: String(user._id), username: user.username, email: user.email, role: user.role } });
+  return ApiResponse.ok({
+    user: {
+      _id: String(updatedUser!._id),
+      username: updatedUser!.username,
+      email: updatedUser!.email,
+      role: updatedUser!.role,
+    },
+  });
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
@@ -96,13 +108,13 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     return ApiResponse.badRequest('Vous ne pouvez pas supprimer votre propre compte');
   }
 
-  const user = await UserModel.findById(id);
+  const user = await UserRepository.findById(id);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
 
   await Promise.all([
-    user.deleteOne(),
+    UserRepository.delete(id),
     SessionModel.deleteMany({ userId: user._id }),
   ]);
 

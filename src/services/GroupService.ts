@@ -3,8 +3,7 @@ import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournament
 import { GroupInvitationRepository } from '@/src/repositories/db/GroupInvitationRepository';
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import type { GroupMemberRole } from '@/src/types/group';
 
 async function assertGroupAdmin(groupId: string, userId: string) {
@@ -37,11 +36,8 @@ export const GroupService = {
     const isMember = group.members.some((m) => String(m.userId) === userId);
     if (!isMember) throw new Error('FORBIDDEN');
 
-    await connectToMongoDB();
-    const memberIds = group.members.map((m) => m.userId);
-    const users = await UserModel.find({ _id: { $in: memberIds } })
-      .select('_id username email')
-      .lean();
+    const memberIds = group.members.map((m) => String(m.userId));
+    const users = await UserRepository.findByIds(memberIds);
     const userMap = Object.fromEntries(users.map((u) => [String(u._id), u]));
 
     return {
@@ -79,8 +75,7 @@ export const GroupService = {
     const hasPending = await GroupInvitationRepository.hasPendingInvitation(groupId, invitedUserId);
     if (hasPending) throw new Error('Une invitation est déjà en attente pour cet utilisateur');
 
-    await connectToMongoDB();
-    const invitedUser = await UserModel.findById(invitedUserId).lean();
+    const invitedUser = await UserRepository.findById(invitedUserId);
     if (!invitedUser) throw new Error('Utilisateur introuvable');
 
     return GroupInvitationRepository.create(groupId, invitedUserId, adminId);
@@ -196,8 +191,7 @@ export const GroupService = {
     );
     if (alreadyActive) throw new Error('Cet utilisateur a déjà un accès actif pour ce tournoi');
 
-    await connectToMongoDB();
-    const invitedUser = await UserModel.findById(invitedUserId).lean();
+    const invitedUser = await UserRepository.findById(invitedUserId);
     if (!invitedUser) throw new Error('Utilisateur introuvable');
 
     return TournamentExternalAccessRepository.create({

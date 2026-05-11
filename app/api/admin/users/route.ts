@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import UserModel from '@models/User';
 import AuditLogModel from '@models/AuditLog';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function GET(request: NextRequest) {
@@ -15,24 +15,7 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get('search')?.trim() || '';
   const role = searchParams.get('role') || '';
 
-  const query: Record<string, unknown> = {};
-  if (search) {
-    query.$or = [
-      { username: { $regex: search, $options: 'i' } },
-      { email: { $regex: search, $options: 'i' } },
-    ];
-  }
-  if (role) query.role = role;
-
-  const [users, total] = await Promise.all([
-    UserModel.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .select('-passwordHash')
-      .lean(),
-    UserModel.countDocuments(query),
-  ]);
+  const { users, total } = await UserRepository.findWithFilters(search, role, page, limit);
 
   return ApiResponse.ok({
     users: users.map((u) => ({ ...u, _id: String(u._id) })),
@@ -55,22 +38,22 @@ export async function POST(request: NextRequest) {
     return ApiResponse.badRequest('Email invalide');
   }
 
-  if (await UserModel.findOne({ username: username?.toLowerCase() })) {
+  if (await UserRepository.existsByUsername(username?.toLowerCase())) {
     return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
   }
-  if (await UserModel.findOne({ email: email?.toLowerCase() })) {
+  if (await UserRepository.existsByEmail(email?.toLowerCase())) {
     return ApiResponse.conflict('Cet email est déjà utilisé');
   }
 
   const passwordHash = await hashPassword(password);
-  const user = await UserModel.create({
+  const user = await UserRepository.create({
     username: username.toLowerCase(),
     email: email.toLowerCase(),
     passwordHash,
     role,
   });
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogModel.create({
     action: 'USER_CREATED',
     userId: auth.session.userId,
