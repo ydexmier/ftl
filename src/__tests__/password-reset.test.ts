@@ -55,6 +55,12 @@ describe('POST /api/auth/forgot-password', () => {
     const res = await forgotPassword(req);
     expect(res.status).toBe(400);
   });
+
+  it('retourne 400 si le champ email est absent', async () => {
+    const req = makeRequest('POST', '/api/auth/forgot-password', {});
+    const res = await forgotPassword(req);
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('GET /api/auth/reset-password/[token]', () => {

@@ -64,6 +64,22 @@ describe('PATCH /api/user/profile', () => {
     const res = await updateProfile(req);
     expect(res.status).toBe(200);
   });
+
+  it('retourne 400 si username et email sont tous les deux absents', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/profile', {}, cookie);
+    const res = await updateProfile(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 si l\'email fourni a un format invalide', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/profile', { email: 'not-an-email' }, cookie);
+    const res = await updateProfile(req);
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('PATCH /api/user/password', () => {
@@ -116,5 +132,32 @@ describe('PATCH /api/user/password', () => {
     }, cookie);
     const res = await updatePassword(req);
     expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 si currentPassword est absent', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/password', { newPassword: 'NewPassword1!' }, cookie);
+    const res = await updatePassword(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 si newPassword est absent', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/password', { currentPassword: DEFAULT_PASSWORD }, cookie);
+    const res = await updatePassword(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('accepte de réutiliser le même mot de passe', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/password', {
+      currentPassword: DEFAULT_PASSWORD,
+      newPassword: DEFAULT_PASSWORD,
+    }, cookie);
+    const res = await updatePassword(req);
+    expect(res.status).toBe(200);
   });
 });
