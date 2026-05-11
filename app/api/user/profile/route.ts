@@ -4,6 +4,7 @@ import UserModel from '@models/User';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { isValidEmail } from '@/src/lib/validation';
 
 export async function PATCH(request: NextRequest) {
   const auth = await getAuthSession(request);
@@ -15,7 +16,7 @@ export async function PATCH(request: NextRequest) {
     return ApiResponse.badRequest('Au moins un champ est requis');
   }
 
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (email && !isValidEmail(email)) {
     return ApiResponse.badRequest('Email invalide');
   }
 

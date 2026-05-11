@@ -4,6 +4,7 @@ import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password'
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { isValidEmail } from '@/src/lib/validation';
 
 export async function GET(request: NextRequest) {
   const auth = await getAdminSession(request);
@@ -34,7 +35,7 @@ export async function POST(request: NextRequest) {
   const check = validatePasswordStrength(password ?? '');
   if (!check.valid) return ApiResponse.badRequest(check.message!);
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!email || !isValidEmail(email)) {
     return ApiResponse.badRequest('Email invalide');
   }
 

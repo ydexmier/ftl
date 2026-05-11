@@ -4,11 +4,12 @@ import UserModel from '@models/User';
 import PasswordResetModel from '@models/PasswordReset';
 import { sendPasswordResetEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { isValidEmail } from '@/src/lib/validation';
 
 export async function POST(request: NextRequest) {
   const { email } = await request.json();
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!email || !isValidEmail(email)) {
     return ApiResponse.badRequest('Email invalide');
   }
 
