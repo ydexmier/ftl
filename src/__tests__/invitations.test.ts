@@ -5,6 +5,77 @@ import InvitationModel from '@models/Invitation';
 import { createTestUser, createAdminUser, createAuthCookie, makeRequest } from '../test/helpers';
 import { sendInvitationEmail } from '@/src/lib/email';
 
+describe('GET /api/admin/invitations', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('GET', '/api/admin/invitations');
+    const res = await listInvitations(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 401 pour un utilisateur non-admin', async () => {
+    const user = await createTestUser({ username: 'listinvuser1', email: 'listinvuser1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', '/api/admin/invitations', undefined, cookie);
+    const res = await listInvitations(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 200 avec un tableau vide si pas d\'invitation', async () => {
+    const admin = await createAdminUser({ username: 'listinvadmin1', email: 'listinvadmin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('GET', '/api/admin/invitations', undefined, cookie);
+    const res = await listInvitations(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(data.invitations)).toBe(true);
+    expect(typeof data.total).toBe('number');
+    expect(typeof data.pages).toBe('number');
+  });
+
+  it('retourne les invitations paginées avec les champs attendus', async () => {
+    const admin = await createAdminUser({ username: 'listinvadmin2', email: 'listinvadmin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    await InvitationModel.create([
+      { email: 'inv1@example.com', token: crypto.randomUUID(), invitedBy: admin._id, expiresAt: new Date(Date.now() + 86400000) },
+      { email: 'inv2@example.com', token: crypto.randomUUID(), invitedBy: admin._id, expiresAt: new Date(Date.now() + 86400000) },
+      { email: 'inv3@example.com', token: crypto.randomUUID(), invitedBy: admin._id, expiresAt: new Date(Date.now() + 86400000) },
+    ]);
+
+    const req = makeRequest('GET', '/api/admin/invitations?limit=2&page=1', undefined, cookie);
+    const res = await listInvitations(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.invitations).toHaveLength(2);
+    expect(data.total).toBeGreaterThanOrEqual(3);
+    expect(data.pages).toBeGreaterThanOrEqual(2);
+    const inv = data.invitations[0];
+    expect(typeof inv._id).toBe('string');
+    expect(typeof inv.email).toBe('string');
+    expect(typeof inv.status).toBe('string');
+    expect(typeof inv.expiresAt).toBe('string');
+  });
+
+  it('filtre par statut', async () => {
+    const admin = await createAdminUser({ username: 'listinvadmin3', email: 'listinvadmin3@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    await InvitationModel.create([
+      { email: 'filterinv1@example.com', token: crypto.randomUUID(), invitedBy: admin._id, status: 'PENDING', expiresAt: new Date(Date.now() + 86400000) },
+      { email: 'filterinv2@example.com', token: crypto.randomUUID(), invitedBy: admin._id, status: 'CANCELLED', expiresAt: new Date(Date.now() + 86400000) },
+    ]);
+
+    const req = makeRequest('GET', '/api/admin/invitations?status=CANCELLED', undefined, cookie);
+    const res = await listInvitations(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.invitations.every((i: { status: string }) => i.status === 'CANCELLED')).toBe(true);
+  });
+});
+
 describe('POST /api/admin/invitations', () => {
   it('retourne 401 sans session', async () => {
     const req = makeRequest('POST', '/api/admin/invitations', { emails: ['new@example.com'] });
@@ -80,6 +151,26 @@ describe('POST /api/admin/invitations', () => {
     expect(data.sent).toBe(3);
     const count = await InvitationModel.countDocuments({ status: 'PENDING' });
     expect(count).toBe(3);
+  });
+
+  it('retourne 400 si emails est un tableau vide', async () => {
+    const admin = await createAdminUser();
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('POST', '/api/admin/invitations', { emails: [] }, cookie);
+    const res = await sendInvitations(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('skip les emails au format invalide', async () => {
+    const admin = await createAdminUser();
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('POST', '/api/admin/invitations', { emails: ['not-an-email', 'valid@example.com'] }, cookie);
+    const res = await sendInvitations(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.sent).toBe(1);
+    expect(data.skipped[0].reason).toMatch(/invalide/i);
   });
 });
 
