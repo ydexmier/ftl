@@ -5,14 +5,14 @@ import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournament
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import connectToMongoDB from '@/src/lib/db';
 import { TournamentsPageClient } from '@components/tournament/TournamentsPageClient';
-import type { Tournament } from '@/src/types/tournament';
+import type { ITournament } from '@models/Tournament';
 
-function serializeTournament(t: Tournament) {
+function serializeTournament(t: ITournament) {
   return {
     id: t.id,
     name: t.name,
-    start_datetime: t.start_datetime,
-    end_datetime: t.end_datetime ?? null,
+    start_datetime: t.start_datetime instanceof Date ? t.start_datetime.toISOString() : String(t.start_datetime ?? ''),
+    end_datetime: t.end_datetime ? (t.end_datetime instanceof Date ? t.end_datetime.toISOString() : String(t.end_datetime)) : null,
     event_status: t.event_status,
     registered_user_count: t.registered_user_count ?? 0,
     capacity: t.capacity ?? 0,
@@ -51,7 +51,7 @@ export default async function TournamentsPage() {
       const gts = await GroupTournamentRepository.findByGroupId(groupId);
       const tournaments = gts
         .map((gt) => allTournaments.find((t) => t.id === gt.tournamentId))
-        .filter((t): t is Tournament => t !== undefined)
+        .filter((t): t is ITournament => t !== undefined)
         .map(serializeTournament);
       return {
         groupId,
