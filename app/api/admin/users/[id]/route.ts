@@ -5,6 +5,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { SessionRepository } from '@/src/repositories/db/SessionRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { isValidEmail } from '@/src/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -48,7 +49,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   if (email !== undefined) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return ApiResponse.badRequest('Email invalide');
+    if (!isValidEmail(email)) return ApiResponse.badRequest('Email invalide');
     if (await UserRepository.existsByEmail(email.toLowerCase(), id)) {
       return ApiResponse.conflict('Cet email est déjà utilisé');
     }

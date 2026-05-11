@@ -22,10 +22,7 @@ export default async function connectToMongoDB(): Promise<typeof mongoose> {
 	if (!cached.promise) {
 		cached.promise = mongoose
 			.connect(`${process.env.MONGO_URI}/${process.env.MONGO_DB_NAME}`)
-			.then((m) => {
-				console.log(`✅ Connecté à MongoDB — ${process.env.MONGO_DB_NAME}`);
-				return m;
-			})
+			.then((m) => m)
 			.catch((err) => {
 				cached.promise = null;
 				throw err;

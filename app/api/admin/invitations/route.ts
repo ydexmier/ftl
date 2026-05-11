@@ -5,6 +5,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { isValidEmail } from '@/src/lib/validation';
 
 export async function GET(request: NextRequest) {
   const auth = await getAdminSession(request);
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
   const results: { email: string; status: 'sent' | 'skipped'; reason?: string }[] = [];
 
   for (const email of unique) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!isValidEmail(email)) {
       results.push({ email, status: 'skipped', reason: 'Email invalide' });
       continue;
     }
