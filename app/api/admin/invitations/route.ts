@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   }
 
   const adminUser = await UserRepository.findById(String(auth.session.userId));
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'ADMIN_ACTION',
     userId: auth.session.userId,
     username: adminUser?.username ?? '',

@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import SessionModel from '@models/Session';
-import AuditLogModel from '@models/AuditLog';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
+import { SessionRepository } from '@/src/repositories/db/SessionRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 type Params = { params: Promise<{ id: string }> };
@@ -17,11 +17,8 @@ export async function GET(request: NextRequest, { params }: Params) {
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
   const [activeSessions, recentLogs] = await Promise.all([
-    SessionModel.countDocuments({ userId: user._id, expiresAt: { $gt: new Date() } }),
-    AuditLogModel.find({ userId: user._id })
-      .sort({ timestamp: -1 })
-      .limit(10)
-      .lean(),
+    SessionRepository.countActive(id),
+    AuditLogRepository.findByUserId(id, 10),
   ]);
 
   return ApiResponse.ok({
@@ -67,7 +64,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     const check = validatePasswordStrength(password);
     if (!check.valid) return ApiResponse.badRequest(check.message!);
     updates.passwordHash = await hashPassword(password);
-    await AuditLogModel.create({
+    await AuditLogRepository.create({
       action: 'PASSWORD_CHANGED',
       userId: auth.session.userId,
       username: adminUsername,
@@ -77,7 +74,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const updatedUser = await UserRepository.update(id, updates);
 
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'USER_UPDATED',
     userId: auth.session.userId,
     username: adminUsername,
@@ -115,10 +112,10 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
   await Promise.all([
     UserRepository.delete(id),
-    SessionModel.deleteMany({ userId: user._id }),
+    SessionRepository.deleteByUserId(id),
   ]);
 
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'USER_DELETED',
     userId: auth.session.userId,
     username: adminUser?.username ?? '',

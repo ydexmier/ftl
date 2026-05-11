@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import PasswordResetModel from '@models/PasswordReset';
 import UserModel from '@models/User';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -43,7 +43,7 @@ export async function POST(
   await reset.save();
 
   const user = await UserModel.findById(reset.userId).select('username').lean();
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'PASSWORD_CHANGED',
     userId: reset.userId,
     username: user?.username ?? '',

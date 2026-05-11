@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { invalidateSession } from '@/src/lib/auth/session';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
 import { ApiResponse } from '@/src/lib/api/responses';
@@ -10,9 +9,8 @@ export async function POST(request: NextRequest) {
   if (val) {
     const p = await verifyCookie(val);
     if (p) {
-      await connectToMongoDB();
       await invalidateSession(p.sessionId);
-      await AuditLogModel.create({ action: 'LOGOUT', ipAddress: 'unknown', userAgent: request.headers.get('user-agent') ?? '' });
+      await AuditLogRepository.create({ action: 'LOGOUT', ipAddress: 'unknown', userAgent: request.headers.get('user-agent') ?? '' });
     }
   }
   const res = ApiResponse.ok({ ok: true });

@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { ApiResponse } from '@/src/lib/api/responses';
@@ -30,7 +30,7 @@ export async function PATCH(request: NextRequest) {
   user.passwordHash = await hashPassword(newPassword);
   await user.save();
 
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'PASSWORD_CHANGED',
     userId: auth.userId,
     username: user.username,
