@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import InvitationModel from '@models/Invitation';
-import UserModel from '@models/User';
 import AuditLogModel from '@models/AuditLog';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -67,8 +67,7 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
+    if (await UserRepository.existsByEmail(email)) {
       results.push({ email, status: 'skipped', reason: 'Un compte existe déjà avec cet email' });
       continue;
     }
@@ -100,7 +99,7 @@ export async function POST(request: NextRequest) {
     results.push({ email, status: 'sent' });
   }
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogModel.create({
     action: 'ADMIN_ACTION',
     userId: auth.session.userId,

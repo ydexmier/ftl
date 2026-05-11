@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
 import InvitationModel from '@models/Invitation';
-import UserModel from '@models/User';
 import AuditLogModel from '@models/AuditLog';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -23,7 +23,7 @@ export async function DELETE(
   invitation.status = 'CANCELLED';
   await invitation.save();
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogModel.create({
     action: 'ADMIN_ACTION',
     userId: auth.session.userId,
@@ -48,8 +48,7 @@ export async function POST(
     return ApiResponse.badRequest('Seules les invitations en attente peuvent être renvoyées');
   }
 
-  const existingUser = await UserModel.findOne({ email: invitation.email });
-  if (existingUser) {
+  if (await UserRepository.existsByEmail(invitation.email)) {
     return ApiResponse.conflict('Un compte existe déjà avec cet email');
   }
 
@@ -64,7 +63,7 @@ export async function POST(
     return ApiResponse.serverError(err);
   }
 
-  const adminUser = await UserModel.findById(auth.session.userId).select('username').lean();
+  const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogModel.create({
     action: 'ADMIN_ACTION',
     userId: auth.session.userId,
