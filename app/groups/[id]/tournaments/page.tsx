@@ -36,7 +36,7 @@ export default async function GroupTournamentsPage({ params }: Params) {
       createdAt: gt.createdAt.toISOString(),
       name: tournament?.name ?? `Tournoi #${gt.tournamentId}`,
       eventStatus: tournament?.event_status ?? '',
-      startDatetime: tournament?.start_datetime ?? '',
+      startDatetime: tournament?.start_datetime instanceof Date ? tournament.start_datetime.toISOString() : (tournament?.start_datetime ? String(tournament.start_datetime) : ''),
     };
   });
 
