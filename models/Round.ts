@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import type { Player, UserEventStatus } from '@/src/types/player';
-import TournamentPlayersDeck from '@models/TournamentPlayersDeck.js';
+import TournamentPlayersDeck from '@models/TournamentPlayersDeck';
 
 // Force import of TournamentPlayersDeck before virtual registration
 void TournamentPlayersDeck;

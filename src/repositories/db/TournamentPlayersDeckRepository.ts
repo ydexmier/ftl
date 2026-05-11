@@ -1,4 +1,4 @@
-import TournamentPlayersDeck from '@models/TournamentPlayersDeck.js';
+import TournamentPlayersDeckModel, { type ITournamentPlayersDeck } from '@models/TournamentPlayersDeck';
 import connectToMongoDB from '@/src/lib/db';
 import type { Deck } from '@/src/types/ink';
 
@@ -18,13 +18,13 @@ function scopeQuery(scope: DeckScope) {
 export const TournamentPlayersDeckRepository = {
   async findByScope(tournamentId: number, scope: DeckScope) {
     await connectToMongoDB();
-    return TournamentPlayersDeck.findOne({ tournamentId, ...scopeQuery(scope) }).lean();
+    return TournamentPlayersDeckModel.findOne({ tournamentId, ...scopeQuery(scope) }).lean();
   },
 
   async upsert(tournamentId: number, players: unknown[], scope: DeckScope) {
     await connectToMongoDB();
     const query = { tournamentId, ...scopeQuery(scope) };
-    return TournamentPlayersDeck.findOneAndUpdate(
+    return TournamentPlayersDeckModel.findOneAndUpdate(
       query,
       { ...query, players },
       { new: true, upsert: true },
@@ -33,7 +33,7 @@ export const TournamentPlayersDeckRepository = {
 
   async deleteMany(tournamentId: number) {
     await connectToMongoDB();
-    return TournamentPlayersDeck.deleteMany({ tournamentId });
+    return TournamentPlayersDeckModel.deleteMany({ tournamentId });
   },
 
   async assignDecks(
@@ -44,16 +44,15 @@ export const TournamentPlayersDeckRepository = {
     await connectToMongoDB();
     const query = { tournamentId, ...scopeQuery(scope) };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let doc = await TournamentPlayersDeck.findOne(query) as any;
+    let doc: ITournamentPlayersDeck | null = await TournamentPlayersDeckModel.findOne(query);
     if (!doc) {
       try {
-        doc = await TournamentPlayersDeck.create({ ...query, players: [] });
+        doc = await TournamentPlayersDeckModel.create({ ...query, players: [] });
       } catch (err: unknown) {
         // MongoDB E11000: old unique index on tournamentId still exists from before group scoping.
         // Drop it with: db.tournamentplayersdecks.dropIndex("tournamentId_1")
         if ((err as { code?: number }).code === 11000) {
-          doc = await TournamentPlayersDeck.findOne({ tournamentId });
+          doc = await TournamentPlayersDeckModel.findOne({ tournamentId });
           if (!doc) throw err;
         } else {
           throw err;
@@ -64,7 +63,7 @@ export const TournamentPlayersDeckRepository = {
     const modified: unknown[] = [];
 
     for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
-      const idx = doc.players.findIndex((p: { playerId: number }) => p.playerId === playerId);
+      const idx = doc.players.findIndex((p) => p.playerId === playerId);
 
       if (idx !== -1) {
         if (!decks || decks.length === 0) {
@@ -73,10 +72,10 @@ export const TournamentPlayersDeckRepository = {
           modified.push({ playerId, decks });
         } else {
           doc.set(`players.${idx}.decks`, decks);
-          modified.push({ ...doc.players[idx].toObject(), decks });
+          modified.push({ ...doc.players[idx], decks });
         }
       } else if (decks.length > 0) {
-        doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
+        doc.players.push({ playerId, best_identifier: bestIdentifier, game_user_profile_picture_url: eventBestIdentifier, pronouns: null, decks });
         modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
       }
     }
