@@ -98,4 +98,21 @@ export const GroupRepository = {
     });
     return count > 0;
   },
+
+  async addMemberToGroups(groupIds: string[], userId: string, invitedBy: string) {
+    await connectToMongoDB();
+    return GroupModel.updateMany(
+      { _id: { $in: groupIds } },
+      {
+        $push: {
+          members: {
+            userId,
+            role: 'MEMBER' as GroupMemberRole,
+            joinedAt: new Date(),
+            invitedBy,
+          },
+        },
+      },
+    );
+  },
 };

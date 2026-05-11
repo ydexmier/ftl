@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import InvitationModel from '@models/Invitation';
 import AuditLogModel from '@models/AuditLog';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -14,14 +14,13 @@ export async function DELETE(
   if (!auth) return ApiResponse.unauthorized();
 
   const { id } = await params;
-  const invitation = await InvitationModel.findById(id);
+  const invitation = await InvitationRepository.findById(id);
   if (!invitation) return ApiResponse.notFound('Invitation introuvable');
   if (invitation.status !== 'PENDING') {
     return ApiResponse.badRequest('Seules les invitations en attente peuvent être annulées');
   }
 
-  invitation.status = 'CANCELLED';
-  await invitation.save();
+  await InvitationRepository.cancel(id);
 
   const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogModel.create({
@@ -42,7 +41,7 @@ export async function POST(
   if (!auth) return ApiResponse.unauthorized();
 
   const { id } = await params;
-  const invitation = await InvitationModel.findById(id);
+  const invitation = await InvitationRepository.findById(id);
   if (!invitation) return ApiResponse.notFound('Invitation introuvable');
   if (invitation.status !== 'PENDING') {
     return ApiResponse.badRequest('Seules les invitations en attente peuvent être renvoyées');
@@ -53,9 +52,8 @@ export async function POST(
   }
 
   const newToken = crypto.randomUUID();
-  invitation.token = newToken;
-  invitation.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  await invitation.save();
+  const newExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await InvitationRepository.renewToken(id, newToken, newExpiresAt);
 
   try {
     await sendInvitationEmail(invitation.email, newToken);

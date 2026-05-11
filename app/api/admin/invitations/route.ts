@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import InvitationModel from '@models/Invitation';
 import AuditLogModel from '@models/AuditLog';
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -15,19 +15,7 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 25));
   const status = searchParams.get('status') || '';
 
-  const query: Record<string, unknown> = {};
-  if (status) query.status = status;
-
-  const [invitations, total] = await Promise.all([
-    InvitationModel.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .populate('invitedBy', 'username')
-      .populate('groupIds', 'name')
-      .lean(),
-    InvitationModel.countDocuments(query),
-  ]);
+  const { invitations, total } = await InvitationRepository.findWithFilters(status, page, limit);
 
   return ApiResponse.ok({
     invitations: invitations.map((inv) => ({
@@ -72,8 +60,7 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    const existingInvitation = await InvitationModel.findOne({ email, status: 'PENDING' });
-    if (existingInvitation) {
+    if (await InvitationRepository.findPendingByEmail(email)) {
       results.push({ email, status: 'skipped', reason: 'Une invitation est déjà en attente pour cet email' });
       continue;
     }
@@ -88,11 +75,11 @@ export async function POST(request: NextRequest) {
       continue;
     }
 
-    await InvitationModel.create({
+    await InvitationRepository.create({
       email,
       token,
       groupIds,
-      invitedBy: auth.session.userId,
+      invitedBy: String(auth.session.userId),
       expiresAt,
     });
 
