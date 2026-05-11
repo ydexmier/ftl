@@ -1,4 +1,4 @@
-import Round from '@models/Round.js';
+import RoundModel from '@models/Round';
 import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
 import type { Match } from '@/src/types/match';
@@ -24,12 +24,12 @@ export interface MatchQueryOptions {
 export const RoundRepository = {
 	async findById(id: number): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).lean() as Promise<RoundDocument | null>;
+		return RoundModel.findOne({ id }).lean() as Promise<RoundDocument | null>;
 	},
 
 	async findByIdWithDecks(id: number, scope: DeckScope): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		const round = (await Round.findOne({ id }).lean()) as RoundDocument | null;
+		const round = (await RoundModel.findOne({ id }).lean()) as RoundDocument | null;
 		if (!round) return null;
 		const playersDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
 		return { ...round, playersDecks: (playersDecks as PlayersDecksMap | null) ?? null };
@@ -37,19 +37,19 @@ export const RoundRepository = {
 
 	async upsert(data: Record<string, unknown>) {
 		await connectToMongoDB();
-		return Round.findOneAndUpdate({ id: data.id }, data, { new: true, upsert: true }).lean();
+		return RoundModel.findOneAndUpdate({ id: data.id }, data, { new: true, upsert: true }).lean();
 	},
 
 	async deleteMany(tournamentId: number) {
 		await connectToMongoDB();
-		return Round.deleteMany({ tournamentId });
+		return RoundModel.deleteMany({ tournamentId });
 	},
 
 	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}, scope: DeckScope) {
 		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
 		await connectToMongoDB();
 
-		const round = (await Round.findOne({ id: roundId }).lean()) as RoundDocument | null;
+		const round = (await RoundModel.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
@@ -101,14 +101,14 @@ export const RoundRepository = {
 
 	async findMatch(roundId: number, matchId: number) {
 		await connectToMongoDB();
-		const round = (await Round.findOne({ id: roundId }).lean()) as RoundDocument | null;
+		const round = (await RoundModel.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 		return round.results?.find((m) => m.id === matchId) ?? null;
 	},
 
 	async mergeAndSave(id: number, tournamentId: number, newData: Record<string, unknown>) {
 		await connectToMongoDB();
-		const existing = await Round.findOne({ id });
+		const existing = await RoundModel.findOne({ id });
 		if (existing) {
 			for (const key in newData) {
 				if (key === 'results') {
@@ -126,8 +126,8 @@ export const RoundRepository = {
 			}
 			await existing.save();
 		} else {
-			await Round.create({ ...newData, id, tournamentId });
+			await RoundModel.create({ ...newData, id, tournamentId });
 		}
-		return Round.findOne({ id }).lean();
+		return RoundModel.findOne({ id }).lean();
 	},
 };
