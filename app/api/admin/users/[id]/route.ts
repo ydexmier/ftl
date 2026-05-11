@@ -1,25 +1,10 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
 import SessionModel from '@models/Session';
 import AuditLogModel from '@models/AuditLog';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
-import { getSession } from '@/src/lib/auth/session';
-import { verifyCookie } from '@/src/lib/auth/cookieSign';
-import { hasRole } from '@/src/lib/auth/rbac';
-import type { UserRole } from '@models/User';
+import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { ApiResponse } from '@/src/lib/api/responses';
-
-async function getAdminSession(request: NextRequest) {
-  const val = request.cookies.get('session')?.value;
-  if (!val) return null;
-  const parsed = await verifyCookie(val);
-  if (!parsed || !hasRole(parsed.role as UserRole, 'ADMIN')) return null;
-  await connectToMongoDB();
-  const session = await getSession(parsed.sessionId);
-  if (!session) return null;
-  return { parsed, session };
-}
 
 type Params = { params: Promise<{ id: string }> };
 

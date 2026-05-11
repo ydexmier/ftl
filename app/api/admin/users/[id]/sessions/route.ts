@@ -1,23 +1,14 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
 import SessionModel from '@models/Session';
 import AuditLogModel from '@models/AuditLog';
-import { getSession } from '@/src/lib/auth/session';
-import { verifyCookie } from '@/src/lib/auth/cookieSign';
-import { hasRole } from '@/src/lib/auth/rbac';
-import type { UserRole } from '@models/User';
+import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const val = request.cookies.get('session')?.value;
-  if (!val) return ApiResponse.unauthorized();
-  const parsed = await verifyCookie(val);
-  if (!parsed || !hasRole(parsed.role as UserRole, 'ADMIN')) return ApiResponse.unauthorized();
-
-  await connectToMongoDB();
-  const session = await getSession(parsed.sessionId);
-  if (!session) return ApiResponse.unauthorized('Session expirée');
+  const auth = await getAdminSession(request);
+  if (!auth) return ApiResponse.unauthorized();
+  const { session } = auth;
 
   const { id } = await params;
   const user = await UserModel.findById(id).select('username').lean();

@@ -1,25 +1,10 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
 import InvitationModel from '@models/Invitation';
 import UserModel from '@models/User';
 import AuditLogModel from '@models/AuditLog';
-import { getSession } from '@/src/lib/auth/session';
-import { verifyCookie } from '@/src/lib/auth/cookieSign';
-import { hasRole } from '@/src/lib/auth/rbac';
+import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
-import type { UserRole } from '@models/User';
-
-async function getAdminSession(request: NextRequest) {
-  const val = request.cookies.get('session')?.value;
-  if (!val) return null;
-  const parsed = await verifyCookie(val);
-  if (!parsed || !hasRole(parsed.role as UserRole, 'ADMIN')) return null;
-  await connectToMongoDB();
-  const session = await getSession(parsed.sessionId);
-  if (!session) return null;
-  return { parsed, session };
-}
 
 export async function DELETE(
   request: NextRequest,

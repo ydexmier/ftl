@@ -1,19 +1,11 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
 import AuditLogModel from '@models/AuditLog';
-import { verifyCookie } from '@/src/lib/auth/cookieSign';
-import { hasRole } from '@/src/lib/auth/rbac';
-import type { UserRole } from '@models/User';
+import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function GET(request: NextRequest) {
-  const val = request.cookies.get('session')?.value;
-  if (!val) return ApiResponse.unauthorized();
-
-  const parsed = await verifyCookie(val);
-  if (!parsed || !hasRole(parsed.role as UserRole, 'ADMIN')) return ApiResponse.forbidden('Interdit');
-
-  await connectToMongoDB();
+  const auth = await getAdminSession(request);
+  if (!auth) return ApiResponse.unauthorized();
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
