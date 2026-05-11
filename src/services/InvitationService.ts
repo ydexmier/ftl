@@ -1,7 +1,7 @@
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword } from '@/src/lib/auth/password';
 import { sendWelcomeEmail } from '@/src/lib/email';
 
@@ -40,7 +40,7 @@ export const InvitationService = {
 
     await InvitationRepository.markUsed(String(invitation._id));
 
-    await AuditLogModel.create({
+    await AuditLogRepository.create({
       action: 'USER_CREATED',
       userId: user._id,
       username: user.username,

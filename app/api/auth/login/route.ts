@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { verifyPassword } from '@/src/lib/auth/password';
 import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/src/lib/auth/rateLimit';
@@ -24,21 +24,21 @@ export async function POST(request: NextRequest) {
 
   if (!user) {
     recordFailedAttempt(ip);
-    await AuditLogModel.create({ action: 'LOGIN_FAIL', username: username ?? '', ipAddress: ip, userAgent: ua });
+    await AuditLogRepository.create({ action: 'LOGIN_FAIL', username: username ?? '', ipAddress: ip, userAgent: ua });
     return NextResponse.json(ERR, { status: 401 });
   }
 
   const valid = await verifyPassword(user.passwordHash, password);
   if (!valid) {
     recordFailedAttempt(ip);
-    await AuditLogModel.create({ action: 'LOGIN_FAIL', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
+    await AuditLogRepository.create({ action: 'LOGIN_FAIL', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
     return NextResponse.json(ERR, { status: 401 });
   }
 
   resetRateLimit(ip);
   const sessionId = await createSession(String(user._id), user.role, ip, ua);
   const cookieValue = await signCookie(sessionId, user.role);
-  await AuditLogModel.create({ action: 'LOGIN_SUCCESS', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
+  await AuditLogRepository.create({ action: 'LOGIN_SUCCESS', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
 
   const res = ApiResponse.ok({ role: user.role });
   res.cookies.set('session', cookieValue, {

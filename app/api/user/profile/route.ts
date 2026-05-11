@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
-import AuditLogModel from '@models/AuditLog';
+import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 
@@ -45,7 +45,7 @@ export async function PATCH(request: NextRequest) {
     .select('-passwordHash')
     .lean();
 
-  await AuditLogModel.create({
+  await AuditLogRepository.create({
     action: 'USER_UPDATED',
     userId: auth.userId,
     username: user?.username ?? '',
