@@ -6,12 +6,6 @@ declare module '@models/Tournament.js' {
 	export default Tournament;
 }
 
-declare module '@models/Round.js' {
-	import type { Model } from 'mongoose';
-	const Round: Model<Record<string, unknown>>;
-	export default Round;
-}
-
 declare module '@models/TournamentPlayersDeck.js' {
 	import type { Model } from 'mongoose';
 	const TournamentPlayersDeck: Model<Record<string, unknown>>;
