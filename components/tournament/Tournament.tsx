@@ -22,7 +22,7 @@ export default function Tournament({ id }: TournamentProps) {
 	const [roundId, setRoundId] = useState(queryRoundId);
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
-	const { updatedAt } = (tournament as { updatedAt?: string }) || {};
+	const { lastFetchedAt } = (tournament as { lastFetchedAt?: string }) || {};
 
 	const handleRoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const value = e.target.value;
@@ -60,7 +60,7 @@ export default function Tournament({ id }: TournamentProps) {
 					defaultLabel="MAJ Tournoi"
 					onFetch={refreshTournament}
 					refreshDelay={60}
-					lastUpdate={updatedAt as unknown as null}
+					lastUpdate={lastFetchedAt}
 				/>
 			</div>
 

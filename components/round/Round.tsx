@@ -26,7 +26,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 
 	const {
 		matchs,
-		updatedAt,
+		lastFetchedAt,
 		loading,
 		error,
 		matchToShow,
@@ -100,7 +100,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 
 	return (
 		<>
-			<RoundHeader updatedAt={updatedAt} onRefresh={refreshRound} />
+			<RoundHeader lastFetchedAt={lastFetchedAt} onRefresh={refreshRound} />
 
 			<div className="mb-4 max-w-sm">
 				<RoundSearch value={search} onChange={setSearch} />

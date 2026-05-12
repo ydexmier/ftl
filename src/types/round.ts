@@ -37,5 +37,6 @@ export interface PaginatedMatches {
 	results: Match[];
 	pagination: PaginationMeta;
 	playersDecks: PlayersDecksMap | null;
+	lastFetchedAt?: string | null;
 	updatedAt?: string;
 }

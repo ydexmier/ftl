@@ -80,6 +80,7 @@ export interface ITournament extends Document {
 	number_of_days: number;
 	url: string | null;
 	timezone: string | null;
+	lastFetchedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -170,6 +171,7 @@ const TournamentSchema = new Schema<ITournament>(
 		number_of_days: Number,
 		url: String,
 		timezone: String,
+		lastFetchedAt: { type: Date, default: null },
 	},
 	{ timestamps: true },
 );

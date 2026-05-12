@@ -21,11 +21,6 @@ export const RoundService = {
 		const tournament = await TournamentRepository.findById(tournamentId);
 		if (!tournament) throw new Error(`Tournoi ${tournamentId} introuvable en base`);
 
-		const allRounds = (tournament.tournament_phases ?? []).flatMap((p) => p.rounds ?? []);
-		if (!allRounds.find((r) => r.id === roundId)) {
-			throw new Error(`Round ${roundId} introuvable dans le tournoi ${tournamentId}`);
-		}
-
 		const shouldFetchAllAsync = useAsyncFetch && mode === FETCH_ALL_ASYNC.mode;
 		const fetchPageSize = shouldFetchAllAsync ? FETCH_ALL_ASYNC.perPage : perPage;
 

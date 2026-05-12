@@ -48,6 +48,7 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 
 	const {
 		results: matchs = [],
+		lastFetchedAt,
 		updatedAt,
 		pagination = { page: 1, perPage: 10, total: 0, totalPages: 1 },
 	} = round ?? {};
@@ -85,6 +86,7 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 
 	return {
 		matchs,
+		lastFetchedAt,
 		updatedAt,
 		loading,
 		error,

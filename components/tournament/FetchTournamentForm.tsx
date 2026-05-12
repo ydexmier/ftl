@@ -21,9 +21,10 @@ const extractTournamentId = (input: string): number | null => {
 export default function FetchTournamentForm({ onSubmitCallback, onValidate }: FetchTournamentFormProps) {
 	const [error, setError] = useState('');
 	const [success, setSuccess] = useState('');
+	const [loading, setLoading] = useState(false);
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		setError('');
 		setSuccess('');
@@ -38,12 +39,15 @@ export default function FetchTournamentForm({ onSubmitCallback, onValidate }: Fe
 			return;
 		}
 
+		setLoading(true);
 		try {
 			const response = await fetchTournament(normalizedId);
 			setSuccess(`Tournoi ${normalizedId} récupéré avec succès !`);
 			onSubmitCallback?.(response.datas);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'Erreur inconnue');
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -56,8 +60,9 @@ export default function FetchTournamentForm({ onSubmitCallback, onValidate }: Fe
 					required
 					fullWidth
 					placeholder="123456 ou https://..."
+					disabled={loading}
 				/>
-				<Button type="submit" className="self-end shrink-0">
+				<Button type="submit" className="self-end shrink-0" loading={loading} disabled={loading}>
 					Récupérer
 				</Button>
 			</div>

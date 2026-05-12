@@ -45,6 +45,7 @@ export interface IRound extends Document {
 	id: number;
 	tournamentId: number;
 	results: IMatch[];
+	lastFetchedAt: Date | null;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -116,6 +117,7 @@ const RoundSchema = new Schema<IRound>(
 		id: Number,
 		tournamentId: { type: Number, required: true },
 		results: [MatchSchema],
+		lastFetchedAt: { type: Date, default: null },
 	},
 	{ timestamps: true },
 );
