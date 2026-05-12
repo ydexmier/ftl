@@ -4,9 +4,11 @@ import { useSearchParams } from 'next/navigation';
 
 import { getRoundName } from '@/src/domain/rules/roundRules';
 import Round from '@components/round/Round';
+import DeckbuildingRound from '@components/round/DeckbuildingRound';
 import { useTournament } from '@/src/hooks/useTournament';
 import FetchButton from '@components/ui/FetchButton';
 import { Spinner } from '@components/ui/Spinner';
+import type { RoundType } from '@/src/types/round';
 
 interface TournamentProps {
 	id: number | string;
@@ -23,6 +25,10 @@ export default function Tournament({ id }: TournamentProps) {
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
 	const { lastFetchedAt } = (tournament as { lastFetchedAt?: string }) || {};
+
+	const selectedRoundType: RoundType | undefined = (tournament as any)?.tournament_phases
+		?.flatMap((p: any) => p.rounds ?? [])
+		.find((r: any) => String(r.id) === String(roundId))?.round_type;
 
 	const handleRoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const value = e.target.value;
@@ -77,7 +83,10 @@ export default function Tournament({ id }: TournamentProps) {
 				))}
 			</select>
 
-			{roundId && (
+			{roundId && selectedRoundType === 'DECKBUILDING' && (
+				<DeckbuildingRound playerCount={(tournament as any)?.registered_user_count} />
+			)}
+			{roundId && selectedRoundType !== 'DECKBUILDING' && (
 				<Round
 					roundId={roundId}
 					page={queryPage}
