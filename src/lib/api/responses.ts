@@ -25,6 +25,9 @@ export const ApiResponse = {
   conflict: (error: string) =>
     NextResponse.json({ error }, { status: 409 }),
 
+  tooManyRequests: (msg: string) =>
+    NextResponse.json({ error: msg }, { status: 429 }),
+
   serverError: (err: unknown) => {
     console.error(err);
     const msg = err instanceof Error ? err.message : String(err);

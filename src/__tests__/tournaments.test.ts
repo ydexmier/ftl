@@ -138,7 +138,7 @@ describe('POST /api/admin/fetchTournament', () => {
       tournament_phases: [],
     } as never);
 
-    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid, isRefetch: false });
+    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid });
     const res = await fetchTournament(req);
     expect(res.status).toBe(200);
     const saved = await TournamentModel.findOne({ id: tid });

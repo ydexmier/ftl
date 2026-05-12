@@ -24,15 +24,15 @@ export const TournamentRepository = {
 		return TournamentModel.findOneAndDelete({ id });
 	},
 
-	async mergeAndSave(data: Record<string, unknown>, isRefetch: boolean) {
+	async mergeAndSave(data: Record<string, unknown>) {
 		await connectToMongoDB();
 		const existing = await TournamentModel.findOne({ id: data.id });
-		if (!isRefetch && existing) throw new Error('Le tournoi existe déjà');
 		if (existing) {
 			mergeDeep(existing as unknown as Record<string, unknown>, data);
+			existing.lastFetchedAt = new Date();
 			await existing.save();
 			return existing;
 		}
-		return TournamentModel.create(data);
+		return TournamentModel.create({ ...data, lastFetchedAt: new Date() });
 	},
 };

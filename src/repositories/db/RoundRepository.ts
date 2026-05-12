@@ -10,6 +10,7 @@ export interface RoundDocument {
 	tournamentId: number;
 	results: Match[];
 	playersDecks?: PlayersDecksMap | null;
+	lastFetchedAt?: string | null;
 	updatedAt?: string;
 	createdAt?: string;
 }
@@ -95,6 +96,7 @@ export const RoundRepository = {
 			results: paginatedResults,
 			playersDecks: filteredPlayersDecks,
 			pagination: { page: currentPage, perPage: limit, total, totalPages },
+			lastFetchedAt: round.lastFetchedAt ?? null,
 			updatedAt: round.updatedAt,
 		};
 	},
@@ -124,9 +126,10 @@ export const RoundRepository = {
 					existing.set(key, newData[key]);
 				}
 			}
+			existing.lastFetchedAt = new Date();
 			await existing.save();
 		} else {
-			await RoundModel.create({ ...newData, id, tournamentId });
+			await RoundModel.create({ ...newData, id, tournamentId, lastFetchedAt: new Date() });
 		}
 		return RoundModel.findOne({ id }).lean();
 	},
