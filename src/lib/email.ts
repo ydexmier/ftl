@@ -6,7 +6,16 @@ import { PasswordResetEmail } from './emails/PasswordResetEmail';
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companionlorcana.dev';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
+function envPrefix(): string {
+  const env = process.env.VERCEL_ENV;
+  if (env === 'preview') return '[PREVIEW] ';
+  if (!env && process.env.NODE_ENV !== 'development') return '[LOCAL] ';
+  return '';
+}
+
 async function sendEmail(to: string, subject: string, html: string) {
+  const prefix = to.endsWith('@yd-lab.com') ? envPrefix() : '';
+  const prefixedSubject = `${prefix}${subject}`;
   if (process.env.NODE_ENV === 'development') {
     const nodemailer = await import('nodemailer');
     const transporter = nodemailer.createTransport({
@@ -14,13 +23,13 @@ async function sendEmail(to: string, subject: string, html: string) {
       port: Number(process.env.SMTP_PORT ?? 1025),
       secure: false,
     });
-    await transporter.sendMail({ from: EMAIL_FROM, to, subject, html });
+    await transporter.sendMail({ from: EMAIL_FROM, to, subject: prefixedSubject, html });
     return;
   }
 
   const { Resend } = await import('resend');
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const { error } = await resend.emails.send({ from: EMAIL_FROM, to, subject, html });
+  const { error } = await resend.emails.send({ from: EMAIL_FROM, to, subject: prefixedSubject, html });
   if (error) throw new Error(error.message);
 }
 

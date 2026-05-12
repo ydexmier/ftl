@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
 
   try {
     await sendPasswordResetEmail(user.email, token);
-  } catch {
+  } catch (e) {
+    console.error('[forgot-password] Échec envoi email:', e);
     await PasswordResetModel.deleteOne({ token });
     return ApiResponse.serverError('Erreur lors de l\'envoi de l\'email');
   }

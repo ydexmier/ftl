@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Trophy, Shield, Users, Mail, Menu, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shield, Users, Mail, MessageSquare, Menu, X, LogOut } from 'lucide-react';
 import { cn } from '@components/ui/cn';
 
 const NAV = [
@@ -10,6 +10,7 @@ const NAV = [
 	{ href: '/admin/tournaments', label: 'Tournois', icon: Trophy },
 	{ href: '/admin/users', label: 'Utilisateurs', icon: Users },
 	{ href: '/admin/invitations', label: 'Invitations', icon: Mail },
+	{ href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
 	{ href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
 ];
 

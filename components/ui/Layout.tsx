@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Swords, LogOut, UserCircle } from 'lucide-react';
 import { cn } from './cn';
+import { FeedbackWidget } from './FeedbackWidget';
 
 const navLinks = [
 	{ href: '/', label: 'Accueil' },
@@ -69,6 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 			</header>
 
 			<main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
+			<FeedbackWidget />
 		</>
 	);
 }
