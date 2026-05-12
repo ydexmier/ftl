@@ -6,7 +6,8 @@ export type RoundType =
 	| 'ELIMINATION'
 	| 'RANKED_SINGLE_ELIMINATION'
 	| 'FINAL'
-	| 'PLAY_VS_OPPONENT';
+	| 'PLAY_VS_OPPONENT'
+	| 'DECKBUILDING';
 
 export interface RoundRef {
 	id: number;
