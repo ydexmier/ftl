@@ -1,10 +1,13 @@
 import GroupTournamentModel from '@models/GroupTournament';
+import type { GroupTournamentStatus } from '@models/GroupTournament';
 import connectToMongoDB from '@/src/lib/db';
 
 export const GroupTournamentRepository = {
-  async findByGroupId(groupId: string) {
+  async findByGroupId(groupId: string, status?: GroupTournamentStatus) {
     await connectToMongoDB();
-    return GroupTournamentModel.find({ groupId }).lean();
+    const filter: Record<string, unknown> = { groupId };
+    if (status) filter.status = status;
+    return GroupTournamentModel.find(filter).lean();
   },
 
   async findByGroupAndTournament(groupId: string, tournamentId: number) {
@@ -19,12 +22,21 @@ export const GroupTournamentRepository = {
 
   async add(groupId: string, tournamentId: number, addedBy: string) {
     await connectToMongoDB();
-    return GroupTournamentModel.create({ groupId, tournamentId, addedBy });
+    return GroupTournamentModel.create({ groupId, tournamentId, addedBy, status: 'ACTIVE' });
   },
 
   async remove(groupId: string, tournamentId: number) {
     await connectToMongoDB();
     return GroupTournamentModel.findOneAndDelete({ groupId, tournamentId });
+  },
+
+  async updateStatus(groupId: string, tournamentId: number, status: GroupTournamentStatus) {
+    await connectToMongoDB();
+    return GroupTournamentModel.findOneAndUpdate(
+      { groupId, tournamentId },
+      { status },
+      { new: true },
+    ).lean();
   },
 
   async hasAccess(groupId: string, tournamentId: number): Promise<boolean> {
