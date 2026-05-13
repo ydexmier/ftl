@@ -57,6 +57,13 @@ export const TournamentConflictRepository = {
     }).lean();
   },
 
+  async findAllPendingAdminByGroup(groupId: string) {
+    await connectToMongoDB();
+    return TournamentConflictModel.find({ groupId, status: 'PENDING_ADMIN' })
+      .populate('userId', 'username')
+      .lean();
+  },
+
   async countPendingAdminByGroup(groupId: string) {
     await connectToMongoDB();
     return TournamentConflictModel.countDocuments({ groupId, status: 'PENDING_ADMIN' });

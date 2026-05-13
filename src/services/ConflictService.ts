@@ -7,6 +7,10 @@ export const ConflictService = {
     return TournamentConflictRepository.findPendingForUser(userId, tournamentId);
   },
 
+  async getGroupPendingAdminConflicts(groupId: string) {
+    return TournamentConflictRepository.findAllPendingAdminByGroup(groupId);
+  },
+
   async resolveMemberConflict(
     conflictId: string,
     userId: string,
