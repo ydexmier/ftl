@@ -64,6 +64,11 @@ export const UserRepository = {
       .lean();
   },
 
+  async updatePassword(id: string, passwordHash: string) {
+    await connectToMongoDB();
+    return UserModel.findByIdAndUpdate(id, { passwordHash });
+  },
+
   async delete(id: string) {
     await connectToMongoDB();
     return UserModel.findByIdAndDelete(id);

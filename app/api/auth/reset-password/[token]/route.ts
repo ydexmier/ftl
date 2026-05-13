@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import PasswordResetModel from '@models/PasswordReset';
-import UserModel from '@models/User';
+import { PasswordResetRepository } from '@/src/repositories/db/PasswordResetRepository';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { ApiResponse } from '@/src/lib/api/responses';
@@ -11,9 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
-  await connectToMongoDB();
 
-  const reset = await PasswordResetModel.findOne({ token });
+  const reset = await PasswordResetRepository.findByToken(token);
   if (!reset || reset.usedAt) return ApiResponse.badRequest('Lien invalide ou déjà utilisé');
   if (reset.expiresAt < new Date()) return ApiResponse.badRequest('Ce lien a expiré');
 
@@ -30,19 +28,15 @@ export async function POST(
   const check = validatePasswordStrength(password ?? '');
   if (!check.valid) return ApiResponse.badRequest(check.message!);
 
-  await connectToMongoDB();
-
-  const reset = await PasswordResetModel.findOne({ token });
+  const reset = await PasswordResetRepository.findByToken(token);
   if (!reset || reset.usedAt) return ApiResponse.badRequest('Lien invalide ou déjà utilisé');
   if (reset.expiresAt < new Date()) return ApiResponse.badRequest('Ce lien a expiré');
 
   const passwordHash = await hashPassword(password);
-  await UserModel.findByIdAndUpdate(reset.userId, { passwordHash });
+  await UserRepository.updatePassword(String(reset.userId), passwordHash);
+  await PasswordResetRepository.markUsed(token);
 
-  reset.usedAt = new Date();
-  await reset.save();
-
-  const user = await UserModel.findById(reset.userId).select('username').lean();
+  const user = await UserRepository.findById(String(reset.userId));
   await AuditLogRepository.create({
     action: 'PASSWORD_CHANGED',
     userId: reset.userId,
