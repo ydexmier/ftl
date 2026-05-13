@@ -2,12 +2,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle, HelpCircle } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AddTournamentModal } from './AddTournamentModal';
 import { ExternalAccessModal } from './ExternalAccessModal';
 import { AdminConflictModal } from './AdminConflictModal';
+import { UncertaintyModal } from './UncertaintyModal';
 
 interface GroupTournamentEntry {
   _id: string;
@@ -27,6 +28,15 @@ interface AdminConflict {
   previousInks: string[][];
   proposedInks: string[][];
   userId: { _id: string; username: string } | string;
+}
+
+interface UncertaintyConflict {
+  _id: string;
+  tournamentId: number;
+  playerId: number;
+  playerName: string;
+  previousInks: string[][];
+  proposedInks: string[][];
 }
 
 interface Props {
@@ -51,6 +61,8 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
   const [externalModal, setExternalModal] = useState<{ tournamentId: number; name: string } | null>(null);
   const [adminConflicts, setAdminConflicts] = useState<AdminConflict[]>([]);
   const [conflictModal, setConflictModal] = useState<{ tournamentId: number; name: string } | null>(null);
+  const [uncertainties, setUncertainties] = useState<UncertaintyConflict[]>([]);
+  const [uncertaintyModal, setUncertaintyModal] = useState<{ tournamentId: number; name: string } | null>(null);
 
   const isAdmin = myRole === 'ADMIN';
 
@@ -62,7 +74,19 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
       .catch(() => {});
   }, [groupId, isAdmin]);
 
+  useEffect(() => {
+    fetch(`/api/groups/${groupId}/uncertainties`)
+      .then((res) => (res.ok ? res.json() : { uncertainties: [] }))
+      .then((data) => setUncertainties(data.uncertainties ?? []))
+      .catch(() => {});
+  }, [groupId]);
+
   const conflictCountByTournament = adminConflicts.reduce<Record<number, number>>((acc, c) => {
+    acc[c.tournamentId] = (acc[c.tournamentId] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const uncertaintyCountByTournament = uncertainties.reduce<Record<number, number>>((acc, c) => {
     acc[c.tournamentId] = (acc[c.tournamentId] ?? 0) + 1;
     return acc;
   }, {});
@@ -90,6 +114,10 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
 
   const conflictsForModal = conflictModal
     ? adminConflicts.filter((c) => c.tournamentId === conflictModal.tournamentId)
+    : [];
+
+  const uncertaintiesForModal = uncertaintyModal
+    ? uncertainties.filter((c) => c.tournamentId === uncertaintyModal.tournamentId)
     : [];
 
   return (
@@ -124,6 +152,7 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
         <div className="space-y-2">
           {tournaments.map((t) => {
             const pendingCount = conflictCountByTournament[t.tournamentId] ?? 0;
+            const uncertaintyCount = uncertaintyCountByTournament[t.tournamentId] ?? 0;
             return (
               <div
                 key={t._id}
@@ -149,6 +178,15 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
                         >
                           <AlertTriangle className="h-3 w-3" />
                           {pendingCount} proposition{pendingCount > 1 ? 's' : ''}
+                        </button>
+                      )}
+                      {uncertaintyCount > 0 && (
+                        <button
+                          onClick={() => setUncertaintyModal({ tournamentId: t.tournamentId, name: t.name })}
+                          className="inline-flex items-center gap-1 rounded-md border border-blue-700 bg-blue-900/20 px-1.5 py-0.5 text-[10px] font-medium text-blue-400 hover:bg-blue-900/40 transition-colors"
+                        >
+                          <HelpCircle className="h-3 w-3" />
+                          {uncertaintyCount} incertitude{uncertaintyCount > 1 ? 's' : ''}
                         </button>
                       )}
                     </div>
@@ -216,6 +254,14 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
           conflicts={conflictsForModal}
           onConflictResolved={handleConflictResolved}
           onClose={() => setConflictModal(null)}
+        />
+      )}
+
+      {uncertaintyModal && uncertaintiesForModal.length > 0 && (
+        <UncertaintyModal
+          tournamentName={uncertaintyModal.name}
+          conflicts={uncertaintiesForModal}
+          onClose={() => setUncertaintyModal(null)}
         />
       )}
     </div>
