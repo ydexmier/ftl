@@ -41,8 +41,16 @@ export default async function TournamentsPage() {
   const groupSectionsData = await Promise.all(
     groups.map(async (g) => {
       const groupId = String(g._id);
-      const gts = await GroupTournamentRepository.findByGroupId(groupId);
-      return { group: g, groupId, tournamentIds: gts.map((gt) => gt.tournamentId) };
+      const [gtsActive, gtsArchived] = await Promise.all([
+        GroupTournamentRepository.findByGroupId(groupId, 'ACTIVE'),
+        GroupTournamentRepository.findByGroupId(groupId, 'ARCHIVED'),
+      ]);
+      return {
+        group: g,
+        groupId,
+        tournamentIds: gtsActive.map((gt) => gt.tournamentId),
+        archivedTournamentIds: gtsArchived.map((gt) => gt.tournamentId),
+      };
     }),
   );
 
@@ -53,7 +61,7 @@ export default async function TournamentsPage() {
   const userTournamentIds = userLinksActive.map((l) => l.tournamentId);
   const archivedTournamentIds = userLinksArchived.map((l) => l.tournamentId);
 
-  const allGroupTournamentIds = groupSectionsData.flatMap((s) => s.tournamentIds);
+  const allGroupTournamentIds = groupSectionsData.flatMap((s) => [...s.tournamentIds, ...s.archivedTournamentIds]);
   const allNeededIds = [...new Set([...userTournamentIds, ...archivedTournamentIds, ...allGroupTournamentIds])];
 
   const neededTournaments = await TournamentRepository.findByIds(allNeededIds);
@@ -71,8 +79,12 @@ export default async function TournamentsPage() {
     .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
     .map(serializeTournament);
 
-  const groupSections = groupSectionsData.map(({ group, groupId, tournamentIds }) => {
+  const groupSections = groupSectionsData.map(({ group, groupId, tournamentIds, archivedTournamentIds: archivedIds }) => {
     const tournaments = tournamentIds
+      .map((id) => tournamentMap.get(id))
+      .filter((t): t is ITournament => t !== undefined)
+      .map(serializeTournament);
+    const archivedGroupTournaments = archivedIds
       .map((id) => tournamentMap.get(id))
       .filter((t): t is ITournament => t !== undefined)
       .map(serializeTournament);
@@ -81,6 +93,7 @@ export default async function TournamentsPage() {
       groupName: group.name,
       myRole: group.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER',
       tournaments,
+      archivedTournaments: archivedGroupTournaments,
     };
   });
 

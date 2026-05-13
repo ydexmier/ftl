@@ -162,6 +162,13 @@ export const GroupService = {
     return GroupTournamentRepository.remove(groupId, tournamentId);
   },
 
+  async archiveGroupTournament(groupId: string, userId: string, tournamentId: number, status: 'ACTIVE' | 'ARCHIVED') {
+    await assertGroupAdmin(groupId, userId);
+    const entry = await GroupTournamentRepository.findByGroupAndTournament(groupId, tournamentId);
+    if (!entry) throw new Error('Tournoi introuvable dans ce groupe');
+    return GroupTournamentRepository.updateStatus(groupId, tournamentId, status);
+  },
+
   async getGroupTournaments(groupId: string, userId: string) {
     await assertGroupMember(groupId, userId);
     return GroupTournamentRepository.findByGroupId(groupId);
