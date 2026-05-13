@@ -1,11 +1,10 @@
 'use client';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Globe, Users, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { BookUser, Users, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
 import TournamentCard, { type TournamentCardData } from './TournamentCard';
-import FetchTournamentForm from './FetchTournamentForm';
+import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
 
 interface TournamentSummary extends TournamentCardData {
@@ -33,7 +32,7 @@ interface AdminGroup {
 }
 
 interface Props {
-  publicTournaments: TournamentSummary[];
+  personalTournaments: TournamentSummary[];
   groupSections: GroupSection[];
   invitedTournaments: InvitedEntry[];
   adminGroups?: AdminGroup[];
@@ -146,13 +145,12 @@ interface FlyingCard {
 }
 
 export function TournamentsPageClient({
-  publicTournaments,
+  personalTournaments,
   groupSections,
   invitedTournaments,
   adminGroups = [],
   initialAssignments = {},
 }: Props) {
-  const router = useRouter();
   const [assignments, setAssignments] = useState<Record<number, string[]>>(initialAssignments);
   const [openPopover, setOpenPopover] = useState<number | null>(null);
   const [successId, setSuccessId] = useState<number | null>(null);
@@ -185,15 +183,13 @@ export function TournamentsPageClient({
     }));
 
     if (assign) {
-      // Show success on button
       setSuccessId(tournamentId);
       setOpenPopover(null);
 
-      // Start ghost card animation after a short delay
       const cardEl = cardRefs.current.get(tournamentId);
       if (cardEl) {
         const fromRect = cardEl.getBoundingClientRect();
-        const tournament = publicTournaments.find((t) => t.id === tournamentId);
+        const tournament = personalTournaments.find((t) => t.id === tournamentId);
         if (tournament) {
           setFlyingCard({ tournament, fromRect });
           requestAnimationFrame(() => {
@@ -202,7 +198,6 @@ export function TournamentsPageClient({
             });
           });
 
-          // After animation: update local sections + clear ghost
           setTimeout(() => {
             setLocalGroupSections((prev) =>
               prev.map((s) =>
@@ -217,7 +212,6 @@ export function TournamentsPageClient({
         }
       }
 
-      // Clear success state
       setTimeout(() => setSuccessId(null), 1500);
     } else {
       setLocalGroupSections((prev) =>
@@ -244,7 +238,6 @@ export function TournamentsPageClient({
         if (!res.ok) throw new Error();
       }
     } catch {
-      // Revert on error
       setAssignments((prev) => ({
         ...prev,
         [tournamentId]: assign
@@ -265,20 +258,18 @@ export function TournamentsPageClient({
 
   return (
     <div className="flex flex-col gap-6 mt-6">
-      <FetchTournamentForm
-        onSubmitCallback={(data) => router.push(`/tournaments/${data.id}`)}
-      />
+      <TournamentSearchBar />
 
-      {/* Section 1 : Tous les tournois */}
-      {publicTournaments.length > 0 && (
+      {/* Section 1 : Mes tournois */}
+      {personalTournaments.length > 0 && (
         <CollapsibleSection
-          icon={Globe}
-          title="Tous les tournois"
-          count={publicTournaments.length}
-          subtitle="Scooting personnel, visible uniquement par vous."
+          icon={BookUser}
+          title="Mes tournois"
+          count={personalTournaments.length}
+          subtitle="Tournois liés à votre compte, visibles uniquement par vous."
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {publicTournaments.map((t) => {
+            {personalTournaments.map((t) => {
               const assignedGroups = getAssignedGroups(t.id);
               const hasAdminGroups = adminGroups.length > 0;
               return (
