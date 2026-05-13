@@ -16,6 +16,7 @@ interface GroupSection {
   groupName: string;
   myRole: string;
   tournaments: TournamentSummary[];
+  archivedTournaments?: TournamentSummary[];
 }
 
 interface InvitedEntry {
@@ -88,8 +89,19 @@ function CollapsibleSection({
   );
 }
 
-function GroupSubSection({ section }: { section: GroupSection }) {
+function GroupSubSection({
+  section,
+  onArchive,
+  onRestore,
+}: {
+  section: GroupSection;
+  onArchive?: (tournamentId: number) => void;
+  onRestore?: (tournamentId: number) => void;
+}) {
   const [open, setOpen] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const isAdmin = section.myRole === 'ADMIN';
+  const archived = section.archivedTournaments ?? [];
 
   return (
     <div className="border border-border rounded-lg overflow-hidden">
@@ -103,6 +115,9 @@ function GroupSubSection({ section }: { section: GroupSection }) {
           <span className="text-xs text-muted-foreground">
             {section.tournaments.length} tournoi{section.tournaments.length !== 1 ? 's' : ''}
           </span>
+          {archived.length > 0 && (
+            <span className="text-xs text-muted-foreground">· {archived.length} archivé{archived.length !== 1 ? 's' : ''}</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -120,18 +135,49 @@ function GroupSubSection({ section }: { section: GroupSection }) {
         </div>
       </button>
       {open && (
-        <div className="p-4">
+        <div className="p-4 flex flex-col gap-3">
           {section.tournaments.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center border border-dashed border-border rounded-lg">
-              Aucun tournoi dans ce groupe.
+              Aucun tournoi actif dans ce groupe.
             </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {section.tournaments.map((t) => (
                 <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
-                  <TournamentCard tournament={t} contextLabel={section.groupName} />
+                  <TournamentCard
+                    tournament={t}
+                    contextLabel={section.groupName}
+                    onArchiveClick={isAdmin && onArchive ? (e) => { e.preventDefault(); e.stopPropagation(); onArchive(t.id); } : undefined}
+                  />
                 </Link>
               ))}
+            </div>
+          )}
+
+          {archived.length > 0 && (
+            <div>
+              <button
+                onClick={() => setShowArchived((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2"
+              >
+                {showArchived ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                {showArchived ? 'Masquer' : 'Voir'} les archivés ({archived.length})
+              </button>
+              {showArchived && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {archived.map((t) => (
+                    <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
+                      <TournamentCard
+                        tournament={t}
+                        contextLabel="Archivé"
+                        contextColor="secondary"
+                        onArchiveClick={isAdmin && onRestore ? (e) => { e.preventDefault(); e.stopPropagation(); onRestore(t.id); } : undefined}
+                        isArchived
+                      />
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -213,6 +259,78 @@ export function TournamentsPageClient({
     } catch {
       setLocalArchived((prev) => [tournament, ...prev]);
       setLocalPersonal((prev) => prev.filter((t) => t.id !== tournamentId));
+    }
+  };
+
+  const handleGroupArchive = async (groupId: string, tournamentId: number) => {
+    setLocalGroupSections((prev) =>
+      prev.map((s) => {
+        if (s.groupId !== groupId) return s;
+        const tournament = s.tournaments.find((t) => t.id === tournamentId);
+        if (!tournament) return s;
+        return {
+          ...s,
+          tournaments: s.tournaments.filter((t) => t.id !== tournamentId),
+          archivedTournaments: [tournament, ...(s.archivedTournaments ?? [])],
+        };
+      }),
+    );
+    try {
+      const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ARCHIVED' }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLocalGroupSections((prev) =>
+        prev.map((s) => {
+          if (s.groupId !== groupId) return s;
+          const tournament = (s.archivedTournaments ?? []).find((t) => t.id === tournamentId);
+          if (!tournament) return s;
+          return {
+            ...s,
+            tournaments: [tournament, ...s.tournaments],
+            archivedTournaments: (s.archivedTournaments ?? []).filter((t) => t.id !== tournamentId),
+          };
+        }),
+      );
+    }
+  };
+
+  const handleGroupRestore = async (groupId: string, tournamentId: number) => {
+    setLocalGroupSections((prev) =>
+      prev.map((s) => {
+        if (s.groupId !== groupId) return s;
+        const tournament = (s.archivedTournaments ?? []).find((t) => t.id === tournamentId);
+        if (!tournament) return s;
+        return {
+          ...s,
+          tournaments: [tournament, ...s.tournaments],
+          archivedTournaments: (s.archivedTournaments ?? []).filter((t) => t.id !== tournamentId),
+        };
+      }),
+    );
+    try {
+      const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLocalGroupSections((prev) =>
+        prev.map((s) => {
+          if (s.groupId !== groupId) return s;
+          const tournament = s.tournaments.find((t) => t.id === tournamentId);
+          if (!tournament) return s;
+          return {
+            ...s,
+            tournaments: s.tournaments.filter((t) => t.id !== tournamentId),
+            archivedTournaments: [tournament, ...(s.archivedTournaments ?? [])],
+          };
+        }),
+      );
     }
   };
 
@@ -346,7 +464,12 @@ export function TournamentsPageClient({
         >
           <div className="flex flex-col gap-3">
             {localGroupSections.map((s) => (
-              <GroupSubSection key={s.groupId} section={s} />
+              <GroupSubSection
+                key={s.groupId}
+                section={s}
+                onArchive={(tid) => handleGroupArchive(s.groupId, tid)}
+                onRestore={(tid) => handleGroupRestore(s.groupId, tid)}
+              />
             ))}
           </div>
         </CollapsibleSection>
