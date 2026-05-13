@@ -4,6 +4,7 @@ import { GroupInvitationRepository } from '@/src/repositories/db/GroupInvitation
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { DataMergeService } from '@/src/services/DataMergeService';
 import type { GroupMemberRole } from '@/src/types/group';
 
 async function assertGroupAdmin(groupId: string, userId: string) {
@@ -132,12 +133,9 @@ export const GroupService = {
     await GroupInvitationRepository.updateStatus(invitationId, status);
 
     if (status === 'ACCEPTED') {
-      await GroupRepository.addMember(
-        String(invitation.groupId),
-        userId,
-        String(invitation.invitedBy),
-        'MEMBER',
-      );
+      const groupId = String(invitation.groupId);
+      await GroupRepository.addMember(groupId, userId, String(invitation.invitedBy), 'MEMBER');
+      await DataMergeService.mergeOnGroupJoin(userId, groupId);
     }
 
     return { status };
