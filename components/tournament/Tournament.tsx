@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { AlertTriangle } from 'lucide-react';
 
 import { getRoundName } from '@/src/domain/rules/roundRules';
 import Round from '@components/round/Round';
@@ -8,6 +9,7 @@ import DeckbuildingRound from '@components/round/DeckbuildingRound';
 import { useTournament } from '@/src/hooks/useTournament';
 import FetchButton from '@components/ui/FetchButton';
 import { Spinner } from '@components/ui/Spinner';
+import { ConflictResolutionModal } from '@components/tournament/ConflictResolutionModal';
 import type { RoundType } from '@/src/types/round';
 
 interface TournamentProps {
@@ -22,9 +24,30 @@ export default function Tournament({ id }: TournamentProps) {
 	const querySearch = searchParams.get('search') ?? '';
 
 	const [roundId, setRoundId] = useState(queryRoundId);
+	const [conflicts, setConflicts] = useState<unknown[]>([]);
+	const [showConflictModal, setShowConflictModal] = useState(false);
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
 	const { lastFetchedAt } = (tournament as { lastFetchedAt?: string }) || {};
+
+	useEffect(() => {
+		fetch(`/api/tournaments/${id}/conflicts`)
+			.then((res) => (res.ok ? res.json() : { conflicts: [] }))
+			.then((data) => {
+				const list = data.conflicts ?? [];
+				setConflicts(list);
+				if (list.length > 0) setShowConflictModal(true);
+			})
+			.catch(() => {});
+	}, [id]);
+
+	const handleConflictResolved = (conflictId: string) => {
+		setConflicts((prev) => {
+			const next = prev.filter((c) => (c as { _id: string })._id !== conflictId);
+			if (next.length === 0) setShowConflictModal(false);
+			return next;
+		});
+	};
 
 	const selectedRoundType: RoundType | undefined = (tournament as any)?.tournament_phases
 		?.flatMap((p: any) => p.rounds ?? [])
@@ -54,46 +77,67 @@ export default function Tournament({ id }: TournamentProps) {
 	) ?? [];
 
 	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex items-center justify-between gap-4 flex-wrap">
-				<h1 className="text-xl font-bold text-foreground">
-					Tournoi : {(tournament as any).name}
-				</h1>
-				<p className="text-sm text-muted-foreground">
-					Joueurs : {(tournament as any).registered_user_count}/{(tournament as any).capacity}
-				</p>
-				<FetchButton
-					defaultLabel="MAJ Tournoi"
-					onFetch={refreshTournament}
-					refreshDelay={60}
-					lastUpdate={lastFetchedAt}
+		<>
+			{showConflictModal && conflicts.length > 0 && (
+				<ConflictResolutionModal
+					tournamentId={Number(id)}
+					conflicts={conflicts as any}
+					onConflictResolved={handleConflictResolved}
+					onClose={() => setShowConflictModal(false)}
 				/>
+			)}
+
+			<div className="flex flex-col gap-4">
+				<div className="flex items-center justify-between gap-4 flex-wrap">
+					<h1 className="text-xl font-bold text-foreground">
+						Tournoi : {(tournament as any).name}
+					</h1>
+					<p className="text-sm text-muted-foreground">
+						Joueurs : {(tournament as any).registered_user_count}/{(tournament as any).capacity}
+					</p>
+					<FetchButton
+						defaultLabel="MAJ Tournoi"
+						onFetch={refreshTournament}
+						refreshDelay={60}
+						lastUpdate={lastFetchedAt}
+					/>
+				</div>
+
+				{conflicts.length > 0 && !showConflictModal && (
+					<button
+						onClick={() => setShowConflictModal(true)}
+						className="flex items-center gap-2 self-start rounded-md border border-yellow-700 bg-yellow-900/20 px-3 py-1.5 text-sm text-yellow-400 hover:bg-yellow-900/40 transition-colors"
+					>
+						<AlertTriangle className="h-4 w-4 shrink-0" />
+						{conflicts.length} conflit{conflicts.length > 1 ? 's' : ''} d&apos;encres en attente
+					</button>
+				)}
+
+				<select
+					value={roundId}
+					onChange={handleRoundChange}
+					className="h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+				>
+					<option value="">-- sélectionner une round --</option>
+					{roundOptions.map((opt: { value: number; label: string }) => (
+						<option key={opt.value} value={opt.value}>
+							{opt.label}
+						</option>
+					))}
+				</select>
+
+				{roundId && selectedRoundType === 'DECKBUILDING' && (
+					<DeckbuildingRound playerCount={(tournament as any)?.registered_user_count} />
+				)}
+				{roundId && selectedRoundType !== 'DECKBUILDING' && (
+					<Round
+						roundId={roundId}
+						page={queryPage}
+						perPage={queryPerPage}
+						search={querySearch}
+					/>
+				)}
 			</div>
-
-			<select
-				value={roundId}
-				onChange={handleRoundChange}
-				className="h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-			>
-				<option value="">-- sélectionner une round --</option>
-				{roundOptions.map((opt: { value: number; label: string }) => (
-					<option key={opt.value} value={opt.value}>
-						{opt.label}
-					</option>
-				))}
-			</select>
-
-			{roundId && selectedRoundType === 'DECKBUILDING' && (
-				<DeckbuildingRound playerCount={(tournament as any)?.registered_user_count} />
-			)}
-			{roundId && selectedRoundType !== 'DECKBUILDING' && (
-				<Round
-					roundId={roundId}
-					page={queryPage}
-					perPage={queryPerPage}
-					search={querySearch}
-				/>
-			)}
-		</div>
+		</>
 	);
 }
