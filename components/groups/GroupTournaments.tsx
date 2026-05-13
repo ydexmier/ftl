@@ -1,12 +1,13 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, Plus, Trash2, Users } from 'lucide-react';
+import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AddTournamentModal } from './AddTournamentModal';
 import { ExternalAccessModal } from './ExternalAccessModal';
+import { AdminConflictModal } from './AdminConflictModal';
 
 interface GroupTournamentEntry {
   _id: string;
@@ -16,6 +17,16 @@ interface GroupTournamentEntry {
   name: string;
   eventStatus: string;
   startDatetime: string;
+}
+
+interface AdminConflict {
+  _id: string;
+  tournamentId: number;
+  playerId: number;
+  playerName: string;
+  previousInks: string[][];
+  proposedInks: string[][];
+  userId: { _id: string; username: string } | string;
 }
 
 interface Props {
@@ -38,8 +49,33 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
   const [showAdd, setShowAdd] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [externalModal, setExternalModal] = useState<{ tournamentId: number; name: string } | null>(null);
+  const [adminConflicts, setAdminConflicts] = useState<AdminConflict[]>([]);
+  const [conflictModal, setConflictModal] = useState<{ tournamentId: number; name: string } | null>(null);
 
   const isAdmin = myRole === 'ADMIN';
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    fetch(`/api/groups/${groupId}/conflicts`)
+      .then((res) => (res.ok ? res.json() : { conflicts: [] }))
+      .then((data) => setAdminConflicts(data.conflicts ?? []))
+      .catch(() => {});
+  }, [groupId, isAdmin]);
+
+  const conflictCountByTournament = adminConflicts.reduce<Record<number, number>>((acc, c) => {
+    acc[c.tournamentId] = (acc[c.tournamentId] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const handleConflictResolved = (conflictId: string) => {
+    setAdminConflicts((prev) => {
+      const next = prev.filter((c) => c._id !== conflictId);
+      if (next.filter((c) => c.tournamentId === conflictModal?.tournamentId).length === 0) {
+        setConflictModal(null);
+      }
+      return next;
+    });
+  };
 
   const removeTournament = async (tid: number) => {
     if (!confirm('Retirer ce tournoi du groupe ?')) return;
@@ -51,6 +87,10 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
       setLoadingId(null);
     }
   };
+
+  const conflictsForModal = conflictModal
+    ? adminConflicts.filter((c) => c.tournamentId === conflictModal.tournamentId)
+    : [];
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -82,60 +122,72 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
         </div>
       ) : (
         <div className="space-y-2">
-          {tournaments.map((t) => (
-            <div
-              key={t._id}
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card gap-3"
-            >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <Trophy className="h-5 w-5 text-muted-foreground shrink-0" />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link
-                      href={`/tournaments/${t.tournamentId}?groupId=${groupId}`}
-                      className="font-medium text-foreground hover:underline truncate"
-                    >
-                      {t.name}
-                    </Link>
-                    {t.eventStatus && (
-                      <Badge label={t.eventStatus} color={statusColor(t.eventStatus)} size="sm" />
+          {tournaments.map((t) => {
+            const pendingCount = conflictCountByTournament[t.tournamentId] ?? 0;
+            return (
+              <div
+                key={t._id}
+                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card gap-3"
+              >
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <Trophy className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link
+                        href={`/tournaments/${t.tournamentId}?groupId=${groupId}`}
+                        className="font-medium text-foreground hover:underline truncate"
+                      >
+                        {t.name}
+                      </Link>
+                      {t.eventStatus && (
+                        <Badge label={t.eventStatus} color={statusColor(t.eventStatus)} size="sm" />
+                      )}
+                      {isAdmin && pendingCount > 0 && (
+                        <button
+                          onClick={() => setConflictModal({ tournamentId: t.tournamentId, name: t.name })}
+                          className="inline-flex items-center gap-1 rounded-md border border-yellow-700 bg-yellow-900/20 px-1.5 py-0.5 text-[10px] font-medium text-yellow-400 hover:bg-yellow-900/40 transition-colors"
+                        >
+                          <AlertTriangle className="h-3 w-3" />
+                          {pendingCount} proposition{pendingCount > 1 ? 's' : ''}
+                        </button>
+                      )}
+                    </div>
+                    {t.startDatetime && (
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(t.startDatetime).toLocaleDateString('fr-FR', {
+                          day: 'numeric', month: 'long', year: 'numeric',
+                        })}
+                      </p>
                     )}
                   </div>
-                  {t.startDatetime && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {new Date(t.startDatetime).toLocaleDateString('fr-FR', {
-                        day: 'numeric', month: 'long', year: 'numeric',
-                      })}
-                    </p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {isAdmin && (
+                    <>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setExternalModal({ tournamentId: t.tournamentId, name: t.name })}
+                        title="Inviter un utilisateur externe"
+                      >
+                        <Users className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        loading={loadingId === String(t.tournamentId)}
+                        onClick={() => removeTournament(t.tournamentId)}
+                        className="hover:text-destructive"
+                        title="Retirer du groupe"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
-              <div className="flex gap-1 shrink-0">
-                {isAdmin && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setExternalModal({ tournamentId: t.tournamentId, name: t.name })}
-                      title="Inviter un utilisateur externe"
-                    >
-                      <Users className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      loading={loadingId === String(t.tournamentId)}
-                      onClick={() => removeTournament(t.tournamentId)}
-                      className="hover:text-destructive"
-                      title="Retirer du groupe"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -154,6 +206,16 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
           tournamentId={externalModal.tournamentId}
           tournamentName={externalModal.name}
           onClose={() => setExternalModal(null)}
+        />
+      )}
+
+      {conflictModal && conflictsForModal.length > 0 && (
+        <AdminConflictModal
+          groupId={groupId}
+          tournamentName={conflictModal.name}
+          conflicts={conflictsForModal}
+          onConflictResolved={handleConflictResolved}
+          onClose={() => setConflictModal(null)}
         />
       )}
     </div>
