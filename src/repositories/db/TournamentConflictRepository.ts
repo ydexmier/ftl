@@ -69,6 +69,11 @@ export const TournamentConflictRepository = {
     return TournamentConflictModel.countDocuments({ groupId, status: 'PENDING_ADMIN' });
   },
 
+  async findAllUncertaintyByGroup(groupId: string) {
+    await connectToMongoDB();
+    return TournamentConflictModel.find({ groupId, status: 'UNCERTAINTY' }).lean();
+  },
+
   async countUncertaintyByGroupAndTournament(groupId: string, tournamentId: number) {
     await connectToMongoDB();
     return TournamentConflictModel.countDocuments({ groupId, tournamentId, status: 'UNCERTAINTY' });

@@ -11,6 +11,10 @@ export const ConflictService = {
     return TournamentConflictRepository.findAllPendingAdminByGroup(groupId);
   },
 
+  async getGroupUncertainties(groupId: string) {
+    return TournamentConflictRepository.findAllUncertaintyByGroup(groupId);
+  },
+
   async resolveMemberConflict(
     conflictId: string,
     userId: string,
