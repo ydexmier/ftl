@@ -1,5 +1,5 @@
 import { Badge } from '@components/ui/Badge';
-import { UserRoundPlus, Check, MapPin, Users } from 'lucide-react';
+import { UserRoundPlus, Check, MapPin, Users, Archive, ArchiveRestore } from 'lucide-react';
 
 export interface TournamentCardData {
   id: number;
@@ -29,6 +29,8 @@ interface TournamentCardProps {
   isPopoverOpen?: boolean;
   onAssignClick?: (e: React.MouseEvent) => void;
   popoverSlot?: React.ReactNode;
+  onArchiveClick?: (e: React.MouseEvent) => void;
+  isArchived?: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { strip: string; label: string; badge: 'success' | 'info' | 'secondary' | 'warning' }> = {
@@ -50,6 +52,8 @@ const TournamentCard = ({
   isPopoverOpen,
   onAssignClick,
   popoverSlot,
+  onArchiveClick,
+  isArchived,
 }: TournamentCardProps) => {
   const status = STATUS_CONFIG[tournament.event_status] ?? { strip: 'bg-zinc-700', label: tournament.event_status, badge: 'secondary' as const };
   const hasCapacity = tournament.capacity > 0;
@@ -129,29 +133,43 @@ const TournamentCard = ({
             )}
           </div>
 
-          {showAssignButton && (
-            <div className="relative shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onArchiveClick && (
               <button
                 onMouseDown={(e) => e.stopPropagation()}
-                onClick={onAssignClick}
-                title={isAssignSuccess ? 'Assigné !' : 'Associer à un groupe'}
-                className={`h-7 w-7 rounded-md border flex items-center justify-center transition-all duration-300 ${
-                  isAssignSuccess
-                    ? 'border-green-500 bg-green-500/20 text-green-400'
-                    : isPopoverOpen
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
-                }`}
+                onClick={onArchiveClick}
+                title={isArchived ? 'Restaurer' : 'Archiver'}
+                className="h-7 w-7 rounded-md border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground flex items-center justify-center transition-colors"
               >
-                {isAssignSuccess ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <UserRoundPlus className="h-3.5 w-3.5" />
-                )}
+                {isArchived
+                  ? <ArchiveRestore className="h-3.5 w-3.5" />
+                  : <Archive className="h-3.5 w-3.5" />}
               </button>
-              {isPopoverOpen && popoverSlot}
-            </div>
-          )}
+            )}
+            {showAssignButton && (
+              <div className="relative">
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={onAssignClick}
+                  title={isAssignSuccess ? 'Assigné !' : 'Associer à un groupe'}
+                  className={`h-7 w-7 rounded-md border flex items-center justify-center transition-all duration-300 ${
+                    isAssignSuccess
+                      ? 'border-green-500 bg-green-500/20 text-green-400'
+                      : isPopoverOpen
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground'
+                  }`}
+                >
+                  {isAssignSuccess ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <UserRoundPlus className="h-3.5 w-3.5" />
+                  )}
+                </button>
+                {isPopoverOpen && popoverSlot}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

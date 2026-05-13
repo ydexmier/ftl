@@ -46,16 +46,26 @@ export default async function TournamentsPage() {
     }),
   );
 
-  const userLinks = await UserTournamentRepository.findByUserId(user.userId, 'ACTIVE');
-  const userTournamentIds = userLinks.map((l) => l.tournamentId);
+  const [userLinksActive, userLinksArchived] = await Promise.all([
+    UserTournamentRepository.findByUserId(user.userId, 'ACTIVE'),
+    UserTournamentRepository.findByUserId(user.userId, 'ARCHIVED'),
+  ]);
+  const userTournamentIds = userLinksActive.map((l) => l.tournamentId);
+  const archivedTournamentIds = userLinksArchived.map((l) => l.tournamentId);
 
   const allGroupTournamentIds = groupSectionsData.flatMap((s) => s.tournamentIds);
-  const allNeededIds = [...new Set([...userTournamentIds, ...allGroupTournamentIds])];
+  const allNeededIds = [...new Set([...userTournamentIds, ...archivedTournamentIds, ...allGroupTournamentIds])];
 
   const neededTournaments = await TournamentRepository.findByIds(allNeededIds);
   const tournamentMap = new Map(neededTournaments.map((t) => [t.id, t]));
 
   const personalTournaments = userTournamentIds
+    .map((id) => tournamentMap.get(id))
+    .filter((t): t is ITournament => t !== undefined)
+    .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
+    .map(serializeTournament);
+
+  const archivedTournaments = archivedTournamentIds
     .map((id) => tournamentMap.get(id))
     .filter((t): t is ITournament => t !== undefined)
     .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
@@ -109,6 +119,7 @@ export default async function TournamentsPage() {
   return (
     <TournamentsPageClient
       personalTournaments={personalTournaments}
+      archivedTournaments={archivedTournaments}
       groupSections={groupSections.filter((s) => s.tournaments.length > 0 || groups.length > 0)}
       invitedTournaments={invitedTournaments}
       adminGroups={adminGroups}
