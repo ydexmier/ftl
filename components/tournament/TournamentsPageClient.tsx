@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { BookUser, Users, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
+import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX } from 'lucide-react';
 import TournamentCard, { type TournamentCardData } from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
@@ -33,6 +33,7 @@ interface AdminGroup {
 
 interface Props {
   personalTournaments: TournamentSummary[];
+  archivedTournaments?: TournamentSummary[];
   groupSections: GroupSection[];
   invitedTournaments: InvitedEntry[];
   adminGroups?: AdminGroup[];
@@ -146,6 +147,7 @@ interface FlyingCard {
 
 export function TournamentsPageClient({
   personalTournaments,
+  archivedTournaments = [],
   groupSections,
   invitedTournaments,
   adminGroups = [],
@@ -155,14 +157,14 @@ export function TournamentsPageClient({
   const [openPopover, setOpenPopover] = useState<number | null>(null);
   const [successId, setSuccessId] = useState<number | null>(null);
   const [localGroupSections, setLocalGroupSections] = useState<GroupSection[]>(groupSections);
+  const [localPersonal, setLocalPersonal] = useState<TournamentSummary[]>(personalTournaments);
+  const [localArchived, setLocalArchived] = useState<TournamentSummary[]>(archivedTournaments);
   const [flyingCard, setFlyingCard] = useState<FlyingCard | null>(null);
   const [isFlying, setIsFlying] = useState(false);
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  useEffect(() => { setIsMounted(true); }, []);
 
   const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
     if (el) cardRefs.current.set(id, el);
@@ -172,6 +174,46 @@ export function TournamentsPageClient({
   const getAssignedGroups = (tournamentId: number): AdminGroup[] => {
     const ids = assignments[tournamentId] ?? [];
     return adminGroups.filter((g) => ids.includes(g.groupId));
+  };
+
+  const handleArchive = async (tournamentId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const tournament = localPersonal.find((t) => t.id === tournamentId);
+    if (!tournament) return;
+    setLocalPersonal((prev) => prev.filter((t) => t.id !== tournamentId));
+    setLocalArchived((prev) => [tournament, ...prev]);
+    try {
+      const res = await fetch(`/api/user/tournaments/${tournamentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ARCHIVED' }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLocalPersonal((prev) => [tournament, ...prev]);
+      setLocalArchived((prev) => prev.filter((t) => t.id !== tournamentId));
+    }
+  };
+
+  const handleRestore = async (tournamentId: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const tournament = localArchived.find((t) => t.id === tournamentId);
+    if (!tournament) return;
+    setLocalArchived((prev) => prev.filter((t) => t.id !== tournamentId));
+    setLocalPersonal((prev) => [tournament, ...prev]);
+    try {
+      const res = await fetch(`/api/user/tournaments/${tournamentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'ACTIVE' }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      setLocalArchived((prev) => [tournament, ...prev]);
+      setLocalPersonal((prev) => prev.filter((t) => t.id !== tournamentId));
+    }
   };
 
   const handleToggleGroup = async (tournamentId: number, groupId: string, assign: boolean) => {
@@ -189,15 +231,10 @@ export function TournamentsPageClient({
       const cardEl = cardRefs.current.get(tournamentId);
       if (cardEl) {
         const fromRect = cardEl.getBoundingClientRect();
-        const tournament = personalTournaments.find((t) => t.id === tournamentId);
+        const tournament = localPersonal.find((t) => t.id === tournamentId);
         if (tournament) {
           setFlyingCard({ tournament, fromRect });
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              setIsFlying(true);
-            });
-          });
-
+          requestAnimationFrame(() => { requestAnimationFrame(() => { setIsFlying(true); }); });
           setTimeout(() => {
             setLocalGroupSections((prev) =>
               prev.map((s) =>
@@ -211,7 +248,6 @@ export function TournamentsPageClient({
           }, 650);
         }
       }
-
       setTimeout(() => setSuccessId(null), 1500);
     } else {
       setLocalGroupSections((prev) =>
@@ -232,9 +268,7 @@ export function TournamentsPageClient({
         });
         if (!res.ok) throw new Error();
       } else {
-        const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
-          method: 'DELETE',
-        });
+        const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, { method: 'DELETE' });
         if (!res.ok) throw new Error();
       }
     } catch {
@@ -261,24 +295,23 @@ export function TournamentsPageClient({
       <TournamentSearchBar />
 
       {/* Section 1 : Mes tournois */}
-      {personalTournaments.length > 0 && (
+      {localPersonal.length > 0 && (
         <CollapsibleSection
           icon={BookUser}
           title="Mes tournois"
-          count={personalTournaments.length}
+          count={localPersonal.length}
           subtitle="Tournois liés à votre compte, visibles uniquement par vous."
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {personalTournaments.map((t) => {
+            {localPersonal.map((t) => {
               const assignedGroups = getAssignedGroups(t.id);
-              const hasAdminGroups = adminGroups.length > 0;
               return (
                 <div key={t.id} ref={setCardRef(t.id)}>
                   <Link href={`/tournaments/${t.id}`} className="block">
                     <TournamentCard
                       tournament={t}
                       assignedGroups={assignedGroups}
-                      showAssignButton={hasAdminGroups}
+                      showAssignButton={adminGroups.length > 0}
                       isAssignSuccess={successId === t.id}
                       isPopoverOpen={openPopover === t.id}
                       onAssignClick={(e) => {
@@ -294,6 +327,7 @@ export function TournamentsPageClient({
                           onClose={() => setOpenPopover(null)}
                         />
                       }
+                      onArchiveClick={(e) => handleArchive(t.id, e)}
                     />
                   </Link>
                 </div>
@@ -338,6 +372,31 @@ export function TournamentsPageClient({
                   contextLabel={`Invité — ${entry.groupName}`}
                   contextColor="info"
                   expiresAt={entry.expiresAt}
+                />
+              </Link>
+            ))}
+          </div>
+        </CollapsibleSection>
+      )}
+
+      {/* Section 4 : Archivés */}
+      {localArchived.length > 0 && (
+        <CollapsibleSection
+          icon={ArchiveX}
+          title="Archivés"
+          count={localArchived.length}
+          subtitle="Tournois masqués. Restaurez-les pour les retrouver dans vos tournois actifs."
+          defaultOpen={false}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {localArchived.map((t) => (
+              <Link key={t.id} href={`/tournaments/${t.id}`} className="block">
+                <TournamentCard
+                  tournament={t}
+                  contextLabel="Archivé"
+                  contextColor="secondary"
+                  onArchiveClick={(e) => handleRestore(t.id, e)}
+                  isArchived
                 />
               </Link>
             ))}
