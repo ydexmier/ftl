@@ -2,6 +2,7 @@ import { getServerUser } from '@/src/lib/auth/getServerUser';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
+import { UserTournamentRepository } from '@/src/repositories/db/UserTournamentRepository';
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import connectToMongoDB from '@/src/lib/db';
 import { TournamentsPageClient } from '@components/tournament/TournamentsPageClient';
@@ -25,18 +26,10 @@ export default async function TournamentsPage() {
   await connectToMongoDB();
   const user = await getServerUser();
 
-  const allTournaments = (await TournamentRepository.findAll()).sort(
-    (a, b) =>
-      new Date(b.start_datetime ?? 0).getTime() -
-      new Date(a.start_datetime ?? 0).getTime(),
-  );
-
-  const publicTournaments = allTournaments.map(serializeTournament);
-
   if (!user) {
     return (
       <TournamentsPageClient
-        publicTournaments={publicTournaments}
+        personalTournaments={[]}
         groupSections={[]}
         invitedTournaments={[]}
       />
@@ -45,38 +38,61 @@ export default async function TournamentsPage() {
 
   const groups = await GroupRepository.findByMemberId(user.userId);
 
-  const groupSections = await Promise.all(
+  const groupSectionsData = await Promise.all(
     groups.map(async (g) => {
       const groupId = String(g._id);
       const gts = await GroupTournamentRepository.findByGroupId(groupId);
-      const tournaments = gts
-        .map((gt) => allTournaments.find((t) => t.id === gt.tournamentId))
-        .filter((t): t is ITournament => t !== undefined)
-        .map(serializeTournament);
-      return {
-        groupId,
-        groupName: g.name,
-        myRole: g.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER',
-        tournaments,
-      };
+      return { group: g, groupId, tournamentIds: gts.map((gt) => gt.tournamentId) };
     }),
   );
 
+  const userLinks = await UserTournamentRepository.findByUserId(user.userId, 'ACTIVE');
+  const userTournamentIds = userLinks.map((l) => l.tournamentId);
+
+  const allGroupTournamentIds = groupSectionsData.flatMap((s) => s.tournamentIds);
+  const allNeededIds = [...new Set([...userTournamentIds, ...allGroupTournamentIds])];
+
+  const neededTournaments = await TournamentRepository.findByIds(allNeededIds);
+  const tournamentMap = new Map(neededTournaments.map((t) => [t.id, t]));
+
+  const personalTournaments = userTournamentIds
+    .map((id) => tournamentMap.get(id))
+    .filter((t): t is ITournament => t !== undefined)
+    .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
+    .map(serializeTournament);
+
+  const groupSections = groupSectionsData.map(({ group, groupId, tournamentIds }) => {
+    const tournaments = tournamentIds
+      .map((id) => tournamentMap.get(id))
+      .filter((t): t is ITournament => t !== undefined)
+      .map(serializeTournament);
+    return {
+      groupId,
+      groupName: group.name,
+      myRole: group.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER',
+      tournaments,
+    };
+  });
+
   const accesses = await TournamentExternalAccessRepository.findAcceptedByUser(user.userId);
-  const invitedTournaments = await Promise.all(
-    accesses.map(async (acc) => {
-      const tournament = allTournaments.find((t) => t.id === acc.tournamentId);
-      const group = groups.find((g) => String(g._id) === String(acc.groupId))
-        ?? await GroupRepository.findById(String(acc.groupId));
-      return {
-        accessId: String(acc._id),
-        groupId: String(acc.groupId),
-        groupName: group?.name ?? 'Groupe inconnu',
-        expiresAt: acc.expiresAt.toISOString(),
-        tournament: tournament ? serializeTournament(tournament) : null,
-      };
-    }),
-  );
+  const invitedTournaments = (
+    await Promise.all(
+      accesses.map(async (acc) => {
+        const tournament = tournamentMap.get(acc.tournamentId)
+          ?? await TournamentRepository.findById(acc.tournamentId);
+        const group = groups.find((g) => String(g._id) === String(acc.groupId))
+          ?? await GroupRepository.findById(String(acc.groupId));
+        if (!tournament) return null;
+        return {
+          accessId: String(acc._id),
+          groupId: String(acc.groupId),
+          groupName: group?.name ?? 'Groupe inconnu',
+          expiresAt: acc.expiresAt.toISOString(),
+          tournament: serializeTournament(tournament as ITournament),
+        };
+      }),
+    )
+  ).filter((i): i is NonNullable<typeof i> => i !== null);
 
   const adminGroups = groupSections
     .filter((s) => s.myRole === 'ADMIN')
@@ -92,9 +108,9 @@ export default async function TournamentsPage() {
 
   return (
     <TournamentsPageClient
-      publicTournaments={publicTournaments}
+      personalTournaments={personalTournaments}
       groupSections={groupSections.filter((s) => s.tournaments.length > 0 || groups.length > 0)}
-      invitedTournaments={invitedTournaments.filter((i): i is typeof i & { tournament: NonNullable<typeof i.tournament> } => i.tournament !== null)}
+      invitedTournaments={invitedTournaments}
       adminGroups={adminGroups}
       initialAssignments={initialAssignments}
     />

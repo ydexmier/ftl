@@ -24,6 +24,22 @@ export const TournamentRepository = {
 		return TournamentModel.findOneAndDelete({ id });
 	},
 
+	async findByIds(ids: number[]): Promise<ITournament[]> {
+		await connectToMongoDB();
+		if (ids.length === 0) return [];
+		return TournamentModel.find({ id: { $in: ids } }).lean() as Promise<ITournament[]>;
+	},
+
+	async search(query: string): Promise<ITournament[]> {
+		await connectToMongoDB();
+		const numericId = Number(query);
+		if (!isNaN(numericId) && numericId > 0) {
+			const byId = await TournamentModel.findOne({ id: numericId }).lean() as ITournament | null;
+			return byId ? [byId] : [];
+		}
+		return TournamentModel.find({ name: { $regex: query, $options: 'i' } }).limit(10).lean() as Promise<ITournament[]>;
+	},
+
 	async mergeAndSave(data: Record<string, unknown>) {
 		await connectToMongoDB();
 		const existing = await TournamentModel.findOne({ id: data.id });
