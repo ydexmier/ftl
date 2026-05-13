@@ -30,6 +30,13 @@ export const TournamentConflictRepository = {
     }).lean();
   },
 
+  async findPendingForUser(userId: string, tournamentId: number) {
+    await connectToMongoDB();
+    return TournamentConflictModel.find({ userId, tournamentId, status: 'PENDING' })
+      .populate('groupId', 'name')
+      .lean();
+  },
+
   async findPendingAdminByGroupAndTournament(groupId: string, tournamentId: number) {
     await connectToMongoDB();
     return TournamentConflictModel.find({
