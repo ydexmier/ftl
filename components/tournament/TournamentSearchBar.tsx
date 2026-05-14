@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Link2, Check, Download, Loader2 } from 'lucide-react';
 import { cn } from '@components/ui/cn';
+import type { TournamentCardData } from './TournamentCard';
 
 interface SearchResult {
   id: number;
@@ -35,7 +36,11 @@ function extractNumericId(input: string): number | null {
   return !isNaN(n) && n > 0 ? n : null;
 }
 
-export function TournamentSearchBar() {
+interface Props {
+  onLinked?: (tournament: TournamentCardData) => void;
+}
+
+export function TournamentSearchBar({ onLinked }: Props) {
   const router = useRouter();
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState<SearchResponse | null>(null);
@@ -75,18 +80,32 @@ export function TournamentSearchBar() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  const linkTournament = async (id: number) => {
-    setLinkingId(id);
+  const close = (result?: SearchResult) => {
+    setResponse(null);
+    setQuery('');
+    setLinkedId(null);
+    if (result) {
+      onLinked?.({
+        id: result.id,
+        name: result.name,
+        start_datetime: result.start_datetime,
+        end_datetime: null,
+        event_status: result.event_status,
+        registered_user_count: 0,
+        capacity: 0,
+        store: result.store,
+        gameplay_format: null,
+      });
+    }
+  };
+
+  const linkTournament = async (result: SearchResult) => {
+    setLinkingId(result.id);
     try {
-      const res = await fetch(`/api/tournaments/${id}/link`, { method: 'POST' });
+      const res = await fetch(`/api/tournaments/${result.id}/link`, { method: 'POST' });
       if (res.ok || res.status === 409) {
-        setLinkedId(id);
-        setTimeout(() => {
-          setResponse(null);
-          setQuery('');
-          setLinkedId(null);
-          router.refresh();
-        }, 800);
+        setLinkedId(result.id);
+        setTimeout(() => close(result), 800);
       }
     } finally {
       setLinkingId(null);
@@ -102,7 +121,14 @@ export function TournamentSearchBar() {
         body: JSON.stringify({ tournamentId: id }),
       });
       if (!fetchRes.ok) return;
-      await linkTournament(id);
+      const linkRes = await fetch(`/api/tournaments/${id}/link`, { method: 'POST' });
+      if (linkRes.ok || linkRes.status === 409) {
+        setLinkedId(id);
+        setTimeout(() => {
+          close();
+          router.refresh();
+        }, 800);
+      }
     } finally {
       setFetching(false);
     }
@@ -152,7 +178,7 @@ export function TournamentSearchBar() {
                       </span>
                     ) : (
                       <button
-                        onClick={() => linkTournament(t.id)}
+                        onClick={() => linkTournament(t)}
                         disabled={linkingId === t.id}
                         className={cn(
                           'flex items-center gap-1 text-xs px-3 py-1.5 rounded-full font-medium transition-colors',

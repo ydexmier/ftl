@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
   const cookieValue = await signCookie(sessionId, user.role);
   await AuditLogRepository.create({ action: 'LOGIN_SUCCESS', userId: user._id, username: user.username, ipAddress: ip, userAgent: ua });
 
-  const res = ApiResponse.ok({ role: user.role });
+  const needsOnboarding = user.role === 'USER' && user.onboardingCompletedAt === null;
+  const res = ApiResponse.ok({ role: user.role, needsOnboarding });
   res.cookies.set('session', cookieValue, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

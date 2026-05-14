@@ -28,6 +28,9 @@ export default function LoginPage() {
 				setError(data.error || 'Identifiants invalides');
 				return;
 			}
+			if (data.needsOnboarding) {
+				sessionStorage.setItem('ftl_onboarding_pending', '1');
+			}
 			router.push(data.role === 'ADMIN' || data.role === 'SUPERUSER' ? '/admin/dashboard' : '/');
 		} catch {
 			setError('Erreur reseau.');

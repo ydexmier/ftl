@@ -6,6 +6,7 @@ import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX } from 
 import TournamentCard, { type TournamentCardData } from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
+import { TournamentsTour } from '@components/ui/TournamentsTour';
 
 interface TournamentSummary extends TournamentCardData {
   // TournamentCardData already covers all fields needed
@@ -212,6 +213,15 @@ export function TournamentsPageClient({
 
   useEffect(() => { setIsMounted(true); }, []);
 
+  // Sync new tournaments from server (additive only — handles fetchAndLink + router.refresh())
+  useEffect(() => {
+    setLocalPersonal((prev) => {
+      const existingIds = new Set(prev.map((t) => t.id));
+      const fresh = personalTournaments.filter((t) => !existingIds.has(t.id));
+      return fresh.length > 0 ? [...fresh, ...prev] : prev;
+    });
+  }, [personalTournaments]);
+
   const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
     if (el) cardRefs.current.set(id, el);
     else cardRefs.current.delete(id);
@@ -410,10 +420,16 @@ export function TournamentsPageClient({
 
   return (
     <div className="flex flex-col gap-6 mt-6">
-      <TournamentSearchBar />
+      <TournamentsTour />
+      <div data-tour="tournaments-search">
+        <TournamentSearchBar
+          onLinked={(t) => setLocalPersonal((prev) => [t, ...prev.filter((p) => p.id !== t.id)])}
+        />
+      </div>
 
       {/* Section 1 : Mes tournois */}
       {localPersonal.length > 0 && (
+        <div data-tour="tournaments-personal">
         <CollapsibleSection
           icon={BookUser}
           title="Mes tournois"
@@ -453,10 +469,12 @@ export function TournamentsPageClient({
             })}
           </div>
         </CollapsibleSection>
+        </div>
       )}
 
       {/* Section 2 : Par groupe */}
       {localGroupSections.length > 0 && (
+        <div data-tour="tournaments-groups">
         <CollapsibleSection
           icon={Users}
           title="Par groupe"
@@ -473,6 +491,7 @@ export function TournamentsPageClient({
             ))}
           </div>
         </CollapsibleSection>
+        </div>
       )}
 
       {/* Section 3 : Invitations temporaires */}

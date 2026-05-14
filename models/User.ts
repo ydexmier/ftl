@@ -7,6 +7,7 @@ export interface IUser extends Document {
   email: string;
   passwordHash: string;
   role: UserRole;
+  onboardingCompletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,6 +17,7 @@ const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ['USER', 'ADMIN', 'SUPERUSER'], default: 'USER' },
+  onboardingCompletedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 export default mongoose.models.User as mongoose.Model<IUser> || mongoose.model<IUser>('User', UserSchema);

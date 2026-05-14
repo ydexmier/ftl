@@ -73,4 +73,9 @@ export const UserRepository = {
     await connectToMongoDB();
     return UserModel.findByIdAndDelete(id);
   },
+
+  async markOnboardingComplete(id: string) {
+    await connectToMongoDB();
+    return UserModel.findByIdAndUpdate(id, { $set: { onboardingCompletedAt: new Date() } });
+  },
 };
