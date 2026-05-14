@@ -99,6 +99,16 @@ export const GroupRepository = {
     return count > 0;
   },
 
+  async getMemberRole(groupId: string, userId: string): Promise<'ADMIN' | 'MEMBER' | null> {
+    await connectToMongoDB();
+    const group = await GroupModel.findOne(
+      { _id: groupId },
+      { members: { $elemMatch: { userId } } },
+    ).lean();
+    if (!group?.members?.length) return null;
+    return (group.members[0] as { role: string }).role as 'ADMIN' | 'MEMBER';
+  },
+
   async addMemberToGroups(groupIds: string[], userId: string, invitedBy: string) {
     await connectToMongoDB();
     return GroupModel.updateMany(

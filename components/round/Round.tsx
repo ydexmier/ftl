@@ -14,9 +14,10 @@ interface RoundProps {
 	page?: string | number;
 	perPage?: string | number;
 	search?: string;
+	groupId?: string | null;
 }
 
-const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch }: RoundProps) => {
+const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch, groupId }: RoundProps) => {
 	const [page, setPage] = useState(parseInt(String(initialPage), 10) || 1);
 	const [perPage, setPerPage] = useState(parseInt(String(initialPerPage), 10) || 10);
 	const [search, setSearch] = useState(String(initialSearch || ''));
@@ -37,7 +38,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		getMatchPlayerInks,
 		refreshRound,
 		pagination,
-	} = useRound(Number(roundId), Number(tournamentId), { page, perPage, search, excludeOnePlayerMatches: true });
+	} = useRound(Number(roundId), Number(tournamentId), { page, perPage, search, excludeOnePlayerMatches: true, groupId });
 
 	const paginationControls = useMemo(() => (
 		<div className="flex items-center justify-between gap-2 my-4 flex-wrap">
