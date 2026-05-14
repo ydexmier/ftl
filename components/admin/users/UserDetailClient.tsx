@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2, ShieldOff } from 'lucide-react';
+import { Pencil, Trash2, ShieldOff, Target } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { Alert } from '@components/ui/Alert';
@@ -34,13 +34,20 @@ interface AuditLogRow {
   timestamp: string;
 }
 
+interface ScoutingTournamentStat {
+  tournamentId: number;
+  tournamentName: string;
+  count: number;
+}
+
 interface Props {
   user: UserForEdit & { createdAt: string; updatedAt: string };
   activeSessions: number;
   recentLogs: AuditLogRow[];
+  scoutingStats: { total: number; byTournament: ScoutingTournamentStat[] };
 }
 
-export function UserDetailClient({ user, activeSessions, recentLogs }: Props) {
+export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats }: Props) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -141,6 +148,33 @@ export function UserDetailClient({ user, activeSessions, recentLogs }: Props) {
             <ShieldOff className="h-3.5 w-3.5" />
             Révoquer toutes les sessions
           </Button>
+        </div>
+
+        {/* Scouting */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Scouting</h2>
+            </div>
+            <span className="text-sm font-semibold text-foreground">{scoutingStats.total} report{scoutingStats.total !== 1 ? 's' : ''}</span>
+          </div>
+          {scoutingStats.byTournament.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Aucun report enregistré.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {scoutingStats.byTournament.map((t) => (
+                  <tr key={t.tournamentId} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-3 text-foreground truncate max-w-xs">{t.tournamentName}</td>
+                    <td className="px-5 py-3 text-right font-semibold text-foreground tabular-nums">
+                      {t.count}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Audit récent */}

@@ -35,7 +35,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 		}
 
 		const scope = groupId ? { groupId } : { userId: auth.userId };
-		const result = await ScoutingService.assignDecks(Number(roundId), Number(matchId), decks, scope);
+		const result = await ScoutingService.assignDecks(Number(roundId), Number(matchId), decks, scope, auth.userId);
 		return ApiResponse.ok(result);
 	} catch (err) {
 		const msg = (err as Error).message;
