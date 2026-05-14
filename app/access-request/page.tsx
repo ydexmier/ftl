@@ -1,12 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import type { ComponentType } from 'react';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
 import { Alert } from '@components/ui/Alert';
-
-const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), { ssr: false });
 
 export default function AccessRequestPage() {
   const [email, setEmail] = useState('');
@@ -16,6 +14,16 @@ export default function AccessRequestPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const captchaRef = useRef<ComponentType<any> | null>(null);
+  const [captchaReady, setCaptchaReady] = useState(false);
+
+  useEffect(() => {
+    import('@hcaptcha/react-hcaptcha').then((mod) => {
+      captchaRef.current = mod.default;
+      setCaptchaReady(true);
+    });
+  }, []);
 
   const resetCaptcha = () => {
     setCaptchaKey((k) => k + 1);
@@ -105,14 +113,23 @@ export default function AccessRequestPage() {
               />
             </div>
 
-            <div className="flex justify-center">
-              <HCaptcha
-                key={captchaKey}
-                sitekey={siteKey}
-                onVerify={setCaptchaToken}
-                onExpire={resetCaptcha}
-                theme="dark"
-              />
+            <div className="flex justify-center min-h-[78px] items-center">
+              {captchaReady && captchaRef.current ? (
+                (() => {
+                  const HCaptcha = captchaRef.current!;
+                  return (
+                    <HCaptcha
+                      key={captchaKey}
+                      sitekey={siteKey}
+                      onVerify={setCaptchaToken}
+                      onExpire={resetCaptcha}
+                      theme="dark"
+                    />
+                  );
+                })()
+              ) : (
+                <div className="h-[78px] w-[300px] rounded-md bg-muted/30 animate-pulse" />
+              )}
             </div>
 
             <Button type="submit" loading={loading} className="w-full">
