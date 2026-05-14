@@ -49,7 +49,7 @@ export async function PATCH(
   try {
     await sendInvitationEmail(email, token);
   } catch {
-    return ApiResponse.serverError('Erreur lors de l\'envoi de l\'email');
+    return ApiResponse.serverError(new Error("Erreur lors de l'envoi de l'email"));
   }
 
   await InvitationRepository.create({
