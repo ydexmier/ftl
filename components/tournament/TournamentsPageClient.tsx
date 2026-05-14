@@ -213,6 +213,15 @@ export function TournamentsPageClient({
 
   useEffect(() => { setIsMounted(true); }, []);
 
+  // Sync new tournaments from server (additive only — handles fetchAndLink + router.refresh())
+  useEffect(() => {
+    setLocalPersonal((prev) => {
+      const existingIds = new Set(prev.map((t) => t.id));
+      const fresh = personalTournaments.filter((t) => !existingIds.has(t.id));
+      return fresh.length > 0 ? [...fresh, ...prev] : prev;
+    });
+  }, [personalTournaments]);
+
   const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
     if (el) cardRefs.current.set(id, el);
     else cardRefs.current.delete(id);
@@ -413,7 +422,9 @@ export function TournamentsPageClient({
     <div className="flex flex-col gap-6 mt-6">
       <TournamentsTour />
       <div data-tour="tournaments-search">
-        <TournamentSearchBar />
+        <TournamentSearchBar
+          onLinked={(t) => setLocalPersonal((prev) => [t, ...prev.filter((p) => p.id !== t.id)])}
+        />
       </div>
 
       {/* Section 1 : Mes tournois */}
