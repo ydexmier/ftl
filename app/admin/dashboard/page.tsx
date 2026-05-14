@@ -1,12 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { AlertTriangle, LogIn, LogOut, ShieldAlert } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, LogIn, LogOut, ShieldAlert, ClipboardList } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import { cn } from '@components/ui/cn';
 
 interface Stats {
 	today: { logins: number; failures: number };
 	week: { logins: number; failures: number };
+	pendingAccessRequests: number;
 	suspiciousIPs: { ip: string; failCount: number; lastAttempt: string; usernames: string[] }[];
 	recentFails: { username: string; ipAddress: string; timestamp: string }[];
 }
@@ -67,6 +69,26 @@ export default function DashboardPage() {
 					<StatCard label="Connexions (7j)" value={stats.week.logins} icon={LogIn} />
 					<StatCard label="Échecs (7j)" value={stats.week.failures} icon={LogOut} danger />
 				</div>
+
+				{stats.pendingAccessRequests > 0 && (
+					<Link
+						href="/admin/access-requests?status=PENDING"
+						className="flex items-center justify-between gap-4 bg-card border border-amber-700/50 rounded-xl p-5 hover:bg-muted/20 transition-colors"
+					>
+						<div className="flex items-center gap-3">
+							<ClipboardList className="h-5 w-5 text-amber-400 shrink-0" />
+							<div>
+								<p className="text-sm font-semibold text-foreground">
+									{stats.pendingAccessRequests} demande{stats.pendingAccessRequests !== 1 ? 's' : ''} d&apos;accès en attente
+								</p>
+								<p className="text-xs text-muted-foreground">Cliquer pour traiter</p>
+							</div>
+						</div>
+						<span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20 text-xs font-bold text-amber-400">
+							{stats.pendingAccessRequests}
+						</span>
+					</Link>
+				)}
 			</section>
 
 			{/* Suspicious IPs */}
