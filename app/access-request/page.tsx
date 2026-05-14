@@ -109,7 +109,7 @@ export default function AccessRequestPage() {
               />
             </div>
 
-            <Button type="submit" loading={loading} disabled={!captchaToken} className="w-full">
+            <Button type="submit" loading={loading} className="w-full">
               Envoyer la demande
             </Button>
           </form>
