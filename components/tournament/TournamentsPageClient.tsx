@@ -6,6 +6,7 @@ import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX } from 
 import TournamentCard, { type TournamentCardData } from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
+import { TournamentsTour } from '@components/ui/TournamentsTour';
 
 interface TournamentSummary extends TournamentCardData {
   // TournamentCardData already covers all fields needed
@@ -410,10 +411,14 @@ export function TournamentsPageClient({
 
   return (
     <div className="flex flex-col gap-6 mt-6">
-      <TournamentSearchBar />
+      <TournamentsTour />
+      <div data-tour="tournaments-search">
+        <TournamentSearchBar />
+      </div>
 
       {/* Section 1 : Mes tournois */}
       {localPersonal.length > 0 && (
+        <div data-tour="tournaments-personal">
         <CollapsibleSection
           icon={BookUser}
           title="Mes tournois"
@@ -453,10 +458,12 @@ export function TournamentsPageClient({
             })}
           </div>
         </CollapsibleSection>
+        </div>
       )}
 
       {/* Section 2 : Par groupe */}
       {localGroupSections.length > 0 && (
+        <div data-tour="tournaments-groups">
         <CollapsibleSection
           icon={Users}
           title="Par groupe"
@@ -473,6 +480,7 @@ export function TournamentsPageClient({
             ))}
           </div>
         </CollapsibleSection>
+        </div>
       )}
 
       {/* Section 3 : Invitations temporaires */}

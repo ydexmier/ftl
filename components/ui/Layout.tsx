@@ -53,6 +53,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 					<Link
 						href="/profile"
+						data-tour="nav-profile"
 						className="text-muted-foreground hover:text-foreground hover:bg-accent p-2 rounded-md transition-colors"
 						aria-label="Mon profil"
 					>

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "driver.js/dist/driver.css";
 
 /* Class-based dark mode */
 @custom-variant dark (&:is(.dark *));
@@ -109,4 +110,78 @@
 	::-webkit-scrollbar-thumb:hover {
 		background: var(--muted-foreground);
 	}
+}
+
+/* ---- Driver.js dark theme ---- */
+.driver-popover {
+	background-color: var(--card);
+	color: var(--foreground);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-lg);
+	box-shadow: 0 8px 24px oklch(0% 0 0 / 0.55);
+	padding: 20px;
+	min-width: 260px;
+	max-width: 320px;
+}
+
+.driver-popover * {
+	font-family: var(--font-sans);
+}
+
+.driver-popover-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--foreground);
+	line-height: 1.4;
+}
+
+.driver-popover-close-btn {
+	color: var(--muted-foreground);
+}
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus {
+	color: var(--foreground);
+}
+
+.driver-popover-description {
+	font-size: 13px;
+	color: var(--muted-foreground);
+	line-height: 1.55;
+}
+
+.driver-popover-progress-text {
+	font-size: 12px;
+	color: var(--muted-foreground);
+}
+
+.driver-popover-footer button {
+	background-color: var(--secondary);
+	color: var(--foreground);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-sm);
+	padding: 5px 12px;
+	font-size: 12px;
+	font-weight: 500;
+	text-shadow: none;
+}
+.driver-popover-footer button:hover,
+.driver-popover-footer button:focus {
+	background-color: var(--accent);
+}
+
+.driver-popover-next-btn,
+.driver-popover-done-btn {
+	background-color: var(--primary) !important;
+	color: var(--primary-foreground) !important;
+	border-color: transparent !important;
+}
+.driver-popover-next-btn:hover,
+.driver-popover-next-btn:focus,
+.driver-popover-done-btn:hover,
+.driver-popover-done-btn:focus {
+	opacity: 0.85;
+}
+
+.driver-popover-arrow {
+	border-color: var(--card);
 }

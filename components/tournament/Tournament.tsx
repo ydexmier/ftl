@@ -13,6 +13,7 @@ import { ConflictResolutionModal } from '@components/tournament/ConflictResoluti
 import { TournamentSidebar, type TournamentTab } from '@components/tournament/TournamentSidebar';
 import { PlayersTab } from '@components/tournament/PlayersTab';
 import { ReportsTab } from '@components/tournament/ReportsTab';
+import { TournamentTour } from '@components/ui/TournamentTour';
 import type { RoundType } from '@/src/types/round';
 
 interface TournamentProps {
@@ -101,6 +102,7 @@ export default function Tournament({ id }: TournamentProps) {
 
 	return (
 		<>
+			<TournamentTour />
 			{showConflictModal && conflicts.length > 0 && (
 				<ConflictResolutionModal
 					tournamentId={Number(id)}
@@ -111,19 +113,21 @@ export default function Tournament({ id }: TournamentProps) {
 			)}
 
 			<div className="flex flex-col gap-4">
-				<div className="flex items-center justify-between gap-4 flex-wrap">
+				<div data-tour="tournament-header" className="flex items-center justify-between gap-4 flex-wrap">
 					<h1 className="text-xl font-bold text-foreground">
 						Tournoi : {(tournament as any).name}
 					</h1>
 					<p className="text-sm text-muted-foreground">
 						Joueurs : {(tournament as any).registered_user_count}/{(tournament as any).capacity}
 					</p>
-					<FetchButton
-						defaultLabel="MAJ Tournoi"
-						onFetch={refreshTournament}
-						refreshDelay={60}
-						lastUpdate={lastFetchedAt}
-					/>
+					<div data-tour="tournament-fetch-btn">
+						<FetchButton
+							defaultLabel="MAJ Tournoi"
+							onFetch={refreshTournament}
+							refreshDelay={60}
+							lastUpdate={lastFetchedAt}
+						/>
+					</div>
 				</div>
 
 				{conflicts.length > 0 && !showConflictModal && (
@@ -137,16 +141,19 @@ export default function Tournament({ id }: TournamentProps) {
 				)}
 
 				{showSidebar && (
-					<TournamentSidebar
-						activeTab={activeTab}
-						onTabChange={setActiveTab}
-						visibleTabs={visibleTabs}
-					/>
+					<div data-tour="tournament-tabs">
+						<TournamentSidebar
+							activeTab={activeTab}
+							onTabChange={setActiveTab}
+							visibleTabs={visibleTabs}
+						/>
+					</div>
 				)}
 
 				{activeTab === 'scouting' && (
 					<>
 						<select
+							data-tour="tournament-round-select"
 							value={roundId}
 							onChange={handleRoundChange}
 							className="h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
