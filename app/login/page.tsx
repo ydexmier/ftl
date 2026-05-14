@@ -74,6 +74,12 @@ export default function LoginPage() {
 						</Link>
 					</form>
 				</div>
+				<p className="text-center text-sm text-muted-foreground mt-4">
+					Pas encore de compte ?{' '}
+					<Link href="/access-request" className="text-primary hover:underline">
+						Faire une demande d&apos;accès
+					</Link>
+				</p>
 			</div>
 		</div>
 	);
