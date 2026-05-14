@@ -22,4 +22,6 @@ const AuditLogSchema = new Schema<IAuditLog>({
   metadata: { type: Schema.Types.Mixed },
 });
 
+AuditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 172800 }); // 48h TTL
+
 export default mongoose.models.AuditLog as mongoose.Model<IAuditLog> || mongoose.model<IAuditLog>('AuditLog', AuditLogSchema);
