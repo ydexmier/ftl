@@ -1,19 +1,26 @@
 'use client';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import HCaptcha from '@hcaptcha/react-hcaptcha';
+import dynamic from 'next/dynamic';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
 import { Alert } from '@components/ui/Alert';
+
+const HCaptcha = dynamic(() => import('@hcaptcha/react-hcaptcha'), { ssr: false });
 
 export default function AccessRequestPage() {
   const [email, setEmail] = useState('');
   const [reason, setReason] = useState('');
   const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const captchaRef = useRef<HCaptcha>(null);
+
+  const resetCaptcha = () => {
+    setCaptchaKey((k) => k + 1);
+    setCaptchaToken('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,8 +41,7 @@ export default function AccessRequestPage() {
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? 'Une erreur est survenue');
-        captchaRef.current?.resetCaptcha();
-        setCaptchaToken('');
+        resetCaptcha();
         return;
       }
       setSuccess(true);
@@ -101,10 +107,10 @@ export default function AccessRequestPage() {
 
             <div className="flex justify-center">
               <HCaptcha
-                ref={captchaRef}
+                key={captchaKey}
                 sitekey={siteKey}
                 onVerify={setCaptchaToken}
-                onExpire={() => setCaptchaToken('')}
+                onExpire={resetCaptcha}
                 theme="dark"
               />
             </div>
