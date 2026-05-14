@@ -15,6 +15,7 @@ interface RoundOptions {
 	perPage?: number;
 	search?: string;
 	excludeOnePlayerMatches?: boolean;
+	groupId?: string | null;
 }
 
 interface ValidateAssignDeckPayload {
@@ -38,9 +39,9 @@ async function fetchRoundFromAPI(
 
 export function useRound(roundId: number, tournamentId: number, options: RoundOptions = {}) {
 	const [matchToShow, setMatchToShow] = useState<Match | null>(null);
-	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false } = options;
+	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, groupId = null } = options;
 	const debouncedSearch = useDebounce(search, 300);
-	const { assignDecks } = useDeckAssignment(roundId);
+	const { assignDecks } = useDeckAssignment(roundId, groupId);
 
 	const { data: round, loading, error, setData } = useFetch<PaginatedMatches>(
 		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}`,
