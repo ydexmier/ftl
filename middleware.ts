@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
 
-const PUBLIC = ['/login', '/api/auth/login', '/api/auth/logout', '/forgot-password', '/api/auth/forgot-password'];
+const PUBLIC = ['/login', '/api/auth/login', '/api/auth/logout', '/forgot-password', '/api/auth/forgot-password', '/access-request', '/api/access-requests'];
 const PUBLIC_PREFIXES = ['/register/', '/api/invitations/', '/reset-password/', '/api/auth/reset-password/'];
 const STATIC = ['/_next', '/favicon.ico', '/svg', '/images'];
 
