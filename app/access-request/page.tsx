@@ -10,7 +10,7 @@ const HCaptchaWidget = dynamic(
   () => import('@components/ui/HCaptchaWidget'),
   {
     ssr: false,
-    loading: () => <div className="h-[78px] w-[300px] rounded-md bg-muted/30 animate-pulse" />,
+    loading: () => <div className="h-[78px] w-full max-w-[300px] rounded-md bg-muted/30 animate-pulse" />,
   },
 );
 

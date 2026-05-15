@@ -63,7 +63,7 @@ function CollapsibleSection({
     <section className="border border-border rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 bg-card hover:bg-accent/50 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-card hover:bg-accent/50 transition-colors text-left"
       >
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
@@ -142,7 +142,7 @@ function GroupSubSection({
               Aucun tournoi actif dans ce groupe.
             </p>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
               {section.tournaments.map((t) => (
                 <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
                   <TournamentCard
@@ -165,7 +165,7 @@ function GroupSubSection({
                 {showArchived ? 'Masquer' : 'Voir'} les archivés ({archived.length})
               </button>
               {showArchived && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
                   {archived.map((t) => (
                     <Link key={t.id} href={`/tournaments/${t.id}?groupId=${section.groupId}`} className="block">
                       <TournamentCard
@@ -436,7 +436,7 @@ export function TournamentsPageClient({
           count={localPersonal.length}
           subtitle="Tournois liés à votre compte, visibles uniquement par vous."
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {localPersonal.map((t) => {
               const assignedGroups = getAssignedGroups(t.id);
               return (
@@ -502,7 +502,7 @@ export function TournamentsPageClient({
           count={invitedTournaments.length}
           subtitle="Accès ponctuels accordés par un admin de groupe."
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {invitedTournaments.map((entry) => (
               <Link
                 key={entry.accessId}
@@ -530,7 +530,7 @@ export function TournamentsPageClient({
           subtitle="Tournois masqués. Restaurez-les pour les retrouver dans vos tournois actifs."
           defaultOpen={false}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
             {localArchived.map((t) => (
               <Link key={t.id} href={`/tournaments/${t.id}`} className="block">
                 <TournamentCard

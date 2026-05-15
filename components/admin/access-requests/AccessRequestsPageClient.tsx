@@ -78,7 +78,7 @@ export function AccessRequestsPageClient({ requests, total, page, pages, status 
             key={s}
             onClick={() => setFilter(s)}
             className={cn(
-              'px-3 py-1 rounded-full text-xs font-medium transition-colors border',
+              'px-3 py-2 sm:py-1 rounded-full text-xs font-medium transition-colors border',
               status === s
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-card text-muted-foreground border-border hover:border-primary/50',
@@ -95,30 +95,31 @@ export function AccessRequestsPageClient({ requests, total, page, pages, status 
         </div>
       ) : (
         <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left hidden md:table-cell">Raison</th>
-                <th className="px-4 py-3 text-left hidden sm:table-cell">Date</th>
-                <th className="px-4 py-3 text-left">Statut</th>
+                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Email</th>
+                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left hidden md:table-cell">Raison</th>
+                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left hidden sm:table-cell">Date</th>
+                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Statut</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
               {requests.map((r) => (
                 <tr key={r._id} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-                  <td className="px-4 py-3 font-medium text-foreground">{r.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground hidden md:table-cell max-w-xs truncate">
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 font-medium text-foreground">{r.email}</td>
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-muted-foreground hidden md:table-cell max-w-xs truncate">
                     {r.reason ?? <span className="italic opacity-50">—</span>}
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
+                  <td className="px-3 sm:px-4 py-2 sm:py-3 text-muted-foreground hidden sm:table-cell whitespace-nowrap">
                     {new Date(r.createdAt).toLocaleString('fr-FR')}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">
                     <Badge label={STATUS_LABEL[r.status]} color={STATUS_BADGE[r.status]} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-3 sm:px-4 py-2 sm:py-3">
                     {r.status === 'PENDING' ? (
                       <div className="flex items-center justify-end gap-2">
                         <Button
@@ -154,17 +155,18 @@ export function AccessRequestsPageClient({ requests, total, page, pages, status 
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
 
       {pages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-1.5 flex-wrap">
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
               key={p}
               onClick={() => router.push(`/admin/access-requests?page=${p}${status ? `&status=${status}` : ''}`)}
               className={cn(
-                'h-8 w-8 rounded-md text-sm font-medium transition-colors',
+                'h-9 w-9 sm:h-8 sm:w-8 rounded-md text-sm font-medium transition-colors',
                 p === page
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-card border border-border text-muted-foreground hover:bg-accent',

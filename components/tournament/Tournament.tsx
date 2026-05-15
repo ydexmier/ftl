@@ -113,14 +113,16 @@ export default function Tournament({ id }: TournamentProps) {
 			)}
 
 			<div className="flex flex-col gap-4">
-				<div data-tour="tournament-header" className="flex items-center justify-between gap-4 flex-wrap">
-					<h1 className="text-xl font-bold text-foreground">
-						Tournoi : {(tournament as any).name}
-					</h1>
-					<p className="text-sm text-muted-foreground">
-						Joueurs : {(tournament as any).registered_user_count}/{(tournament as any).capacity}
-					</p>
-					<div data-tour="tournament-fetch-btn">
+				<div data-tour="tournament-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+					<div className="flex flex-col gap-0.5">
+						<h1 className="text-lg sm:text-xl font-bold text-foreground">
+							{(tournament as any).name}
+						</h1>
+						<p className="text-sm text-muted-foreground">
+							{(tournament as any).registered_user_count}/{(tournament as any).capacity} joueurs
+						</p>
+					</div>
+					<div data-tour="tournament-fetch-btn" className="self-start sm:self-auto shrink-0">
 						<FetchButton
 							defaultLabel="MAJ Tournoi"
 							onFetch={refreshTournament}
@@ -156,7 +158,7 @@ export default function Tournament({ id }: TournamentProps) {
 							data-tour="tournament-round-select"
 							value={roundId}
 							onChange={handleRoundChange}
-							className="h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+							className="h-10 sm:h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						>
 							<option value="">-- sélectionner une round --</option>
 							{roundOptions.map((opt: { value: number; label: string }) => (
