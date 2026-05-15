@@ -15,8 +15,8 @@ function invParams(invId: string) {
   return { params: Promise.resolve({ invId }) };
 }
 
-const BASE_P1 = { playerId: 1, best_identifier: 'Player One', game_user_profile_picture_url: 'url1', pronouns: null };
-const BASE_P2 = { playerId: 2, best_identifier: 'Player Two', game_user_profile_picture_url: 'url2', pronouns: null };
+const BASE_P1 = { playerId: 1, best_identifier: 'Player One', event_best_identifier: 'pseudo1', pronouns: null };
+const BASE_P2 = { playerId: 2, best_identifier: 'Player Two', event_best_identifier: 'pseudo2', pronouns: null };
 
 // ─── mergeUserDataIntoGroup ────────────────────────────────────────────────
 

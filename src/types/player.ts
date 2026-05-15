@@ -28,7 +28,7 @@ export interface PlayerDeck {
 	playerId: number;
 	best_identifier: string;
 	pronouns: string | null;
-	game_user_profile_picture_url: string | null;
+	event_best_identifier: string;
 	decks: Deck[];
 }
 

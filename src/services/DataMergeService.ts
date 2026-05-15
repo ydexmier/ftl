@@ -38,14 +38,14 @@ export const DataMergeService = {
         toAssign.push({
           playerId: userPlayer.playerId,
           bestIdentifier: userPlayer.best_identifier,
-          eventBestIdentifier: userPlayer.game_user_profile_picture_url,
+          eventBestIdentifier: userPlayer.event_best_identifier,
           decks: userPlayer.decks as Deck[],
         });
       } else if (!hasInks(groupPlayer.decks)) {
         toAssign.push({
           playerId: userPlayer.playerId,
           bestIdentifier: userPlayer.best_identifier,
-          eventBestIdentifier: userPlayer.game_user_profile_picture_url,
+          eventBestIdentifier: userPlayer.event_best_identifier,
           decks: userPlayer.decks as Deck[],
         });
       } else if (JSON.stringify(userPlayer.decks) !== JSON.stringify(groupPlayer.decks)) {

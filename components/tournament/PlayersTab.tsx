@@ -1,12 +1,24 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
+import { Button } from '@components/ui/Button';
+import { Select } from '@components/ui/Select';
 import Ink from '@components/ui/Ink';
+import { PlayerDeckModal } from './PlayerDeckModal';
 
 interface PlayerRow {
   playerId: number;
   best_identifier: string;
+  event_best_identifier: string;
   decks: string[][];
+}
+
+interface Pagination {
+  page: number;
+  perPage: number;
+  total: number;
+  totalPages: number;
 }
 
 interface PlayersTabProps {
@@ -14,21 +26,61 @@ interface PlayersTabProps {
   groupId?: string | null;
 }
 
+const PER_PAGE_OPTIONS = [
+  { value: 10, label: '10 / page' },
+  { value: 25, label: '25 / page' },
+  { value: 50, label: '50 / page' },
+  { value: 100, label: '100 / page' },
+];
+
+const DEFAULT_PAGINATION: Pagination = { page: 1, perPage: 25, total: 0, totalPages: 1 };
+
 export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
   const [players, setPlayers] = useState<PlayerRow[]>([]);
+  const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
+  const [selected, setSelected] = useState<PlayerRow | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     setLoading(true);
-    const url = groupId
-      ? `/api/tournaments/${tournamentId}/players?groupId=${groupId}`
-      : `/api/tournaments/${tournamentId}/players`;
-    fetch(url)
-      .then((res) => (res.ok ? res.json() : { players: [] }))
-      .then((data) => setPlayers(data.players ?? []))
+    const params = new URLSearchParams();
+    if (groupId) params.set('groupId', groupId);
+    params.set('page', String(page));
+    params.set('perPage', String(perPage));
+    if (debouncedSearch) params.set('search', debouncedSearch);
+
+    fetch(`/api/tournaments/${tournamentId}/players?${params}`)
+      .then((res) => (res.ok ? res.json() : { players: [], pagination: DEFAULT_PAGINATION }))
+      .then((data) => {
+        setPlayers(data.players ?? []);
+        setPagination(data.pagination ?? DEFAULT_PAGINATION);
+      })
       .catch(() => setPlayers([]))
       .finally(() => setLoading(false));
-  }, [tournamentId, groupId]);
+  }, [tournamentId, groupId, page, perPage, debouncedSearch]);
+
+  const handleSaved = (playerId: number, decks: string[][]) => {
+    setPlayers((prev) => prev.map((p) => (p.playerId === playerId ? { ...p, decks } : p)));
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
+  const handlePerPage = (value: number) => {
+    setPerPage(value);
+    setPage(1);
+  };
 
   if (loading) {
     return (
@@ -38,46 +90,122 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
     );
   }
 
-  if (players.length === 0) {
+  if (!loading && pagination.total === 0 && !debouncedSearch) {
     return (
       <p className="text-sm text-muted-foreground text-center py-16">
-        Aucune bicolorité enregistrée pour ce tournoi.
+        Aucun joueur trouvé pour ce tournoi.
       </p>
     );
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border bg-muted/30">
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Joueur
-            </th>
-            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Bicolorité
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {players.map((p) => (
-            <tr key={p.playerId} className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors">
-              <td className="px-4 py-3 text-foreground truncate max-w-xs">{p.best_identifier}</td>
-              <td className="px-4 py-3">
-                <div className="flex justify-end gap-2">
-                  {p.decks.length === 0 ? (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  ) : (
-                    p.decks.map((deck, i) => (
-                      <Ink key={i} type={deck} width={32} />
-                    ))
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Rechercher un joueur…"
+              className="w-full h-9 rounded-md border border-white/25 bg-card pl-9 pr-3 py-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            />
+          </div>
+          <Select
+            options={PER_PAGE_OPTIONS}
+            value={perPage}
+            onChange={(e) => handlePerPage(Number(e.target.value))}
+            className="w-32 shrink-0"
+          />
+        </div>
+
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/30">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Joueur
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Bicolorité
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {players.length === 0 ? (
+                <tr>
+                  <td colSpan={2} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                    Aucun résultat
+                  </td>
+                </tr>
+              ) : (
+                players.map((p) => (
+                  <tr
+                    key={p.playerId}
+                    onClick={() => setSelected(p)}
+                    className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer"
+                  >
+                    <td className="px-4 py-3 max-w-xs">
+                      <span className="text-foreground truncate block">{p.event_best_identifier || p.best_identifier}</span>
+                      {p.event_best_identifier && p.event_best_identifier !== p.best_identifier && (
+                        <span className="text-xs text-muted-foreground truncate block">{p.best_identifier}</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex justify-end gap-2">
+                        {p.decks.length === 0 ? (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        ) : (
+                          p.decks.map((deck, i) => <Ink key={i} type={deck} width={32} />)
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">
+              Page {pagination.page} sur {pagination.totalPages}
+              <span className="hidden sm:inline"> · {pagination.total} joueur{pagination.total > 1 ? 's' : ''}</span>
+            </span>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page <= 1}
+                onClick={() => setPage(pagination.page - 1)}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Précédent
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => setPage(pagination.page + 1)}
+              >
+                Suivant
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <PlayerDeckModal
+        player={selected}
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        onSaved={handleSaved}
+        tournamentId={tournamentId}
+        groupId={groupId}
+      />
+    </>
   );
 }
