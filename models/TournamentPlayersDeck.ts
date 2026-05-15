@@ -4,7 +4,7 @@ export interface ITournamentPlayerDeck {
 	playerId: number;
 	pronouns: string | null;
 	best_identifier: string;
-	game_user_profile_picture_url: string;
+	event_best_identifier: string;
 	decks: string[][];
 }
 
@@ -22,7 +22,7 @@ const PlayerSchema = new Schema<ITournamentPlayerDeck>(
 		playerId: { type: Number, required: true },
 		pronouns: { type: String, default: null },
 		best_identifier: String,
-		game_user_profile_picture_url: String,
+		event_best_identifier: { type: String, default: '' },
 		decks: { type: [[String]], default: () => [] },
 	},
 	{ _id: false },

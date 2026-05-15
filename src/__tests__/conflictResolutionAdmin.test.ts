@@ -166,7 +166,7 @@ describe('PATCH /api/groups/[id]/conflicts/[conflictId]', () => {
 
     await TournamentPlayersDeckModel.create({
       tournamentId: tid, groupId: group._id, userId: null,
-      players: [{ playerId: 1, best_identifier: 'Player One', game_user_profile_picture_url: '', pronouns: null, decks: [['Amber', 'Sapphire']] }],
+      players: [{ playerId: 1, best_identifier: 'Player One', event_best_identifier: '', pronouns: null, decks: [['Amber', 'Sapphire']] }],
     });
 
     const conflict = await seedConflict({
@@ -193,7 +193,7 @@ describe('PATCH /api/groups/[id]/conflicts/[conflictId]', () => {
 
     await TournamentPlayersDeckModel.create({
       tournamentId: tid, groupId: group._id, userId: null,
-      players: [{ playerId: 1, best_identifier: 'Player One', game_user_profile_picture_url: '', pronouns: null, decks: [['Amber', 'Sapphire']] }],
+      players: [{ playerId: 1, best_identifier: 'Player One', event_best_identifier: '', pronouns: null, decks: [['Amber', 'Sapphire']] }],
     });
 
     const conflict = await seedConflict({

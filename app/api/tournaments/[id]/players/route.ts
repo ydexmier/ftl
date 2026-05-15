@@ -3,6 +3,7 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthSession(req);
@@ -14,6 +15,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const url = new URL(req.url);
   const groupId = url.searchParams.get('groupId');
+  const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'));
+  const perPage = Math.min(100, Math.max(1, Number(url.searchParams.get('perPage') ?? '25')));
+  const search = url.searchParams.get('search') ?? '';
 
   let scope: { groupId?: string | null; userId?: string | null };
   if (groupId) {
@@ -24,11 +28,30 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     scope = { groupId };
   } else {
     scope = { userId: auth.userId };
+    // Lazy init for personal scope: populate from rounds on first access
+    const existing = await TournamentPlayersDeckRepository.findByScope(tournamentId, scope);
+    if (!existing || existing.players.length === 0) {
+      const roundPlayers = await RoundRepository.findUniquePlayersByTournamentId(tournamentId);
+      if (roundPlayers.length > 0) {
+        await TournamentPlayersDeckRepository.upsertMissingPlayers(tournamentId, roundPlayers, scope);
+        await TournamentPlayersDeckRepository.syncPlayerIdentifiers(tournamentId, roundPlayers);
+      }
+    }
   }
 
   try {
-    const data = await TournamentPlayersDeckRepository.findByScope(tournamentId, scope);
-    return ApiResponse.ok({ players: data?.players ?? [] });
+    const result = await TournamentPlayersDeckRepository.findPlayersPaginated(tournamentId, scope, {
+      search,
+      page,
+      perPage,
+    });
+
+    const totalPages = Math.max(1, Math.ceil(result.total / perPage));
+
+    return ApiResponse.ok({
+      players: result.players,
+      pagination: { page, perPage, total: result.total, totalPages },
+    });
   } catch (err) {
     return ApiResponse.serverError(err);
   }

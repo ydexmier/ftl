@@ -108,6 +108,51 @@ export const RoundRepository = {
 		return round.results?.find((m) => m.id === matchId) ?? null;
 	},
 
+	async findUniquePlayersByTournamentId(tournamentId: number) {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find({ tournamentId }).lean()) as RoundDocument[];
+		const seen = new Set<number>();
+		const players: import('@/src/repositories/db/TournamentPlayersDeckRepository').PlayerInfo[] = [];
+		for (const round of rounds) {
+			for (const match of round.results ?? []) {
+				for (const pmr of match.player_match_relationships ?? []) {
+					const p = pmr.player;
+					if (p?.id && !seen.has(p.id)) {
+						seen.add(p.id);
+						players.push({
+							id: p.id,
+							best_identifier: p.best_identifier,
+							pronouns: p.pronouns ?? null,
+							eventBestIdentifier: pmr.user_event_status?.best_identifier ?? '',
+						});
+					}
+				}
+			}
+		}
+		return players;
+	},
+
+	async findPlayerInTournament(tournamentId: number, playerId: number) {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find(
+			{ tournamentId, 'results.player_match_relationships.player.id': playerId },
+		).lean()) as RoundDocument[];
+		for (const round of rounds) {
+			for (const match of round.results ?? []) {
+				for (const pmr of match.player_match_relationships ?? []) {
+					if (pmr.player?.id === playerId) {
+						return {
+							id: pmr.player.id,
+							best_identifier: pmr.player.best_identifier,
+							eventBestIdentifier: pmr.user_event_status?.best_identifier ?? '',
+						};
+					}
+				}
+			}
+		}
+		return null;
+	},
+
 	async mergeAndSave(id: number, tournamentId: number, newData: Record<string, unknown>) {
 		await connectToMongoDB();
 		const existing = await RoundModel.findOne({ id });
