@@ -9,17 +9,21 @@ Tu es ingénieur senior permanent de ce projet. Tu connais le codebase en profon
 **Companion Lorcana** — Application compagnon pour les tournois Disney Lorcana TCG.
 
 Fonctionnalités principales :
-- Récupération des données de tournoi depuis l'API Ravensburger
-- Scouting : assignation des combinaisons d'encres (decks) aux joueurs pendant les rondes
-- Gestion des groupes et des accès
-- Système d'invitation par email pour la création de comptes utilisateurs
+- Récupération des données de tournoi et rondes depuis l'API Ravensburger
+- **Scouting** : assignation des combinaisons d'encres (decks) aux joueurs, avec 3 portées (utilisateur / groupe / tournoi)
+- **Groupes** : gestion collaborative des tournois, invitation de membres, conflits de decks, accès externes temporaires
+- **Conflits** : workflow de résolution PENDING → PENDING_ADMIN → APPROVED/REJECTED/UNCERTAINTY
+- **Système d'invitation** par email pour la création de comptes utilisateurs
+- **Demandes d'accès** : formulaire public pour demander un accès (sans invitation directe)
+- **Feedback utilisateur** : signalement de bugs et demandes d'améliorations
+- **Onboarding** : tour guidé Driver.js pour les nouveaux utilisateurs
 
 ---
 
 ## Stack technique
 
 ### Framework & Runtime
-- **Next.js 15.5.8** — App Router exclusivement (pas de Pages Router)
+- **Next.js 15.5.18** — App Router exclusivement (pas de Pages Router)
 - **React 19** — Server Components par défaut, Client Components uniquement si nécessaire (`'use client'`)
 - **TypeScript** — mode strict activé, pas de `any` sauf cas exceptionnel justifié
 - **Node.js 22**
@@ -27,8 +31,8 @@ Fonctionnalités principales :
 ### Base de données
 - **MongoDB** via **Mongoose v7**
 - Connexion singleton dans `src/lib/db.ts` (cache global `__mongoose`)
-- Les schémas et modèles sont dans `models/`
-- Les repositories dans `src/repositories/db/` encapsulent tout accès Mongoose
+- Schémas et modèles dans `models/`
+- Repositories dans `src/repositories/db/` encapsulent tout accès Mongoose
 
 ### Styling
 - **Tailwind CSS v4** — design system OKLCH dark (`class="dark"` sur `<html>`)
@@ -40,20 +44,28 @@ Fonctionnalités principales :
 - **Resend** — envoi en production (nécessite un domaine vérifié)
 - **Nodemailer** + **Mailpit** — envoi en développement local (mail catcher sur `localhost:1025`)
 - **@react-email/components** + **@react-email/render** — templates email en React
-- Le switch prod/dev se fait automatiquement via `NODE_ENV` dans `src/lib/email.ts`
+- Switch prod/dev automatique via `NODE_ENV` dans `src/lib/email.ts`
 
 ### Authentification & Sécurité
 - Sessions stockées en MongoDB (`models/Session.ts`), TTL 8h / inactivité 30min
 - Cookies signés HMAC-SHA256 (`SESSION_SECRET`) via Web Crypto API (`src/lib/auth/cookieSign.ts`)
-- Hachage des mots de passe **Argon2id** (via `argon2`) — `src/lib/auth/password.ts`
+- Hachage des mots de passe **Argon2id** (`argon2`) — `src/lib/auth/password.ts`
 - RBAC : `USER < ADMIN < SUPERUSER` — `src/lib/auth/rbac.ts`
 - Rate limiting en mémoire : 5 tentatives / 15min par IP — `src/lib/auth/rateLimit.ts`
-- Audit log sur toutes les actions sensibles (`models/AuditLog.ts`)
+- Audit log sur toutes les actions sensibles (`models/AuditLog.ts`, TTL 48h)
+- **hCaptcha** sur les endpoints publics (registration, access-request) — `src/lib/hcaptcha.ts`
+
+### Bibliothèques notables
+- **Zustand v5** — gestion d'état client (initialisé dans `app/providers.tsx`)
+- **Driver.js v1** — tours guidés onboarding (`components/ui/OnboardingTour.tsx`, `TournamentTour.tsx`)
+- **Ramda v0.30** — utilitaires fonctionnels
+- **uuid v14** — génération d'identifiants
+- **js-cookie** + **cookie** — gestion cookies côté client
 
 ### Tests
-- **Vitest** — runner de tests
-- **MongoDB Memory Server** — base de données en mémoire pour les tests d'intégration
-- Tests dans `src/__tests__/`, helpers dans `src/test/`
+- **Vitest v4** — runner de tests
+- **MongoDB Memory Server v11** — base de données en mémoire pour les tests d'intégration
+- Tests dans `src/__tests__/` (26 fichiers), helpers dans `src/test/`
 - Email mocké, `connectToMongoDB` mocké en no-op (mongoose déjà connecté)
 
 ### Infrastructure locale
@@ -68,72 +80,274 @@ Fonctionnalités principales :
 ## Architecture
 
 ```
-app/                        — Next.js App Router
-  (public)/                 — Layout avec header (utilisateurs connectés)
-    profile/                — Page profil utilisateur
-    tournaments/            — Pages tournois
-    groups/                 — Pages groupes
-  admin/                    — Pages admin (ADMIN/SUPERUSER uniquement)
-    dashboard/
-    users/
-    invitations/
+app/                              — Next.js App Router
+  (public)/                       — Layout avec header (utilisateurs connectés)
+    page.tsx                      — Page d'accueil / dashboard
+    profile/                      — Page profil utilisateur
     tournaments/
-    audit-logs/
-  api/                      — Route handlers
-    admin/                  — Routes admin protégées
-    auth/                   — login, logout, forgot-password, reset-password
-    user/                   — profile, password
-    groups/                 — CRUD groupes
-    invitations/            — Routes publiques d'inscription
-    rounds/
-    tournaments/
-  login/                    — Page de connexion
-  forgot-password/          — Demande de réinitialisation
-  reset-password/[token]/   — Formulaire nouveau mot de passe
-  register/[token]/         — Inscription via invitation
+      page.tsx                    — Liste des tournois
+      [tournamentId]/
+        page.tsx                  — Détail d'un tournoi (onglets Players, Reports)
+        rounds/[roundId]/matchs/[matchId]/page.tsx  — Détail d'un match
+    groups/
+      page.tsx                    — Liste des groupes de l'utilisateur
+      [id]/
+        page.tsx                  — Détail d'un groupe
+        tournaments/page.tsx      — Tournois du groupe
+  admin/                          — Pages admin (ADMIN/SUPERUSER uniquement)
+    dashboard/                    — Tableau de bord stats
+    users/[id]/                   — Gestion utilisateurs
+    invitations/                  — Invitations en masse
+    tournaments/[id]/             — Gestion tournois
+    audit-logs/                   — Journal d'audit
+    feedback/                     — Feedbacks utilisateurs
+    access-requests/              — Demandes d'accès
+  api/                            — Route handlers (voir section Routes API)
+  access-request/                 — Formulaire public de demande d'accès
+  login/                          — Page de connexion
+  forgot-password/                — Demande de réinitialisation
+  reset-password/[token]/         — Formulaire nouveau mot de passe
+  register/[token]/               — Inscription via invitation
 
 components/
-  admin/                    — Composants admin (clients)
-  ui/                       — Primitives UI partagées (Button, Input, Badge, Alert, Select…)
+  ui/                             — Primitives partagées
+    Button.tsx, Input.tsx, Badge.tsx, Alert.tsx, Select.tsx
+    Tabs.tsx, Tooltip.tsx, Spinner.tsx
+    Ink.tsx, InkButton.tsx, DeckSelection.tsx
+    FeedbackWidget.tsx            — Widget flottant de feedback
+    HCaptchaWidget.tsx            — Wrapper hCaptcha
+    FetchButton.tsx, Layout.tsx
+    OnboardingTour.tsx, TournamentTour.tsx, TournamentsTour.tsx
+    cn.ts                         — clsx + tailwind-merge
+  admin/                          — Composants admin
+  tournament/                     — Vues tournoi (PlayersTab, ReportsTab, ConflictResolutionModal…)
+  round/                          — Vues ronde (Round, RoundHeader, DeckbuildingRound…)
+  match/                          — Vues match (Match, MatchCard, MatchModal)
+  groups/                         — Gestion groupes (GroupDetail, InviteMemberModal, AdminConflictModal…)
 
-models/                     — Schémas Mongoose
-  User.ts, Session.ts, AuditLog.ts
-  Invitation.ts, PasswordReset.ts
-  Group.ts, GroupInvitation.ts, GroupTournament.ts
-  Round.js, Tournament.js, TournamentPlayersDeck.js
+models/                           — Schémas Mongoose (voir section Modèles)
 
 src/
-  __tests__/                — Tests d'intégration
+  __tests__/                      — Tests d'intégration (26 fichiers)
   domain/
-    rules/                  — Règles métier (matchRules, roundRules, scoutingRules)
-    value-objects/          — Ink, MatchStatus, RoundType
-  hooks/                    — Hooks React (useRound, useTournament, useDeckAssignment…)
+    rules/                        — matchRules, roundRules, scoutingRules
+    value-objects/                — Ink, MatchStatus, RoundType
+  hooks/
+    useFetch.ts                   — Hook générique GET avec loading/error
+    useTournament.ts              — Tournoi + refreshTournament()
+    useRound.ts                   — Matches paginés avec decks
+    useDeckAssignment.ts          — État formulaire d'assignation
+    useDebounce.ts
   lib/
-    api/                    — ApiResponse, apiFetch
-    auth/                   — session, cookieSign, password, rbac, rateLimit, getAuthSession, getServerUser
-    email.ts                — Fonctions d'envoi (sendInvitationEmail, sendWelcomeEmail, sendPasswordResetEmail)
-    emails/                 — Templates React Email
-    db.ts                   — Singleton connexion MongoDB
-    constants.ts, date.ts, mergeDeep.ts
+    api/                          — ApiResponse (responses.ts), apiFetch.ts
+    auth/                         — session, cookieSign, password, rbac, rateLimit
+                                    getAuthSession.ts, getServerUser.ts
+    email.ts                      — sendInvitationEmail, sendWelcomeEmail, sendPasswordResetEmail
+    emails/                       — Templates React Email (Invitation, Welcome, PasswordReset)
+    db.ts                         — Singleton connexion MongoDB
+    hcaptcha.ts                   — verifyHcaptcha()
+    constants.ts                  — FETCH_ALL_ASYNC
+    date.ts, mergeDeep.ts, validation.ts
   repositories/
-    db/                     — Accès MongoDB (TournamentRepository, GroupRepository, RoundRepository…)
-    external/               — API externes (RavensburgerClient)
-  services/                 — Orchestration métier (TournamentService, GroupService, RoundService, ScoutingService)
-  test/                     — setup.ts, helpers.ts
-  types/                    — Interfaces TypeScript
+    db/                           — Accès MongoDB (voir section Repositories)
+    external/                     — RavensburgerClient.ts
+  services/                       — Orchestration métier (voir section Services)
+  test/                           — setup.ts, helpers.ts
+  types/                          — Interfaces TypeScript (ink, player, match, round, tournament, group, ranking)
 ```
 
 ---
 
-## Principes d'architecture à respecter
+## Modèles Mongoose (`models/`)
+
+| Modèle | Champs clés | Rôle |
+|--------|-------------|------|
+| **User** | `username`, `email`, `passwordHash`, `role` (USER/ADMIN/SUPERUSER), `onboardingCompletedAt` | Compte utilisateur |
+| **Session** | `sessionId`, `userId`, `role`, `expiresAt` (TTL 8h), `lastActivityAt` | Sessions (TTL 30min inactivité) |
+| **AuditLog** | `action`, `userId`, `username`, `ipAddress`, `timestamp`, `metadata` | Audit trail (TTL 48h) |
+| **Invitation** | `email`, `token`, `groupIds[]`, `status` (PENDING/USED/EXPIRED/CANCELLED), `expiresAt` | Invitations signup |
+| **PasswordReset** | `userId`, `token`, `expiresAt`, `usedAt` | Tokens reset mdp |
+| **Group** | `name`, `description`, `createdBy`, `members[]` (userId, role, joinedAt, invitedBy) | Groupes utilisateurs |
+| **GroupInvitation** | `groupId`, `invitedUserId`, `invitedBy`, `status` (PENDING/ACCEPTED/REJECTED), `expiresAt` | Invitations groupe |
+| **GroupTournament** | `groupId`, `tournamentId`, `addedBy`, `status` (ACTIVE/ARCHIVED) | Tournois attachés à un groupe |
+| **Tournament** | `id` (number), `name`, `start_datetime`, `store`, `tournament_phases[]`, `gameplay_format` | Données Ravensburger |
+| **Round** | `id` (number), `tournamentId`, `results[]` (matches imbriqués), `lastFetchedAt` | Rondes Ravensburger |
+| **Ranking** | `id_tournament`, `count`, `total`, `results[]` (classements joueurs) | Classements Ravensburger |
+| **TournamentPlayersDeck** | `tournamentId`, `groupId` (nullable), `userId` (nullable), `players[]` | Decks par portée (user/group/tournament) |
+| **TournamentConflict** | `userId`, `groupId`, `tournamentId`, `playerId`, `status` (PENDING/PENDING_ADMIN/APPROVED/REJECTED/UNCERTAINTY), `previousInks`, `proposedInks`, `resolvedInks` | Conflits d'assignation de deck |
+| **TournamentExternalAccess** | `groupId`, `tournamentId`, `userId`, `invitedBy`, `status` (PENDING/ACCEPTED/REJECTED/EXPIRED), `expiresAt` | Accès externes temporaires (TTL) |
+| **ScoutingReport** | `userId`, `groupId`, `tournamentId`, `playerId`, `createdAt` | Audit trail scouting |
+| **UserTournament** | `userId`, `tournamentId`, `status` (ACTIVE/ARCHIVED) | Tournois d'un utilisateur |
+| **AccessRequest** | `email`, `reason`, `status` (PENDING/APPROVED/REJECTED), `reviewedBy` | Demandes d'accès publiques |
+| **Feedback** | `type` (bug/improvement), `title`, `description`, `page`, `userId`, `status` (open/in-progress/done/closed) | Feedbacks utilisateurs |
+
+---
+
+## Repositories (`src/repositories/db/`)
+
+Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose exclusif ici.
+
+- **TournamentRepository** — `findAll`, `findById`, `findByIds`, `search`, `upsert`, `deleteById`, `mergeAndSave`
+- **UserRepository** — `findWithFilters`, `findById`, `findByIds`, `existsByUsername`, `existsByEmail`, `create`, `update`, `updatePassword`, `delete`, `markOnboardingComplete`
+- **GroupRepository** — `findById`, `findByMemberId`, `create`, `update`, `delete`, `addMember`, `removeMember`, `updateMemberRole`, `isAdmin`, `isMember`, `addMemberToGroups`
+- **RoundRepository** — `findById`, `findByIdWithDecks`, `upsert`, `deleteMany`, `findMatchesPaginated`, `mergeAndSave`
+- **TournamentPlayersDeckRepository** — `findByScope`, `assignDecks`, `createOne`, `deleteMany`, `upsertMissingPlayers`, `upsertMissingPlayersAllExisting`, `syncPlayerIdentifiers`
+- **GroupTournamentRepository** — `findByGroupId`, `findByTournamentId`, `create`, `updateStatus`, `delete`
+- **TournamentConflictRepository** — `findById`, `findPendingForUser`, `findAllPendingAdminByGroup`, `findAllUncertaintyByGroup`, `create`, `createMany`, `updateStatus`
+- **InvitationRepository**, **GroupInvitationRepository**, **SessionRepository**, **AuditLogRepository**, **PasswordResetRepository**, **FeedbackRepository**, **TournamentExternalAccessRepository**, **ScoutingReportRepository**, **AccessRequestRepository**, **UserTournamentRepository**
+- **RavensburgerClient** (`src/repositories/external/`) — `fetchTournament(id)`, `fetchRound(id, page, pageSize)`, `fetchRank(id, page, pageSize)`
+
+---
+
+## Services (`src/services/`)
+
+| Service | Responsabilités |
+|---------|----------------|
+| **TournamentService** | `fetchAndSave(id)` depuis Ravensburger, `getAll`, `getById`, `delete` (cascade rounds + decks) |
+| **GroupService** | CRUD groupes, membres, invitations, tournois de groupe, accès externes, `acceptGroupInvitation` |
+| **RoundService** | `fetchAndSave(tournamentId, roundId, options, scope)`, `getMatchesPaginated(roundId, options, scope)` |
+| **ScoutingService** | `assignDecks(roundId, matchId, assignments, scope, reporterUserId)` — assigne et crée `ScoutingReport` |
+| **ConflictService** | `getUserPendingConflicts`, `getGroupPendingAdminConflicts`, `getGroupUncertainties`, `resolveMemberConflict`, `resolveAdminConflict` |
+| **InvitationService** | `register(token, username, password)` — crée l'user, l'ajoute aux groupes, envoie welcome email |
+| **DataMergeService** | `mergeOnGroupJoin(userId, groupId)` — fusionne les decks personnels dans le groupe, crée des conflits si divergence |
+
+---
+
+## Routes API (`app/api/`)
+
+### Auth
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| POST | `/api/auth/login` | Login + rate limiting + audit log |
+| POST | `/api/auth/logout` | Invalidation session |
+| POST | `/api/auth/forgot-password` | Envoi email reset mdp |
+| POST | `/api/auth/reset-password/[token]` | Soumission nouveau mdp |
+| GET | `/api/auth/me` | Info session courante |
+
+### User
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| GET/PUT | `/api/user/profile` | Profil utilisateur |
+| POST | `/api/user/password` | Changement mdp |
+| POST | `/api/user/onboarding` | Marquer onboarding terminé |
+| GET | `/api/user/tournaments/[id]` | Statut tournoi pour l'utilisateur |
+
+### Groupes
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| GET/POST | `/api/groups` | Liste / création |
+| GET/PUT/DELETE | `/api/groups/[id]` | Détail groupe |
+| GET/POST | `/api/groups/[id]/members` | Membres |
+| GET/PUT/DELETE | `/api/groups/[id]/members/[userId]` | Gestion membre |
+| GET | `/api/groups/[id]/my-role` | Rôle de l'utilisateur dans le groupe |
+| GET/POST | `/api/groups/[id]/tournaments` | Tournois du groupe |
+| GET/PUT/DELETE | `/api/groups/[id]/tournaments/[tid]` | Tournoi de groupe |
+| GET/POST | `/api/groups/[id]/tournaments/[tid]/reports` | Rapports scouting du groupe |
+| GET/POST | `/api/groups/[id]/tournaments/[tid]/external-access` | Accès externes |
+| GET/POST | `/api/groups/[id]/conflicts` | Conflits du groupe |
+| GET/PUT | `/api/groups/[id]/conflicts/[conflictId]` | Résolution conflit |
+| GET | `/api/groups/[id]/uncertainties` | Conflits UNCERTAINTY |
+| GET/POST | `/api/groups/invitations` | Invitations groupe |
+| GET/PUT | `/api/groups/invitations/[invId]` | Accepter/refuser invitation |
+| GET/PUT | `/api/groups/external-access/[accessId]` | Répondre à un accès externe |
+
+### Tournois
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| GET/POST | `/api/tournaments` | Liste / ajout |
+| GET/DELETE | `/api/tournaments/[id]` | Détail / suppression |
+| GET | `/api/tournaments/search` | Recherche par nom ou ID |
+| GET/POST | `/api/tournaments/[id]/players` | Joueurs + decks |
+| POST | `/api/tournaments/[id]/players/[playerId]/assign_deck` | Assignation deck (portée tournoi/user) |
+| GET/POST | `/api/tournaments/[id]/conflicts` | Conflits du tournoi |
+| PUT | `/api/tournaments/[id]/conflicts/[conflictId]` | Résolution conflit |
+| POST | `/api/tournaments/[id]/link` | Rattacher à un groupe |
+
+### Rondes & Matchs
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| GET/POST | `/api/rounds/[roundId]/matchs` | Matches paginés avec decks |
+| GET/PUT | `/api/rounds/[roundId]/matchs/[matchId]` | Détail match |
+| POST | `/api/rounds/[roundId]/matchs/[matchId]/assign_deck` | Assignation deck depuis un match |
+
+### Admin (ADMIN/SUPERUSER)
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| GET/POST | `/api/admin/users` | Gestion utilisateurs |
+| GET/PUT/DELETE | `/api/admin/users/[id]` | Détail utilisateur |
+| GET | `/api/admin/users/[id]/sessions` | Sessions d'un utilisateur |
+| GET | `/api/admin/users/[id]/reports` | Rapports scouting d'un utilisateur |
+| GET/POST | `/api/admin/invitations` | Invitations en masse |
+| PUT/DELETE | `/api/admin/invitations/[id]` | Gestion invitation |
+| GET/POST | `/api/admin/tournaments` | Tournois en admin |
+| POST | `/api/admin/fetchTournament` | Fetch depuis Ravensburger |
+| POST | `/api/admin/fetchRound` | Fetch ronde depuis Ravensburger |
+| GET/POST | `/api/admin/audit-logs` | Journal d'audit |
+| GET/POST | `/api/admin/feedback` | Feedbacks |
+| PUT/DELETE | `/api/admin/feedback/[id]` | Gestion feedback |
+| GET/POST | `/api/admin/access-requests` | Demandes d'accès |
+| PUT/DELETE | `/api/admin/access-requests/[id]` | Traitement demande |
+| GET | `/api/admin/groups` | Liste des groupes |
+| GET | `/api/admin/stats` | Statistiques dashboard |
+
+### Public
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| POST | `/api/invitations/[token]` | Inscription via token d'invitation |
+| POST | `/api/access-requests` | Soumission demande d'accès (hCaptcha) |
+| POST | `/api/feedback` | Soumission feedback utilisateur |
+
+---
+
+## Middleware (`middleware.ts`)
+
+- **Routes publiques** : `/login`, `/forgot-password`, `/access-request`, `/api/auth/**`, `/api/invitations/[token]`, `/api/access-requests`, `/register/[token]/**`, `/reset-password/[token]/**`
+- **Fichiers statiques** : `/_next`, `/favicon.ico`, `/svg`, `/images` — passent sans contrôle
+- Sur les routes protégées : vérifie le cookie `session` via HMAC, redirige vers `/login` si absent ou invalide
+- Sur `/admin/**` : vérifie que le rôle est ADMIN ou SUPERUSER, sinon redirige vers `/`
+- Headers injectés dans les API routes : `x-user-id` (sessionId), `x-user-role` — **NE PAS utiliser directement**, utiliser `getAuthSession(request)` qui relit le cookie et la session MongoDB
+
+---
+
+## Patterns clés
+
+### Portées de deck (Three-Scope Storage)
+Les decks sont stockés dans `TournamentPlayersDeck` selon 3 portées :
+- **Tournoi** : `{ tournamentId, groupId: null, userId: null }` — vue globale du tournoi
+- **Groupe** : `{ tournamentId, groupId, userId: null }` — vue partagée du groupe
+- **Utilisateur** : `{ tournamentId, groupId: null, userId }` — vue personnelle
+
+`TournamentPlayersDeckRepository.findByScope(tournamentId, scope)` sélectionne la bonne entrée.
+
+### Workflow des conflits
+Déclenché quand deux portées ont des decks différents pour le même joueur (ex. à l'entrée d'un utilisateur dans un groupe via `DataMergeService`) :
+```
+PENDING → (membre) → PENDING_ADMIN (escalade) ou UNCERTAINTY (incertitude signalée)
+PENDING_ADMIN → (admin) → APPROVED (decks résolus) ou REJECTED
+```
+
+### Fusion des données à l'entrée dans un groupe
+`DataMergeService.mergeOnGroupJoin(userId, groupId)` est appelé automatiquement quand un utilisateur accepte une invitation de groupe. Il copie ses decks personnels dans la portée groupe et crée des `TournamentConflict` si les assignations diffèrent de celles déjà présentes dans le groupe.
+
+### Récupération async des rondes
+`NEXT_PUBLIC_USE_ASYNC_FETCH=true` active `FETCH_ALL_ASYNC` qui récupère toutes les pages d'une ronde en parallèle (utile pour les gros tournois). Contrôlé dans `src/lib/constants.ts`.
+
+### Assignation de deck depuis la vue match
+`POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck` — portée déterminée par les paramètres (`userId`, `groupId` ou ni l'un ni l'autre pour la portée tournoi). Délégue à `ScoutingService.assignDecks`.
+
+---
+
+## Principes d'architecture
 
 - **Server Components par défaut** — `'use client'` uniquement si interaction utilisateur ou hooks nécessaires
 - **Pas de logique métier dans les composants React** — les composants sont purement présentationnels
-- **Les routes API** appellent les services → les services appellent les repositories → les repositories utilisent Mongoose
-- **Accès MongoDB exclusivement via les repositories** (`src/repositories/db/`) — pas de requêtes Mongoose directes dans les routes ou services
+- **Les routes API** → Services → Repositories → Mongoose (jamais de saut de couche)
+- **Accès MongoDB exclusivement via les repositories** (`src/repositories/db/`) — jamais de requêtes Mongoose directes dans les routes ou services
 - **`ApiResponse`** (`src/lib/api/responses.ts`) pour toutes les réponses HTTP
-- **`getAuthSession(request)`** pour l'auth dans les routes API, **`getServerUser()`** dans les Server Components
-- **Types dans `src/types/`**, pas de types inline dans les composants ou routes
+- **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB
+- **`getServerUser()`** dans les Server Components — ne pas utiliser dans les API routes
+- **Types dans `src/types/`** — pas de types inline dans les composants ou routes
+- **Hooks React** dans `src/hooks/` — `useFetch<T>(url)` est le hook de fetching client standard (pas de React Query)
 
 ---
 
@@ -160,13 +374,13 @@ git checkout -b claude/bug/description-du-bug origin/staging   # correction de b
    - **Tests unitaires** : uniquement pour des fonctions pures isolées à logique complexe (ex. règles de validation, calculs métier). Pas de tests unitaires sur des fonctions triviales.
    - En cas de doute : préférer les tests d'intégration.
 
-**4. Exécuter tous les tests** — s'assurer que les changements n'ont pas cassé les tests existants :
+**4. Exécuter tous les tests** :
 ```bash
 npm test
 ```
 Tous les tests doivent passer avant de rédiger le commit.
 
-**5. Commit** — message structuré en suivant ce format :
+**5. Commit** :
 ```
 type(scope): description courte en français
 
@@ -187,16 +401,23 @@ MONGO_URI=mongodb://localhost:27017
 MONGO_DB_NAME=ftl
 
 # Auth
-SESSION_SECRET=                    # clé HMAC min. 32 chars
+SESSION_SECRET=                          # clé HMAC min. 32 chars
 
 # Email - production (Resend)
 RESEND_API_KEY=
-EMAIL_FROM=onboarding@resend.dev   # remplacer par domaine vérifié en prod
+EMAIL_FROM=onboarding@resend.dev         # remplacer par domaine vérifié en prod
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 # Email - développement local (Mailpit)
 SMTP_HOST=localhost
 SMTP_PORT=1025
+
+# hCaptcha (dev : clés de test officielles hCaptcha, toujours valides sur localhost)
+NEXT_PUBLIC_HCAPTCHA_SITE_KEY=10000000-ffff-ffff-ffff-000000000001
+HCAPTCHA_SECRET_KEY=0x0000000000000000000000000000000000000000
+
+# Fetch des rondes (true = récupération de toutes les pages en parallèle)
+NEXT_PUBLIC_USE_ASYNC_FETCH=true
 ```
 
 ---
@@ -222,3 +443,5 @@ npm run test:coverage       # rapport de couverture
 - Jamais réécrire de larges portions de code non demandées
 - Jamais créer un fichier sans vérifier qu'il n'existe pas déjà
 - Jamais committer sans que `npm test` passe à 100%
+- Jamais lire `x-user-id` / `x-user-role` directement dans les API routes — utiliser `getAuthSession(request)`
+- Jamais utiliser `getServerUser()` dans une route API (réservé aux Server Components)
