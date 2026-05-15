@@ -1,30 +1,56 @@
-'use client';
-import Typography from '@mui/material/Typography';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import FileOpenIcon from '@mui/icons-material/FileOpen';
+import Link from 'next/link';
+import { Trophy, Users, UserCircle, ChevronRight } from 'lucide-react';
+import { OnboardingTour } from '@components/ui/OnboardingTour';
+
+const sections = [
+	{
+		href: '/tournaments',
+		icon: Trophy,
+		label: 'Tournois',
+		description: 'Consulter les tournois et scouteur les decks en cours de ronde.',
+		tourId: 'home-tournaments',
+	},
+	{
+		href: '/groups',
+		icon: Users,
+		label: 'Groupes',
+		description: 'Gérer vos groupes et les accès aux tournois partagés.',
+		tourId: 'home-groups',
+	},
+	{
+		href: '/profile',
+		icon: UserCircle,
+		label: 'Profil',
+		description: 'Modifier vos informations personnelles et votre mot de passe.',
+		tourId: undefined,
+	},
+];
 
 export default function HomePage() {
 	return (
-		<>
-			<Typography variant="h3" gutterBottom>
-				Ressources
-			</Typography>
-			<List>
-				<ListItemButton
-					target="_blank"
-					rel="noopener"
-					component="a"
-					href="https://profuse-smash-889.notion.site/Scooting-272f07a4069a809f951cc08bf8e116a1?pvs=73"
-				>
-					<ListItemIcon>
-						<FileOpenIcon />
-					</ListItemIcon>
-					<ListItemText primary="Tutoriel du scooting (Notion)" />
-				</ListItemButton>
-			</List>
-		</>
+		<div className="max-w-2xl">
+			<OnboardingTour />
+			<h1 className="text-3xl font-bold text-foreground mb-2">Bienvenue</h1>
+			<p className="text-muted-foreground mb-8">Que souhaitez-vous faire ?</p>
+			<div className="flex flex-col gap-3">
+				{sections.map(({ href, icon: Icon, label, description, tourId }) => (
+					<Link
+						key={href}
+						href={href}
+						data-tour={tourId}
+						className="flex items-center gap-4 px-4 py-4 rounded-lg border border-border bg-card hover:bg-accent transition-colors group"
+					>
+						<div className="flex h-10 w-10 items-center justify-center rounded-md bg-background border border-border shrink-0">
+							<Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+						</div>
+						<div className="flex-1 min-w-0">
+							<p className="text-sm font-medium text-foreground">{label}</p>
+							<p className="text-xs text-muted-foreground mt-0.5">{description}</p>
+						</div>
+						<ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+					</Link>
+				))}
+			</div>
+		</div>
 	);
 }

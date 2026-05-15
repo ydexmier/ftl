@@ -1,17 +1,32 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { RoundService } from '@/src/services/RoundService';
+import { RoundRepository } from '@/src/repositories/db/RoundRepository';
+import { ApiResponse } from '@/src/lib/api/responses';
+import connectToMongoDB from '@/src/lib/db';
+
+const RATE_LIMIT_SECONDS = 60;
 
 export async function POST(request: NextRequest) {
 	const { tournamentId, roundId, options = {} } = await request.json();
 
-	if (!tournamentId) return NextResponse.json({ error: 'TournamentId requis' }, { status: 400 });
-	if (!roundId) return NextResponse.json({ error: 'RoundId requis' }, { status: 400 });
+	if (!tournamentId) return ApiResponse.badRequest('TournamentId requis');
+	if (!roundId) return ApiResponse.badRequest('RoundId requis');
+
+	await connectToMongoDB();
+	const existing = await RoundRepository.findById(Number(roundId));
+	if (existing?.lastFetchedAt) {
+		const elapsed = (Date.now() - new Date(existing.lastFetchedAt).getTime()) / 1000;
+		if (elapsed < RATE_LIMIT_SECONDS) {
+			const wait = Math.ceil(RATE_LIMIT_SECONDS - elapsed);
+			return ApiResponse.tooManyRequests(`Veuillez attendre encore ${wait}s avant de refetcher ce round.`);
+		}
+	}
 
 	try {
-		const datas = await RoundService.fetchAndSave(Number(tournamentId), Number(roundId), options);
-		return NextResponse.json({ message: 'Round récupéré !', datas });
+		// Admin fetch: no user scope — decks are empty until scouted in context (group or personal)
+		const datas = await RoundService.fetchAndSave(Number(tournamentId), Number(roundId), options, { groupId: null, userId: null });
+		return ApiResponse.ok({ message: 'Round récupéré !', datas });
 	} catch (err) {
-		console.error('Erreur fetchAndSaveRound:', err);
-		return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+		return ApiResponse.serverError(err);
 	}
 }

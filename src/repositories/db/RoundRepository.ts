@@ -1,14 +1,16 @@
-import Round from '@models/Round.js';
+import RoundModel from '@models/Round';
 import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
 import type { Match } from '@/src/types/match';
 import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
+import { TournamentPlayersDeckRepository, type DeckScope } from './TournamentPlayersDeckRepository';
 
 export interface RoundDocument {
 	id: number;
 	tournamentId: number;
 	results: Match[];
 	playersDecks?: PlayersDecksMap | null;
+	lastFetchedAt?: string | null;
 	updatedAt?: string;
 	createdAt?: string;
 }
@@ -23,29 +25,32 @@ export interface MatchQueryOptions {
 export const RoundRepository = {
 	async findById(id: number): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).lean() as Promise<RoundDocument | null>;
+		return RoundModel.findOne({ id }).lean() as Promise<RoundDocument | null>;
 	},
 
-	async findByIdWithDecks(id: number): Promise<RoundDocument | null> {
+	async findByIdWithDecks(id: number, scope: DeckScope): Promise<RoundDocument | null> {
 		await connectToMongoDB();
-		return Round.findOne({ id }).populate('playersDecks').lean() as Promise<RoundDocument | null>;
+		const round = (await RoundModel.findOne({ id }).lean()) as RoundDocument | null;
+		if (!round) return null;
+		const playersDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
+		return { ...round, playersDecks: (playersDecks as PlayersDecksMap | null) ?? null };
 	},
 
 	async upsert(data: Record<string, unknown>) {
 		await connectToMongoDB();
-		return Round.findOneAndUpdate({ id: data.id }, data, { new: true, upsert: true }).lean();
+		return RoundModel.findOneAndUpdate({ id: data.id }, data, { new: true, upsert: true }).lean();
 	},
 
 	async deleteMany(tournamentId: number) {
 		await connectToMongoDB();
-		return Round.deleteMany({ tournamentId });
+		return RoundModel.deleteMany({ tournamentId });
 	},
 
-	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}) {
+	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}, scope: DeckScope) {
 		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
 		await connectToMongoDB();
 
-		const round = (await Round.findOne({ id: roundId }).populate('playersDecks').lean()) as RoundDocument | null;
+		const round = (await RoundModel.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
@@ -77,7 +82,8 @@ export const RoundRepository = {
 			(match.player_match_relationships ?? []).map((pmr) => pmr.player?.id).filter(Boolean),
 		);
 
-		const playersDecks = round.playersDecks ?? null;
+		const rawDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
+		const playersDecks = rawDecks as PlayersDecksMap | null;
 		const filteredPlayersDecks =
 			playersDecks && playersDecks.players
 				? {
@@ -90,20 +96,66 @@ export const RoundRepository = {
 			results: paginatedResults,
 			playersDecks: filteredPlayersDecks,
 			pagination: { page: currentPage, perPage: limit, total, totalPages },
+			lastFetchedAt: round.lastFetchedAt ?? null,
 			updatedAt: round.updatedAt,
 		};
 	},
 
 	async findMatch(roundId: number, matchId: number) {
 		await connectToMongoDB();
-		const round = (await Round.findOne({ id: roundId }).lean()) as RoundDocument | null;
+		const round = (await RoundModel.findOne({ id: roundId }).lean()) as RoundDocument | null;
 		if (!round) return null;
 		return round.results?.find((m) => m.id === matchId) ?? null;
 	},
 
+	async findUniquePlayersByTournamentId(tournamentId: number) {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find({ tournamentId }).lean()) as RoundDocument[];
+		const seen = new Set<number>();
+		const players: import('@/src/repositories/db/TournamentPlayersDeckRepository').PlayerInfo[] = [];
+		for (const round of rounds) {
+			for (const match of round.results ?? []) {
+				for (const pmr of match.player_match_relationships ?? []) {
+					const p = pmr.player;
+					if (p?.id && !seen.has(p.id)) {
+						seen.add(p.id);
+						players.push({
+							id: p.id,
+							best_identifier: p.best_identifier,
+							pronouns: p.pronouns ?? null,
+							eventBestIdentifier: pmr.user_event_status?.best_identifier ?? '',
+						});
+					}
+				}
+			}
+		}
+		return players;
+	},
+
+	async findPlayerInTournament(tournamentId: number, playerId: number) {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find(
+			{ tournamentId, 'results.player_match_relationships.player.id': playerId },
+		).lean()) as RoundDocument[];
+		for (const round of rounds) {
+			for (const match of round.results ?? []) {
+				for (const pmr of match.player_match_relationships ?? []) {
+					if (pmr.player?.id === playerId) {
+						return {
+							id: pmr.player.id,
+							best_identifier: pmr.player.best_identifier,
+							eventBestIdentifier: pmr.user_event_status?.best_identifier ?? '',
+						};
+					}
+				}
+			}
+		}
+		return null;
+	},
+
 	async mergeAndSave(id: number, tournamentId: number, newData: Record<string, unknown>) {
 		await connectToMongoDB();
-		const existing = await Round.findOne({ id });
+		const existing = await RoundModel.findOne({ id });
 		if (existing) {
 			for (const key in newData) {
 				if (key === 'results') {
@@ -119,10 +171,11 @@ export const RoundRepository = {
 					existing.set(key, newData[key]);
 				}
 			}
+			existing.lastFetchedAt = new Date();
 			await existing.save();
 		} else {
-			await Round.create({ ...newData, id, tournamentId });
+			await RoundModel.create({ ...newData, id, tournamentId, lastFetchedAt: new Date() });
 		}
-		return Round.findOne({ id }).populate('playersDecks').lean();
+		return RoundModel.findOne({ id }).lean();
 	},
 };

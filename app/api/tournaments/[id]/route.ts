@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -7,10 +8,10 @@ export async function GET(_req: NextRequest, { params }: Params) {
 	try {
 		const { id } = await params;
 		const tournament = await TournamentRepository.findById(Number(id));
-		if (!tournament) return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
-		return NextResponse.json(tournament);
+		if (!tournament) return ApiResponse.notFound('Tournament not found');
+		return ApiResponse.ok(tournament);
 	} catch (err) {
-		return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+		return ApiResponse.serverError(err);
 	}
 }
 
@@ -18,9 +19,9 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 	try {
 		const { id } = await params;
 		const deleted = await TournamentRepository.deleteById(Number(id));
-		if (!deleted) return NextResponse.json({ error: 'Tournament not found' }, { status: 404 });
-		return NextResponse.json({ message: 'Tournament deleted' });
+		if (!deleted) return ApiResponse.notFound('Tournament not found');
+		return ApiResponse.ok({ message: 'Tournament deleted' });
 	} catch (err) {
-		return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+		return ApiResponse.serverError(err);
 	}
 }

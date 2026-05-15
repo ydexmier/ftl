@@ -1,0 +1,193 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { GET as getMatches } from '../../app/api/rounds/[roundId]/matchs/route';
+import { GET as getMatch } from '../../app/api/rounds/[roundId]/matchs/[matchId]/route';
+import { POST as assignDeck } from '../../app/api/rounds/[roundId]/matchs/[matchId]/assign_deck/route';
+import { POST as fetchRound } from '../../app/api/admin/fetchRound/route';
+import TournamentModel from '@models/Tournament';
+import RoundModel from '@models/Round';
+import { createTestUser, createAuthCookie, makeRequest } from '../test/helpers';
+import { NextRequest } from 'next/server';
+
+vi.mock('@/src/repositories/external/RavensburgerClient', () => ({
+  RavensburgerClient: {
+    fetchTournament: vi.fn(),
+    fetchRound: vi.fn(),
+  },
+}));
+
+import { RavensburgerClient } from '@/src/repositories/external/RavensburgerClient';
+
+function roundParams(roundId: string) {
+  return { params: Promise.resolve({ roundId }) };
+}
+function matchParams(roundId: string, matchId: string) {
+  return { params: Promise.resolve({ roundId, matchId }) };
+}
+
+let _counter = 0;
+function nextId() { return 700000 + ++_counter; }
+
+function makeMatch(id: number, playerId1 = 1, playerId2 = 2) {
+  return {
+    id,
+    table_number: 1,
+    order: 1,
+    status: 'COMPLETE',
+    pod_number: null,
+    match_is_bye: false,
+    match_is_intentional_draw: false,
+    match_is_unintentional_draw: false,
+    match_is_loss: false,
+    reports_are_in_conflict: false,
+    games_drawn: null,
+    games_won_by_winner: 2,
+    games_won_by_loser: 0,
+    is_ghost_match: false,
+    is_feature_match: false,
+    deck_check_started: false,
+    deck_check_completed: false,
+    time_extension_seconds: 0,
+    tournament_round: 1,
+    winning_player: playerId1,
+    reporting_player: null,
+    assigned_judge: null,
+    players: [playerId1, playerId2],
+    player_match_relationships: [
+      { player_order: 1, player: { id: playerId1, best_identifier: 'Alice', pronouns: null, game_user_profile_picture_url: null }, user_event_status: { id: playerId1, best_identifier: 'Alice', registration_status: 'CHECKED_IN', matches_won: 1, matches_lost: 0, matches_drawn: 0, total_match_points: 3 } },
+      { player_order: 2, player: { id: playerId2, best_identifier: 'Bob', pronouns: null, game_user_profile_picture_url: null }, user_event_status: { id: playerId2, best_identifier: 'Bob', registration_status: 'CHECKED_IN', matches_won: 0, matches_lost: 1, matches_drawn: 0, total_match_points: 0 } },
+    ],
+  };
+}
+
+beforeEach(() => { vi.clearAllMocks(); });
+
+describe('GET /api/rounds/[roundId]/matchs', () => {
+  it('retourne 404 si le round n\'existe pas', async () => {
+    const req = makeRequest('GET', '/api/rounds/999/matchs');
+    const res = await getMatches(req, roundParams('999'));
+    expect(res.status).toBe(404);
+  });
+
+  it('retourne 200 avec la liste paginée des matchs', async () => {
+    const rid = nextId();
+    const tid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(nextId()), makeMatch(nextId())] });
+    const req = makeRequest('GET', `/api/rounds/${rid}/matchs`);
+    const res = await getMatches(req, roundParams(String(rid)));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.results).toHaveLength(2);
+    expect(data.pagination.total).toBe(2);
+  });
+
+  it('filtre par numéro de table', async () => {
+    const rid = nextId();
+    const tid = nextId();
+    const m1 = { ...makeMatch(nextId()), table_number: 42 };
+    const m2 = { ...makeMatch(nextId()), table_number: 99 };
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [m1, m2] });
+    const req = makeRequest('GET', `/api/rounds/${rid}/matchs?search=42`);
+    const res = await getMatches(req, roundParams(String(rid)));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.results.length).toBe(1);
+    expect(data.results[0].table_number).toBe(42);
+  });
+});
+
+describe('GET /api/rounds/[roundId]/matchs/[matchId]', () => {
+  it('retourne 404 si le match n\'existe pas', async () => {
+    const rid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: nextId(), results: [] });
+    const req = new NextRequest(`http://localhost:3000/api/rounds/${rid}/matchs/999`);
+    const res = await getMatch(req, matchParams(String(rid), '999'));
+    expect(res.status).toBe(404);
+  });
+
+  it('retourne 200 avec le match', async () => {
+    const rid = nextId();
+    const mid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: nextId(), results: [makeMatch(mid)] });
+    const req = new NextRequest(`http://localhost:3000/api/rounds/${rid}/matchs/${mid}`);
+    const res = await getMatch(req, matchParams(String(rid), String(mid)));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.id).toBe(mid);
+  });
+});
+
+describe('POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('POST', '/api/rounds/1/matchs/1/assign_deck', { decks: [] });
+    const res = await assignDeck(req, matchParams('1', '1'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 404 si le round n\'existe pas', async () => {
+    const user = await createTestUser({ username: 'deckuser1', email: 'deckuser1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/rounds/999/matchs/1/assign_deck', { decks: [] }, cookie);
+    const res = await assignDeck(req, matchParams('999', '1'));
+    expect(res.status).toBe(404);
+  });
+
+  it('assigne des decks et retourne 200', async () => {
+    const user = await createTestUser({ username: 'deckuser2', email: 'deckuser2@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const rid = nextId();
+    const mid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: nextId(), results: [makeMatch(mid, 10, 11)] });
+    const req = makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+      decks: [{ playerId: 10, decks: [['Ambre', 'Rubis']] }],
+    }, cookie);
+    const res = await assignDeck(req, matchParams(String(rid), String(mid)));
+    expect(res.status).toBe(200);
+  });
+});
+
+describe('POST /api/admin/fetchRound', () => {
+  it('retourne 400 sans tournamentId', async () => {
+    const req = makeRequest('POST', '/api/admin/fetchRound', { roundId: 1 });
+    const res = await fetchRound(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 sans roundId', async () => {
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1 });
+    const res = await fetchRound(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 500 si le round n\'existe pas dans le tournoi', async () => {
+    const tid = nextId();
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: 999 });
+    const res = await fetchRound(req);
+    expect(res.status).toBe(500);
+  });
+
+  it('fetche et sauvegarde un round via RavensburgerClient', async () => {
+    const tid = nextId();
+    const rid = nextId();
+    const mid = nextId();
+    await TournamentModel.create({
+      id: tid,
+      name: 'T',
+      event_status: 'ENDED',
+      start_datetime: new Date(),
+      tournament_phases: [{ id: 1, status: 'COMPLETE', order_in_phases: 1, number_of_rounds: 1, round_type: 'SWISS', first_round_type: null, rank_required_to_enter_phase: null, rounds: [{ id: rid, round_number: 1, final_round_in_event: true, pairings_status: 'PUBLISHED', standings_status: 'PUBLISHED', round_type: 'SWISS', status: 'COMPLETE' }] }],
+    });
+
+    vi.mocked(RavensburgerClient.fetchRound).mockResolvedValue({
+      id: rid,
+      total: 1,
+      results: [makeMatch(mid)],
+    } as never);
+
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: rid });
+    const res = await fetchRound(req);
+    expect(res.status).toBe(200);
+    const saved = await RoundModel.findOne({ id: rid });
+    expect(saved).not.toBeNull();
+  });
+});

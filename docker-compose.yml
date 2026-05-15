@@ -1,24 +1,21 @@
-version: "3.8"
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - MONGO_URI=mongodb://mongo:27017
-      - MONGO_DB_NAME=ftl
-    depends_on:
-      - mongo
+# Services d'infrastructure pour le développement local.
+# Next.js se lance séparément avec `npm run dev`.
 
+services:
   mongo:
-    image: mongo
+    image: mongo:7
     ports:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"  # UI web  → http://localhost:8025
+      - "1025:1025"  # SMTP    ← utilisé par l'app en dev
+    restart: unless-stopped
 
 volumes:
   mongo-data:

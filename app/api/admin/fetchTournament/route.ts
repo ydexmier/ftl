@@ -1,16 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { TournamentService } from '@/src/services/TournamentService';
+import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
+import { ApiResponse } from '@/src/lib/api/responses';
+import connectToMongoDB from '@/src/lib/db';
+
+const RATE_LIMIT_SECONDS = 60;
 
 export async function POST(request: NextRequest) {
-	const { tournamentId, isRefetch } = await request.json();
+	const { tournamentId } = await request.json();
 
-	if (!tournamentId) return NextResponse.json({ error: 'TournamentId requis' }, { status: 400 });
+	if (!tournamentId) return ApiResponse.badRequest('TournamentId requis');
+
+	await connectToMongoDB();
+	const existing = await TournamentRepository.findById(Number(tournamentId));
+	if (existing?.lastFetchedAt) {
+		const elapsed = (Date.now() - new Date(existing.lastFetchedAt).getTime()) / 1000;
+		if (elapsed < RATE_LIMIT_SECONDS) {
+			const wait = Math.ceil(RATE_LIMIT_SECONDS - elapsed);
+			return ApiResponse.tooManyRequests(`Veuillez attendre encore ${wait}s avant de refetcher ce tournoi.`);
+		}
+	}
 
 	try {
-		const datas = await TournamentService.fetchAndSave(Number(tournamentId), isRefetch);
-		return NextResponse.json({ message: 'Tournoi récupéré !', datas });
+		const datas = await TournamentService.fetchAndSave(Number(tournamentId));
+		return ApiResponse.ok({ message: 'Tournoi récupéré !', datas });
 	} catch (err) {
-		console.error('Erreur fetchAndSaveTournament:', err);
-		return NextResponse.json({ error: (err as Error).message }, { status: 500 });
+		return ApiResponse.serverError(err);
 	}
 }
