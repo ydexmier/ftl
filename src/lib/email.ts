@@ -3,7 +3,7 @@ import { InvitationEmail } from './emails/InvitationEmail';
 import { WelcomeEmail } from './emails/WelcomeEmail';
 import { PasswordResetEmail } from './emails/PasswordResetEmail';
 
-export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companionlorcana.dev';
+export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companion.yd-lab.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 function envPrefix(): string {
