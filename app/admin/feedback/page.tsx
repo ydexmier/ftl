@@ -99,7 +99,7 @@ export default function FeedbackAdminPage() {
 
   return (
     <div className="max-w-5xl mx-auto flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
         <h1 className="text-2xl font-bold text-foreground">Feedback utilisateurs</h1>
         {total > 0 && (
           <span className="text-sm text-muted-foreground">{total} entrée{total > 1 ? 's' : ''}</span>
@@ -107,7 +107,7 @@ export default function FeedbackAdminPage() {
       </div>
 
       <div className="flex gap-3">
-        <div className="w-48">
+        <div className="w-full sm:w-48">
           <Select
             label="Statut"
             options={STATUS_OPTIONS}
@@ -149,14 +149,14 @@ export default function FeedbackAdminPage() {
                 {expanded === item._id && (
                   <div className="ml-6 flex flex-col gap-3">
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">{item.description}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col sm:flex-row flex-wrap gap-2">
                       {(['open', 'in-progress', 'done', 'closed'] as FeedbackStatus[]).map((s) => (
                         <button
                           key={s}
                           disabled={item.status === s || updating === item._id}
                           onClick={() => updateStatus(item._id, s)}
                           className={cn(
-                            'px-2.5 py-1 rounded text-xs font-medium border transition-colors disabled:opacity-50',
+                            'px-2.5 py-2 sm:py-1 rounded text-xs font-medium border transition-colors disabled:opacity-50',
                             item.status === s
                               ? STATUS_STYLES[s]
                               : 'border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground',

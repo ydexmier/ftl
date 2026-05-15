@@ -101,7 +101,7 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
   return (
     <>
       <div className="space-y-3">
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
             <input
@@ -109,14 +109,14 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Rechercher un joueur…"
-              className="w-full h-9 rounded-md border border-white/25 bg-card pl-9 pr-3 py-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="w-full h-10 sm:h-9 rounded-md border border-white/25 bg-card pl-9 pr-3 py-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
           </div>
           <Select
             options={PER_PAGE_OPTIONS}
             value={perPage}
             onChange={(e) => handlePerPage(Number(e.target.value))}
-            className="w-32 shrink-0"
+            className="w-full sm:w-32 sm:shrink-0"
           />
         </div>
 
@@ -124,7 +124,7 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Joueur
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -146,13 +146,13 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
                     onClick={() => setSelected(p)}
                     className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer"
                   >
-                    <td className="px-4 py-3 max-w-xs">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3 max-w-xs">
                       <span className="text-foreground truncate block">{p.event_best_identifier || p.best_identifier}</span>
                       {p.event_best_identifier && p.event_best_identifier !== p.best_identifier && (
                         <span className="text-xs text-muted-foreground truncate block">{p.best_identifier}</span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-2 sm:py-3">
                       <div className="flex justify-end gap-2">
                         {p.decks.length === 0 ? (
                           <span className="text-muted-foreground text-xs">—</span>

@@ -87,23 +87,23 @@ export function AdminSidebar() {
 			<header className="lg:hidden fixed top-0 left-0 right-0 h-14 flex items-center px-4 border-b border-border bg-card z-30">
 				<button
 					onClick={() => setMobileOpen(true)}
-					className="p-1.5 rounded-md hover:bg-accent transition-colors"
+					className="p-2.5 rounded-md hover:bg-accent transition-colors"
 					aria-label="Ouvrir le menu"
 				>
 					<Menu className="h-5 w-5" />
 				</button>
-				<span className="ml-3 font-bold text-foreground">Companion Admin</span>
+				<span className="ml-3 font-bold text-foreground truncate">Companion Admin</span>
 			</header>
 
 			{/* Mobile drawer */}
 			{mobileOpen && (
 				<>
 					<div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setMobileOpen(false)} />
-					<aside className="lg:hidden fixed inset-y-0 left-0 w-60 z-50">
+					<aside className="lg:hidden fixed inset-y-0 left-0 w-72 max-w-[85vw] z-50">
 						<div className="absolute top-3 right-3 z-10">
 							<button
 								onClick={() => setMobileOpen(false)}
-								className="p-1.5 rounded-md hover:bg-accent transition-colors"
+								className="p-2.5 rounded-md hover:bg-accent transition-colors"
 								aria-label="Fermer le menu"
 							>
 								<X className="h-4 w-4" />

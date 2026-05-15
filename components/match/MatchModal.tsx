@@ -195,8 +195,8 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 	const [p1, p2] = match.player_match_relationships;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-			<div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 flex flex-col gap-4 shadow-xl max-h-[90vh] overflow-y-auto">
+		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleCancel}>
+			<div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 flex flex-col gap-4 shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
 
 				{/* Header */}
 				<div className="flex items-center justify-between">
@@ -220,11 +220,11 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 					</div>
 					{renderInkSelection('combination1')}
 					{!match.match_is_bye && (
-						<div className="flex gap-2 flex-wrap">
-							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p1.player.id)}>
+						<div className="flex flex-col sm:flex-row gap-2">
+							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p1.player.id)} className="w-full sm:w-auto truncate">
 								Assigner à {p1.player.best_identifier}
 							</Button>
-							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p2.player.id)}>
+							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p2.player.id)} className="w-full sm:w-auto truncate">
 								Assigner à {p2.player.best_identifier}
 							</Button>
 						</div>
@@ -246,10 +246,10 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 							</div>
 							{renderInkSelection('combination2')}
 							<div className="flex gap-2 flex-wrap">
-								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p1.player.id)}>
+								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p1.player.id)} className="w-full sm:w-auto truncate">
 									Assigner à {p1.player.best_identifier}
 								</Button>
-								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p2.player.id)}>
+								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p2.player.id)} className="w-full sm:w-auto truncate">
 									Assigner à {p2.player.best_identifier}
 								</Button>
 							</div>
@@ -259,9 +259,9 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 				)}
 
 				{/* Actions */}
-				<div className="flex justify-end gap-2 mt-2">
-					<Button variant="outline" onClick={handleCancel}>Annuler</Button>
-					<Button variant="success" onClick={handleValidate}>Valider</Button>
+				<div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-2">
+					<Button variant="outline" onClick={handleCancel} className="w-full sm:w-auto">Annuler</Button>
+					<Button variant="success" onClick={handleValidate} className="w-full sm:w-auto">Valider</Button>
 				</div>
 			</div>
 		</div>

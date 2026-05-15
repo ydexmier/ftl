@@ -93,8 +93,8 @@ export function PlayerDeckModal({
   const knownCombos = player.decks.filter((d) => d.length > 0);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col gap-4 p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-xl w-full max-w-md shadow-xl flex flex-col gap-4 p-6" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="truncate">
