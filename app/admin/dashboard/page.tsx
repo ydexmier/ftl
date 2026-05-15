@@ -27,7 +27,7 @@ function StatCard({
 	danger?: boolean;
 }) {
 	return (
-		<div className={cn('bg-card border rounded-xl p-5 flex flex-col gap-3', danger && value > 0 ? 'border-destructive/50' : 'border-border')}>
+		<div className={cn('bg-card border rounded-xl p-3 sm:p-5 flex flex-col gap-2 sm:gap-3', danger && value > 0 ? 'border-destructive/50' : 'border-border')}>
 			<div className="flex items-center justify-between">
 				<span className="text-sm text-muted-foreground">{label}</span>
 				<Icon className={cn('h-4 w-4', danger && value > 0 ? 'text-destructive' : 'text-muted-foreground')} />
@@ -63,7 +63,7 @@ export default function DashboardPage() {
 			{/* Stats cards */}
 			<section className="flex flex-col gap-3">
 				<h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Aujourd'hui</h2>
-				<div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
 					<StatCard label="Connexions" value={stats.today.logins} icon={LogIn} />
 					<StatCard label="Échecs" value={stats.today.failures} icon={LogOut} danger />
 					<StatCard label="Connexions (7j)" value={stats.week.logins} icon={LogIn} />
@@ -108,8 +108,8 @@ export default function DashboardPage() {
 						<table className="w-full text-sm">
 							<thead>
 								<tr className="border-b border-border text-muted-foreground text-xs uppercase tracking-wider">
-									<th className="px-4 py-3 text-left">IP</th>
-									<th className="px-4 py-3 text-left">Échecs</th>
+									<th className="px-3 sm:px-4 py-2 sm:py-3 text-left">IP</th>
+									<th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Échecs</th>
 									<th className="px-4 py-3 text-left hidden sm:table-cell">Logins tentés</th>
 									<th className="px-4 py-3 text-left hidden md:table-cell">Dernier essai</th>
 								</tr>
@@ -117,12 +117,12 @@ export default function DashboardPage() {
 							<tbody>
 								{stats.suspiciousIPs.map((row) => (
 									<tr key={row.ip} className="border-b border-border last:border-0">
-										<td className="px-4 py-3 font-mono text-xs">{row.ip || '—'}</td>
-										<td className="px-4 py-3 text-destructive font-semibold">{row.failCount}</td>
-										<td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">
+										<td className="px-3 sm:px-4 py-2 sm:py-3 font-mono text-xs">{row.ip || '—'}</td>
+										<td className="px-3 sm:px-4 py-2 sm:py-3 text-destructive font-semibold">{row.failCount}</td>
+										<td className="px-3 sm:px-4 py-2 sm:py-3 hidden sm:table-cell text-muted-foreground">
 											{row.usernames.filter(Boolean).join(', ') || '—'}
 										</td>
-										<td className="px-4 py-3 hidden md:table-cell text-muted-foreground">
+										<td className="px-3 sm:px-4 py-2 sm:py-3 hidden md:table-cell text-muted-foreground">
 											{new Date(row.lastAttempt).toLocaleString('fr-FR')}
 										</td>
 									</tr>
@@ -146,19 +146,19 @@ export default function DashboardPage() {
 						<table className="w-full text-sm">
 							<thead>
 								<tr className="border-b border-border text-muted-foreground text-xs uppercase tracking-wider">
-									<th className="px-4 py-3 text-left">Login tenté</th>
+									<th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Login tenté</th>
 									<th className="px-4 py-3 text-left hidden sm:table-cell">IP</th>
-									<th className="px-4 py-3 text-left">Heure</th>
+									<th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Heure</th>
 								</tr>
 							</thead>
 							<tbody>
 								{stats.recentFails.map((f, i) => (
 									<tr key={i} className="border-b border-border last:border-0">
-										<td className="px-4 py-3">{f.username || '—'}</td>
-										<td className="px-4 py-3 hidden sm:table-cell font-mono text-xs text-muted-foreground">
+										<td className="px-3 sm:px-4 py-2 sm:py-3">{f.username || '—'}</td>
+										<td className="px-3 sm:px-4 py-2 sm:py-3 hidden sm:table-cell font-mono text-xs text-muted-foreground">
 											{f.ipAddress || '—'}
 										</td>
-										<td className="px-4 py-3 text-muted-foreground">
+										<td className="px-3 sm:px-4 py-2 sm:py-3 text-muted-foreground">
 											{new Date(f.timestamp).toLocaleTimeString('fr-FR')}
 										</td>
 									</tr>

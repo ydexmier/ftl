@@ -72,7 +72,7 @@ export function ProfileClient({ initialUsername, initialEmail }: Props) {
       <h1 className="text-2xl font-bold text-foreground">Mon profil</h1>
 
       {/* Informations */}
-      <section className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
+      <section className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col gap-4">
         <h2 className="text-base font-semibold text-foreground">Informations</h2>
 
         {profileError && <Alert severity="error">{profileError}</Alert>}
@@ -96,14 +96,14 @@ export function ProfileClient({ initialUsername, initialEmail }: Props) {
             fullWidth
             autoComplete="email"
           />
-          <Button type="submit" loading={profileLoading} className="self-start">
+          <Button type="submit" loading={profileLoading} className="w-full sm:w-auto sm:self-start">
             Enregistrer
           </Button>
         </form>
       </section>
 
       {/* Mot de passe */}
-      <section className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
+      <section className="bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col gap-4">
         <h2 className="text-base font-semibold text-foreground">Modifier le mot de passe</h2>
 
         {pwdError && <Alert severity="error">{pwdError}</Alert>}
@@ -151,7 +151,7 @@ export function ProfileClient({ initialUsername, initialEmail }: Props) {
             autoComplete="new-password"
           />
 
-          <Button type="submit" loading={pwdLoading} className="self-start">
+          <Button type="submit" loading={pwdLoading} className="w-full sm:w-auto sm:self-start">
             Modifier le mot de passe
           </Button>
         </form>

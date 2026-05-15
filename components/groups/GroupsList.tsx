@@ -37,14 +37,14 @@ export function GroupsList({ groups, invitations, currentUserId }: Props) {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Mes groupes</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Gérez vos groupes et collaborez sur le scouting.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           {invitations.length > 0 && (
             <Button variant="outline" size="sm" onClick={() => setShowInvitations((v) => !v)}>
               <Bell className="h-4 w-4" />

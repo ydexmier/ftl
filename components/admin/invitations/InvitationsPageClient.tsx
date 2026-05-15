@@ -97,7 +97,7 @@ export function InvitationsPageClient({ invitations, total, page, pages, status:
   return (
     <>
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Invitations</h1>
             {total > 0 && (
@@ -106,14 +106,14 @@ export function InvitationsPageClient({ invitations, total, page, pages, status:
               </p>
             )}
           </div>
-          <Button onClick={() => setSendOpen(true)}>
+          <Button onClick={() => setSendOpen(true)} className="w-full sm:w-auto">
             <Send className="h-4 w-4" />
             Envoyer une invitation
           </Button>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4">
-          <Select options={STATUS_OPTIONS} value={status} onChange={handleStatusChange} className="min-w-48" />
+          <Select options={STATUS_OPTIONS} value={status} onChange={handleStatusChange} className="w-full sm:min-w-48 sm:w-auto" />
         </div>
 
         <div className="bg-card border border-border rounded-xl overflow-hidden">
@@ -127,24 +127,24 @@ export function InvitationsPageClient({ invitations, total, page, pages, status:
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-muted-foreground text-xs uppercase tracking-wider">
-                    <th className="px-4 py-3 text-left">Email</th>
-                    <th className="px-4 py-3 text-left hidden sm:table-cell">Groupes</th>
-                    <th className="px-4 py-3 text-left">Statut</th>
-                    <th className="px-4 py-3 text-left hidden md:table-cell">Envoyée le</th>
-                    <th className="px-4 py-3 text-left hidden lg:table-cell">Expire le</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Email</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left hidden sm:table-cell">Groupes</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left">Statut</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left hidden md:table-cell">Envoyée le</th>
+                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left hidden lg:table-cell">Expire le</th>
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {invitations.map((inv) => (
                     <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <span className="font-mono text-xs text-foreground">{inv.email}</span>
                         {inv.invitedBy && (
                           <p className="text-xs text-muted-foreground mt-0.5">par {inv.invitedBy.username}</p>
                         )}
                       </td>
-                      <td className="px-4 py-3 hidden sm:table-cell">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 hidden sm:table-cell">
                         {inv.groups.length === 0 ? (
                           <span className="text-muted-foreground text-xs">—</span>
                         ) : (
@@ -155,24 +155,24 @@ export function InvitationsPageClient({ invitations, total, page, pages, status:
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3">
                         <Badge label={STATUS_LABEL[inv.status] ?? inv.status} color={STATUS_BADGE[inv.status]} />
                       </td>
-                      <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs font-mono">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 hidden md:table-cell text-muted-foreground text-xs font-mono">
                         {new Date(inv.createdAt).toLocaleDateString('fr-FR')}
                       </td>
-                      <td className="px-4 py-3 hidden lg:table-cell text-muted-foreground text-xs font-mono">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 hidden lg:table-cell text-muted-foreground text-xs font-mono">
                         {inv.status === 'USED' && inv.usedAt
                           ? `Utilisée le ${new Date(inv.usedAt).toLocaleDateString('fr-FR')}`
                           : new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-right">
                         {inv.status === 'PENDING' && (
                           <div className="flex items-center justify-end gap-1">
                             <button
                               onClick={() => resend(inv._id)}
                               disabled={actionLoading === inv._id}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
+                              className="p-2 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors disabled:opacity-50"
                               title="Renvoyer"
                             >
                               <RefreshCw className="h-3.5 w-3.5" />
@@ -180,7 +180,7 @@ export function InvitationsPageClient({ invitations, total, page, pages, status:
                             <button
                               onClick={() => cancel(inv._id)}
                               disabled={actionLoading === inv._id}
-                              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                              className="p-2 sm:p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
                               title="Annuler"
                             >
                               <Ban className="h-3.5 w-3.5" />

@@ -139,7 +139,7 @@ const TournamentCard = ({
                 onMouseDown={(e) => e.stopPropagation()}
                 onClick={onArchiveClick}
                 title={isArchived ? 'Restaurer' : 'Archiver'}
-                className="h-7 w-7 rounded-md border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground flex items-center justify-center transition-colors"
+                className="h-9 w-9 sm:h-7 sm:w-7 rounded-md border border-border bg-card text-muted-foreground hover:bg-accent hover:text-foreground flex items-center justify-center transition-colors"
               >
                 {isArchived
                   ? <ArchiveRestore className="h-3.5 w-3.5" />
@@ -152,7 +152,7 @@ const TournamentCard = ({
                   onMouseDown={(e) => e.stopPropagation()}
                   onClick={onAssignClick}
                   title={isAssignSuccess ? 'Assigné !' : 'Associer à un groupe'}
-                  className={`h-7 w-7 rounded-md border flex items-center justify-center transition-all duration-300 ${
+                  className={`h-9 w-9 sm:h-7 sm:w-7 rounded-md border flex items-center justify-center transition-all duration-300 ${
                     isAssignSuccess
                       ? 'border-green-500 bg-green-500/20 text-green-400'
                       : isPopoverOpen

@@ -77,20 +77,20 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
   return (
     <>
       <div className="max-w-6xl mx-auto flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">Utilisateurs</h1>
             {total > 0 && <p className="text-sm text-muted-foreground mt-0.5">{total} utilisateur{total > 1 ? 's' : ''}</p>}
           </div>
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => setCreateOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="h-4 w-4" />
             Nouvel utilisateur
           </Button>
         </div>
 
         {/* Filtres */}
-        <div className="bg-card border border-border rounded-xl p-4 flex gap-3 flex-wrap">
-          <div className="flex-1 min-w-48 flex gap-2">
+        <div className="bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex gap-2 w-full sm:flex-1">
             <Input
               placeholder="Rechercher par username ou email…"
               value={search}
@@ -102,7 +102,7 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
               <Search className="h-4 w-4" />
             </Button>
           </div>
-          <Select options={ROLE_OPTIONS} value={role} onChange={handleRoleChange} className="min-w-36" />
+          <Select options={ROLE_OPTIONS} value={role} onChange={handleRoleChange} className="w-full sm:min-w-36 sm:w-auto" />
         </div>
 
         {/* Table */}
@@ -145,7 +145,7 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => setEditUser({ _id: u._id, username: u.username, email: u.email, role: u.role })}
-                            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                            className="p-2 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                             title="Modifier"
                           >
                             <Pencil className="h-3.5 w-3.5" />
