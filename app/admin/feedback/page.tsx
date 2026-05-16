@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/src/lib/api/apiFetch';
 import { Bug, Lightbulb } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Select } from '@components/ui/Select';
@@ -69,7 +70,7 @@ export default function FeedbackAdminPage() {
     try {
       const params = new URLSearchParams({ page: String(p) });
       if (status) params.set('status', status);
-      const res = await fetch(`/api/admin/feedback?${params}`);
+      const res = await apiFetch(`/api/admin/feedback?${params}`);
       const data = await res.json();
       setItems(data.feedbacks ?? []);
       setTotal(data.total ?? 0);
@@ -86,7 +87,7 @@ export default function FeedbackAdminPage() {
   const updateStatus = async (id: string, status: FeedbackStatus) => {
     setUpdating(id);
     try {
-      await fetch(`/api/admin/feedback/${id}`, {
+      await apiFetch(`/api/admin/feedback/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status }),

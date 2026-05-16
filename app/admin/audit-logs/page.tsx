@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import { apiFetch } from '@/src/lib/api/apiFetch';
 import { Spinner } from '@components/ui/Spinner';
 import { Input } from '@components/ui/Input';
 import { Select } from '@components/ui/Select';
@@ -76,7 +77,7 @@ export default function AuditLogsPage() {
 			if (f.from) params.set('from', f.from);
 			if (f.to) params.set('to', f.to);
 
-			const res = await fetch(`/api/admin/audit-logs?${params}`);
+			const res = await apiFetch(`/api/admin/audit-logs?${params}`);
 			const data = await res.json();
 			setLogs(data.logs ?? []);
 			setTotal(data.total ?? 0);

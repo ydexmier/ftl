@@ -2,9 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import connectToMongoDB from '@/src/lib/db';
 import SessionModel from '@models/Session';
 
-const MAX_AGE_MS = 8 * 60 * 60 * 1000;
-const INACTIVITY_MS = 30 * 60 * 1000;
-export const SESSION_COOKIE_MAX_AGE = 8 * 60 * 60;
+const MAX_AGE_MS = 12 * 60 * 60 * 1000;
+const INACTIVITY_MS = 4 * 60 * 60 * 1000;
+// Le cookie expire en même temps que la fenêtre d'inactivité DB — les deux horloges sont synchronisées.
+// Le SessionGuard client renouvelle le cookie toutes les 4 min quand l'onglet est actif.
+export const SESSION_COOKIE_MAX_AGE = 4 * 60 * 60; // 4h, en secondes
 
 export async function createSession(userId: string, role: string, ip: string, ua: string): Promise<string> {
   await connectToMongoDB();
