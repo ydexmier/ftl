@@ -4,8 +4,17 @@ import { AccessRequestRepository } from '@/src/repositories/db/AccessRequestRepo
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { verifyHcaptcha } from '@/src/lib/hcaptcha';
 import { isValidEmail } from '@/src/lib/validation';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
+
+function getIp(req: NextRequest) {
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+}
 
 export async function POST(req: NextRequest) {
+  const ip = getIp(req);
+  const rl = checkRateLimit(`access-request:${ip}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans quelques minutes.');
+
   const { email, reason, captchaToken } = await req.json();
 
   if (!email || !isValidEmail(email)) {

@@ -3,10 +3,14 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { FeedbackRepository } from '@/src/repositories/db/FeedbackRepository';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession(request);
   if (!session) return ApiResponse.unauthorized();
+
+  const rl = checkRateLimit(`feedback:${session.userId}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de soumissions. Réessayez dans quelques minutes.');
 
   const body = await request.json();
   const { type, title, description, page } = body;

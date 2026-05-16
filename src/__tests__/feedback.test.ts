@@ -92,6 +92,24 @@ describe('POST /api/feedback', () => {
     expect(saved).not.toBeNull();
     expect(saved?.type).toBe('bug');
   });
+
+  it('retourne 429 après trop de soumissions par le même utilisateur', async () => {
+    const user = await createTestUser({ username: 'fb_rl1', email: 'fb_rl1@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    let lastStatus = 0;
+    for (let i = 0; i < 10; i++) {
+      const req = makeRequest(
+        'POST',
+        '/api/feedback',
+        { type: 'bug', title: `Bug ${i}`, description: 'Description suffisamment longue', page: '/' },
+        cookie,
+      );
+      const res = await postFeedback(req);
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
+  });
 });
 
 // ─── GET /api/admin/feedback ──────────────────────────────────────────────────
