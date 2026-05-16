@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DELETE as revokeSessions } from '../../app/api/admin/users/[id]/sessions/route';
+import { GET as getSessions, DELETE as revokeSessions } from '../../app/api/admin/users/[id]/sessions/route';
 import { GET as getStats } from '../../app/api/admin/stats/route';
 import { GET as getAdminGroups } from '../../app/api/admin/groups/route';
 import { createTestUser, createAdminUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
@@ -19,12 +19,12 @@ describe('DELETE /api/admin/users/[id]/sessions', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 pour un utilisateur non-admin', async () => {
+  it('retourne 403 pour un utilisateur non-admin', async () => {
     const user = await createTestUser({ username: 'revokeuser1', email: 'revokeuser1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('DELETE', `/api/admin/users/${user._id}/sessions`, undefined, cookie);
     const res = await revokeSessions(req, params(String(user._id)));
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 404 si l\'utilisateur cible n\'existe pas', async () => {
@@ -64,6 +64,47 @@ describe('DELETE /api/admin/users/[id]/sessions', () => {
     const log = await AuditLogModel.findOne({ action: 'ADMIN_ACTION', username: 'revokeadmin3' });
     expect(log).not.toBeNull();
     expect((log!.metadata as { action: string }).action).toBe('REVOKE_SESSIONS');
+  });
+});
+
+// ─── GET /api/admin/users/[id]/sessions ──────────────────────────────────────
+
+describe('GET /api/admin/users/[id]/sessions', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('GET', '/api/admin/users/123/sessions');
+    const res = await getSessions(req, params('123'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 pour un USER', async () => {
+    const user = await createTestUser({ username: 'sessuser1', email: 'sessuser1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', `/api/admin/users/${user._id}/sessions`, undefined, cookie);
+    const res = await getSessions(req, params(String(user._id)));
+    expect(res.status).toBe(403);
+  });
+
+  it('retourne 404 si l\'utilisateur cible n\'existe pas', async () => {
+    const admin = await createAdminUser({ username: 'sessadmin1', email: 'sessadmin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const fakeId = '000000000000000000000002';
+    const req = makeRequest('GET', `/api/admin/users/${fakeId}/sessions`, undefined, cookie);
+    const res = await getSessions(req, params(fakeId));
+    expect(res.status).toBe(404);
+  });
+
+  it('retourne 200 avec les sessions de l\'utilisateur', async () => {
+    const admin = await createAdminUser({ username: 'sessadmin2', email: 'sessadmin2@example.com' });
+    const target = await createTestUser({ username: 'sesstgt1', email: 'sesstgt1@example.com' });
+    await createAuthCookie(target._id, 'USER');
+    await createAuthCookie(target._id, 'USER');
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('GET', `/api/admin/users/${target._id}/sessions`, undefined, cookie);
+    const res = await getSessions(req, params(String(target._id)));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(Array.isArray(data.sessions)).toBe(true);
+    expect(data.sessions.length).toBe(2);
   });
 });
 
