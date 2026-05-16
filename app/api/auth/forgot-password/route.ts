@@ -3,16 +3,14 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { PasswordResetRepository } from '@/src/repositories/db/PasswordResetRepository';
 import { sendPasswordResetEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { isValidEmail } from '@/src/lib/validation';
+import { validateForgotPasswordBody } from '@/src/lib/validation';
 
 export async function POST(request: NextRequest) {
-  const { email } = await request.json();
+  const body = await request.json();
+  const v = validateForgotPasswordBody(body);
+  if (!v.ok) return ApiResponse.badRequest(v.error);
 
-  if (!email || !isValidEmail(email)) {
-    return ApiResponse.badRequest('Email invalide');
-  }
-
-  const user = await UserRepository.findByEmail(email.toLowerCase().trim());
+  const user = await UserRepository.findByEmail(v.data.email);
 
   // Réponse identique que l'email existe ou non (sécurité : pas d'énumération)
   if (!user) {

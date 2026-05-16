@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
 import { validatePasswordStrength } from '@/src/lib/auth/password';
+import { validateRegisterBody } from '@/src/lib/validation';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { InvitationService } from '@/src/services/InvitationService';
 import { ApiResponse } from '@/src/lib/api/responses';
@@ -32,15 +33,14 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
-  const { username, password } = await request.json();
+  const v = validateRegisterBody(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
 
-  if (!username?.trim()) return ApiResponse.badRequest('Le pseudo est requis');
-
-  const check = validatePasswordStrength(password ?? '');
+  const check = validatePasswordStrength(v.data.password);
   if (!check.valid) return ApiResponse.badRequest(check.message!);
 
   try {
-    const result = await InvitationService.register(token, username, password);
+    const result = await InvitationService.register(token, v.data.username, v.data.password);
     return ApiResponse.created(result);
   } catch (err) {
     const msg = err instanceof Error ? err.message : '';
