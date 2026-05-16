@@ -31,8 +31,7 @@ export const UserTournamentRepository = {
 
   async exists(userId: string, tournamentId: number): Promise<boolean> {
     await connectToMongoDB();
-    const count = await UserTournamentModel.countDocuments({ userId, tournamentId });
-    return count > 0;
+    return (await UserTournamentModel.exists({ userId, tournamentId })) !== null;
   },
 
   async deleteByUserId(userId: string) {

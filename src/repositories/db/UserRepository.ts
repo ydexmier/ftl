@@ -57,14 +57,14 @@ export const UserRepository = {
     await connectToMongoDB();
     const query: Record<string, unknown> = { username };
     if (excludeId) query._id = { $ne: excludeId };
-    return (await UserModel.countDocuments(query)) > 0;
+    return (await UserModel.exists(query)) !== null;
   },
 
   async existsByEmail(email: string, excludeId?: string): Promise<boolean> {
     await connectToMongoDB();
     const query: Record<string, unknown> = { email };
     if (excludeId) query._id = { $ne: excludeId };
-    return (await UserModel.countDocuments(query)) > 0;
+    return (await UserModel.exists(query)) !== null;
   },
 
   async create(data: { username: string; email: string; passwordHash: string; role: string }) {

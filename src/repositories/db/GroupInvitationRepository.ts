@@ -42,12 +42,11 @@ export const GroupInvitationRepository = {
 
   async hasPendingInvitation(groupId: string, invitedUserId: string): Promise<boolean> {
     await connectToMongoDB();
-    const count = await GroupInvitationModel.countDocuments({
+    return (await GroupInvitationModel.exists({
       groupId,
       invitedUserId,
       status: 'PENDING',
       expiresAt: { $gt: new Date() },
-    });
-    return count > 0;
+    })) !== null;
   },
 };
