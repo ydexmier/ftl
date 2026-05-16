@@ -1,4 +1,4 @@
-export async function fetchTournament(tournamentId: number | string): Promise<unknown> {
+export async function fetchTournament(tournamentId: number | string): Promise<{ message: string; datas: { id: number } }> {
   const res = await fetch('/api/admin/fetchTournament', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
