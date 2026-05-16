@@ -1,6 +1,12 @@
+import { redirect } from 'next/navigation';
+import { getServerUser } from '@/src/lib/auth/getServerUser';
 import { AdminSidebar } from '@components/admin/AdminSidebar';
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+	const user = await getServerUser();
+	if (!user) redirect('/login');
+	if (user.role !== 'ADMIN' && user.role !== 'SUPERUSER') redirect('/');
+
 	return (
 		<div className="min-h-screen bg-background">
 			<AdminSidebar />

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiFetch } from '@/src/lib/api/apiFetch';
 import { AlertTriangle, LogIn, LogOut, ShieldAlert, ClipboardList } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import { cn } from '@components/ui/cn';
@@ -46,7 +47,7 @@ export default function DashboardPage() {
 	const [error, setError] = useState('');
 
 	useEffect(() => {
-		fetch('/api/admin/stats')
+		apiFetch('/api/admin/stats')
 			.then((r) => r.json())
 			.then(setStats)
 			.catch(() => setError('Impossible de charger les statistiques'))
