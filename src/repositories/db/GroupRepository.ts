@@ -8,6 +8,11 @@ export const GroupRepository = {
     return GroupModel.findById(id).lean();
   },
 
+  async findAll() {
+    await connectToMongoDB();
+    return GroupModel.find().sort({ name: 1 }).select('_id name').lean();
+  },
+
   async findByMemberId(userId: string) {
     await connectToMongoDB();
     return GroupModel.find({ 'members.userId': userId }).lean();

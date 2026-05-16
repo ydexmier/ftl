@@ -31,6 +31,21 @@ export const UserRepository = {
     return UserModel.findById(id).select('-passwordHash').lean();
   },
 
+  async findByUsername(username: string) {
+    await connectToMongoDB();
+    return UserModel.findOne({ username }).lean();
+  },
+
+  async findByEmail(email: string) {
+    await connectToMongoDB();
+    return UserModel.findOne({ email }).select('-passwordHash').lean();
+  },
+
+  async findByIdWithPassword(id: string) {
+    await connectToMongoDB();
+    return UserModel.findById(id).lean();
+  },
+
   async findByIds(ids: string[]) {
     await connectToMongoDB();
     return UserModel.find({ _id: { $in: ids } })

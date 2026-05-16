@@ -1,9 +1,8 @@
 import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { FeedbackRepository } from '@/src/repositories/db/FeedbackRepository';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
-import UserModel from '@models/User';
-import connectToMongoDB from '@/src/lib/db';
 
 export async function POST(request: NextRequest) {
   const session = await getAuthSession(request);
@@ -17,8 +16,7 @@ export async function POST(request: NextRequest) {
   if (!description?.trim() || description.trim().length > 2000) return ApiResponse.badRequest('Description invalide (2000 caractères max)');
   if (!page) return ApiResponse.badRequest('Page manquante');
 
-  await connectToMongoDB();
-  const user = await UserModel.findById(session.userId).select('username').lean();
+  const user = await UserRepository.findById(session.userId);
 
   await FeedbackRepository.create({
     type,

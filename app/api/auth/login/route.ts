@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { verifyPassword } from '@/src/lib/auth/password';
 import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
@@ -18,8 +17,7 @@ export async function POST(request: NextRequest) {
   if (!rl.allowed) return NextResponse.json({ error: 'Trop de tentatives.' }, { status: 429 });
 
   const { username, password } = await request.json();
-  await connectToMongoDB();
-  const user = await UserModel.findOne({ username: username?.toLowerCase() });
+  const user = await UserRepository.findByUsername(username?.toLowerCase() ?? '');
   const ERR = { error: 'Identifiants invalides' };
 
   if (!user) {

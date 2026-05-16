@@ -129,12 +129,12 @@ describe('GET /api/admin/groups', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 pour un non-admin', async () => {
+  it('retourne 403 pour un non-admin', async () => {
     const user = await createTestUser({ username: 'admingrpuser1', email: 'admingrpuser1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/groups', undefined, cookie);
     const res = await getAdminGroups(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 avec un tableau vide si pas de groupes', async () => {
