@@ -1,25 +1,18 @@
 'use client';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX } from 'lucide-react';
-import TournamentCard, { type TournamentCardData } from './TournamentCard';
+import TournamentCard from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
 import { TournamentsTour } from '@components/ui/TournamentsTour';
-import { mergeTournamentsWithoutDuplicates } from '@/src/domain/rules/tournamentRules';
-
-interface TournamentSummary extends TournamentCardData {
-  // TournamentCardData already covers all fields needed
-}
-
-interface GroupSection {
-  groupId: string;
-  groupName: string;
-  myRole: string;
-  tournaments: TournamentSummary[];
-  archivedTournaments?: TournamentSummary[];
-}
+import {
+  useTournamentManagement,
+  type TournamentSummary,
+  type GroupSection,
+  type AdminGroup,
+} from '@/src/hooks/useTournamentManagement';
 
 interface InvitedEntry {
   accessId: string;
@@ -27,11 +20,6 @@ interface InvitedEntry {
   groupName: string;
   expiresAt: string;
   tournament: TournamentSummary;
-}
-
-interface AdminGroup {
-  groupId: string;
-  groupName: string;
 }
 
 interface Props {
@@ -188,11 +176,6 @@ function GroupSubSection({
   );
 }
 
-interface FlyingCard {
-  tournament: TournamentSummary;
-  fromRect: DOMRect;
-}
-
 export function TournamentsPageClient({
   personalTournaments,
   archivedTournaments = [],
@@ -201,219 +184,32 @@ export function TournamentsPageClient({
   adminGroups = [],
   initialAssignments = {},
 }: Props) {
-  const [assignments, setAssignments] = useState<Record<number, string[]>>(initialAssignments);
-  const [openPopover, setOpenPopover] = useState<number | null>(null);
-  const [successId, setSuccessId] = useState<number | null>(null);
-  const [localGroupSections, setLocalGroupSections] = useState<GroupSection[]>(groupSections);
-  const [localPersonal, setLocalPersonal] = useState<TournamentSummary[]>(personalTournaments);
-  const [localArchived, setLocalArchived] = useState<TournamentSummary[]>(archivedTournaments);
-  const [flyingCard, setFlyingCard] = useState<FlyingCard | null>(null);
-  const [isFlying, setIsFlying] = useState(false);
-  const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => { setIsMounted(true); }, []);
-
-  // Sync new tournaments from server (additive only — handles fetchAndLink + router.refresh())
-  useEffect(() => {
-    setLocalPersonal((prev) => mergeTournamentsWithoutDuplicates(prev, personalTournaments));
-  }, [personalTournaments]);
-
-  const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {
-    if (el) cardRefs.current.set(id, el);
-    else cardRefs.current.delete(id);
-  }, []);
-
-  const getAssignedGroups = (tournamentId: number): AdminGroup[] => {
-    const ids = assignments[tournamentId] ?? [];
-    return adminGroups.filter((g) => ids.includes(g.groupId));
-  };
-
-  const handleArchive = async (tournamentId: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const tournament = localPersonal.find((t) => t.id === tournamentId);
-    if (!tournament) return;
-    setLocalPersonal((prev) => prev.filter((t) => t.id !== tournamentId));
-    setLocalArchived((prev) => [tournament, ...prev]);
-    try {
-      const res = await fetch(`/api/user/tournaments/${tournamentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ARCHIVED' }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setLocalPersonal((prev) => [tournament, ...prev]);
-      setLocalArchived((prev) => prev.filter((t) => t.id !== tournamentId));
-    }
-  };
-
-  const handleRestore = async (tournamentId: number, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const tournament = localArchived.find((t) => t.id === tournamentId);
-    if (!tournament) return;
-    setLocalArchived((prev) => prev.filter((t) => t.id !== tournamentId));
-    setLocalPersonal((prev) => [tournament, ...prev]);
-    try {
-      const res = await fetch(`/api/user/tournaments/${tournamentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ACTIVE' }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setLocalArchived((prev) => [tournament, ...prev]);
-      setLocalPersonal((prev) => prev.filter((t) => t.id !== tournamentId));
-    }
-  };
-
-  const handleGroupArchive = async (groupId: string, tournamentId: number) => {
-    setLocalGroupSections((prev) =>
-      prev.map((s) => {
-        if (s.groupId !== groupId) return s;
-        const tournament = s.tournaments.find((t) => t.id === tournamentId);
-        if (!tournament) return s;
-        return {
-          ...s,
-          tournaments: s.tournaments.filter((t) => t.id !== tournamentId),
-          archivedTournaments: [tournament, ...(s.archivedTournaments ?? [])],
-        };
-      }),
-    );
-    try {
-      const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ARCHIVED' }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setLocalGroupSections((prev) =>
-        prev.map((s) => {
-          if (s.groupId !== groupId) return s;
-          const tournament = (s.archivedTournaments ?? []).find((t) => t.id === tournamentId);
-          if (!tournament) return s;
-          return {
-            ...s,
-            tournaments: [tournament, ...s.tournaments],
-            archivedTournaments: (s.archivedTournaments ?? []).filter((t) => t.id !== tournamentId),
-          };
-        }),
-      );
-    }
-  };
-
-  const handleGroupRestore = async (groupId: string, tournamentId: number) => {
-    setLocalGroupSections((prev) =>
-      prev.map((s) => {
-        if (s.groupId !== groupId) return s;
-        const tournament = (s.archivedTournaments ?? []).find((t) => t.id === tournamentId);
-        if (!tournament) return s;
-        return {
-          ...s,
-          tournaments: [tournament, ...s.tournaments],
-          archivedTournaments: (s.archivedTournaments ?? []).filter((t) => t.id !== tournamentId),
-        };
-      }),
-    );
-    try {
-      const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ACTIVE' }),
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      setLocalGroupSections((prev) =>
-        prev.map((s) => {
-          if (s.groupId !== groupId) return s;
-          const tournament = s.tournaments.find((t) => t.id === tournamentId);
-          if (!tournament) return s;
-          return {
-            ...s,
-            tournaments: s.tournaments.filter((t) => t.id !== tournamentId),
-            archivedTournaments: [tournament, ...(s.archivedTournaments ?? [])],
-          };
-        }),
-      );
-    }
-  };
-
-  const handleToggleGroup = async (tournamentId: number, groupId: string, assign: boolean) => {
-    setAssignments((prev) => ({
-      ...prev,
-      [tournamentId]: assign
-        ? [...(prev[tournamentId] ?? []), groupId]
-        : (prev[tournamentId] ?? []).filter((id) => id !== groupId),
-    }));
-
-    if (assign) {
-      setSuccessId(tournamentId);
-      setOpenPopover(null);
-
-      const cardEl = cardRefs.current.get(tournamentId);
-      if (cardEl) {
-        const fromRect = cardEl.getBoundingClientRect();
-        const tournament = localPersonal.find((t) => t.id === tournamentId);
-        if (tournament) {
-          setFlyingCard({ tournament, fromRect });
-          requestAnimationFrame(() => { requestAnimationFrame(() => { setIsFlying(true); }); });
-          setTimeout(() => {
-            setLocalGroupSections((prev) =>
-              prev.map((s) =>
-                s.groupId === groupId && !s.tournaments.find((t) => t.id === tournamentId)
-                  ? { ...s, tournaments: [tournament, ...s.tournaments] }
-                  : s,
-              ),
-            );
-            setFlyingCard(null);
-            setIsFlying(false);
-          }, 650);
-        }
-      }
-      setTimeout(() => setSuccessId(null), 1500);
-    } else {
-      setLocalGroupSections((prev) =>
-        prev.map((s) =>
-          s.groupId === groupId
-            ? { ...s, tournaments: s.tournaments.filter((t) => t.id !== tournamentId) }
-            : s,
-        ),
-      );
-    }
-
-    try {
-      if (assign) {
-        const res = await fetch(`/api/groups/${groupId}/tournaments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tournamentId }),
-        });
-        if (!res.ok) throw new Error();
-      } else {
-        const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error();
-      }
-    } catch {
-      setAssignments((prev) => ({
-        ...prev,
-        [tournamentId]: assign
-          ? (prev[tournamentId] ?? []).filter((id) => id !== groupId)
-          : [...(prev[tournamentId] ?? []), groupId],
-      }));
-      if (assign) {
-        setLocalGroupSections((prev) =>
-          prev.map((s) =>
-            s.groupId === groupId
-              ? { ...s, tournaments: s.tournaments.filter((t) => t.id !== tournamentId) }
-              : s,
-          ),
-        );
-      }
-    }
-  };
+  const {
+    localPersonal,
+    localArchived,
+    localGroupSections,
+    assignments,
+    successId,
+    flyingCard,
+    isFlying,
+    isMounted,
+    openPopover,
+    setOpenPopover,
+    setLocalPersonal,
+    handleArchive,
+    handleRestore,
+    handleGroupArchive,
+    handleGroupRestore,
+    handleToggleGroup,
+    getAssignedGroups,
+    setCardRef,
+  } = useTournamentManagement({
+    personalTournaments,
+    archivedTournaments,
+    groupSections,
+    adminGroups,
+    initialAssignments,
+  });
 
   return (
     <div className="flex flex-col gap-6 mt-6">
@@ -427,67 +223,67 @@ export function TournamentsPageClient({
       {/* Section 1 : Mes tournois */}
       {localPersonal.length > 0 && (
         <div data-tour="tournaments-personal">
-        <CollapsibleSection
-          icon={BookUser}
-          title="Mes tournois"
-          count={localPersonal.length}
-          subtitle="Tournois liés à votre compte, visibles uniquement par vous."
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-            {localPersonal.map((t) => {
-              const assignedGroups = getAssignedGroups(t.id);
-              return (
-                <div key={t.id} ref={setCardRef(t.id)}>
-                  <Link href={`/tournaments/${t.id}`} className="block">
-                    <TournamentCard
-                      tournament={t}
-                      assignedGroups={assignedGroups}
-                      showAssignButton={adminGroups.length > 0}
-                      isAssignSuccess={successId === t.id}
-                      isPopoverOpen={openPopover === t.id}
-                      onAssignClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setOpenPopover((p) => (p === t.id ? null : t.id));
-                      }}
-                      popoverSlot={
-                        <GroupAssignPopover
-                          adminGroups={adminGroups}
-                          assignedGroupIds={assignments[t.id] ?? []}
-                          onToggle={(groupId, assign) => handleToggleGroup(t.id, groupId, assign)}
-                          onClose={() => setOpenPopover(null)}
-                        />
-                      }
-                      onArchiveClick={(e) => handleArchive(t.id, e)}
-                    />
-                  </Link>
-                </div>
-              );
-            })}
-          </div>
-        </CollapsibleSection>
+          <CollapsibleSection
+            icon={BookUser}
+            title="Mes tournois"
+            count={localPersonal.length}
+            subtitle="Tournois liés à votre compte, visibles uniquement par vous."
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+              {localPersonal.map((t) => {
+                const assignedGroups = getAssignedGroups(t.id);
+                return (
+                  <div key={t.id} ref={setCardRef(t.id)}>
+                    <Link href={`/tournaments/${t.id}`} className="block">
+                      <TournamentCard
+                        tournament={t}
+                        assignedGroups={assignedGroups}
+                        showAssignButton={adminGroups.length > 0}
+                        isAssignSuccess={successId === t.id}
+                        isPopoverOpen={openPopover === t.id}
+                        onAssignClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setOpenPopover((p) => (p === t.id ? null : t.id));
+                        }}
+                        popoverSlot={
+                          <GroupAssignPopover
+                            adminGroups={adminGroups}
+                            assignedGroupIds={assignments[t.id] ?? []}
+                            onToggle={(groupId, assign) => handleToggleGroup(t.id, groupId, assign)}
+                            onClose={() => setOpenPopover(null)}
+                          />
+                        }
+                        onArchiveClick={(e) => handleArchive(t.id, e)}
+                      />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </CollapsibleSection>
         </div>
       )}
 
       {/* Section 2 : Par groupe */}
       {localGroupSections.length > 0 && (
         <div data-tour="tournaments-groups">
-        <CollapsibleSection
-          icon={Users}
-          title="Par groupe"
-          subtitle="Scooting partagé avec les membres de chaque groupe."
-        >
-          <div className="flex flex-col gap-3">
-            {localGroupSections.map((s) => (
-              <GroupSubSection
-                key={s.groupId}
-                section={s}
-                onArchive={(tid) => handleGroupArchive(s.groupId, tid)}
-                onRestore={(tid) => handleGroupRestore(s.groupId, tid)}
-              />
-            ))}
-          </div>
-        </CollapsibleSection>
+          <CollapsibleSection
+            icon={Users}
+            title="Par groupe"
+            subtitle="Scooting partagé avec les membres de chaque groupe."
+          >
+            <div className="flex flex-col gap-3">
+              {localGroupSections.map((s) => (
+                <GroupSubSection
+                  key={s.groupId}
+                  section={s}
+                  onArchive={(tid) => handleGroupArchive(s.groupId, tid)}
+                  onRestore={(tid) => handleGroupRestore(s.groupId, tid)}
+                />
+              ))}
+            </div>
+          </CollapsibleSection>
         </div>
       )}
 
