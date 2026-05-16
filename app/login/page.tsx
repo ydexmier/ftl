@@ -1,17 +1,19 @@
 'use client';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
 import { Alert } from '@components/ui/Alert';
 
-export default function LoginPage() {
+function LoginForm() {
 	const [username, setUsername] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState('');
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
+	const searchParams = useSearchParams();
+	const sessionExpired = searchParams.get('reason') === 'expired';
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -48,6 +50,11 @@ export default function LoginPage() {
 				</div>
 				<div className="bg-card border border-border rounded-xl p-8 shadow-xl">
 					<h2 className="text-lg font-semibold text-foreground mb-6">Connexion</h2>
+					{sessionExpired && (
+						<div className="mb-4">
+							<Alert severity="warning">Votre session a expiré. Veuillez vous reconnecter.</Alert>
+						</div>
+					)}
 					{error && (
 						<div className="mb-4">
 							<Alert severity="error">{error}</Alert>
@@ -85,5 +92,13 @@ export default function LoginPage() {
 				</p>
 			</div>
 		</div>
+	);
+}
+
+export default function LoginPage() {
+	return (
+		<Suspense>
+			<LoginForm />
+		</Suspense>
 	);
 }

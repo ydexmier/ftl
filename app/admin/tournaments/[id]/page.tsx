@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { apiFetch } from '@/src/lib/api/apiFetch';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@components/ui/Button';
 import { Alert } from '@components/ui/Alert';
@@ -21,8 +22,7 @@ export default function TournamentPage() {
 		if (!id) return;
 		const fetchTournament = async () => {
 			try {
-				const res = await fetch(`/api/tournaments/${id}`);
-				if (!res.ok) throw new Error('Impossible de récupérer le tournoi');
+				const res = await apiFetch(`/api/tournaments/${id}`);
 				const data = await res.json();
 				setTournament(data);
 			} catch (err) {
