@@ -1,3 +1,5 @@
+[![Coverage](https://codecov.io/gh/ydexmier/ftl/branch/main/graph/badge.svg)](https://codecov.io/gh/ydexmier/ftl)
+
 ## Pour installer le projet
 
 Installation de Git sous windows:
