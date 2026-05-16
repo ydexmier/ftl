@@ -29,7 +29,7 @@ export const UserTournamentRepository = {
     ).lean();
   },
 
-  async exists(userId: string, tournamentId: number): Promise<boolean> {
+  async existsByUserAndTournament(userId: string, tournamentId: number): Promise<boolean> {
     await connectToMongoDB();
     return (await UserTournamentModel.exists({ userId, tournamentId })) !== null;
   },
