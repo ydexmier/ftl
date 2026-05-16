@@ -69,8 +69,8 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 				pagination,
 			});
 			closeMatchModal();
-		} catch (err) {
-			console.error('Error:', err);
+		} catch {
+			// erreur silencieuse — l'état précédent est conservé
 		}
 	};
 

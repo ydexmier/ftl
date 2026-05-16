@@ -41,8 +41,8 @@ export default function FetchButton({ defaultLabel = 'Rafraîchir', onFetch, las
 			setCooldown(refreshDelay);
 			setShowSuccess(true);
 			setTimeout(() => setShowSuccess(false), 3000);
-		} catch (err) {
-			console.error('Erreur fetch:', err);
+		} catch {
+			// erreur silencieuse — l'appelant gère son propre état d'erreur
 		} finally {
 			setLoading(false);
 		}
