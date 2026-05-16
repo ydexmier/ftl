@@ -317,6 +317,25 @@ describe('POST /api/groups/[id]/tournaments/[tid]/external-access', () => {
     const res = await inviteExternal(req, tournamentParams(String(group._id), String(tournament.id)));
     expect(res.status).toBe(201);
   });
+
+  it('retourne 409 si l\'utilisateur est déjà membre du groupe', async () => {
+    const owner = await createTestUser({ username: 'ext10', email: 'ext10@example.com' });
+    const member = await createTestUser({ username: 'ext11', email: 'ext11@example.com' });
+    const group = await createTestGroup(owner._id, { name: 'ext-group-6' });
+    const tournament = await createTestTournament();
+    const GroupModelLocal = (await import('@models/Group')).default;
+    await GroupModelLocal.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: member._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: owner._id } },
+    });
+    const cookie = await createAuthCookie(owner._id, 'USER');
+    const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
+    await addTournament(addReq, groupParams(String(group._id)));
+    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
+      userId: String(member._id),
+    }, cookie);
+    const res = await inviteExternal(req, tournamentParams(String(group._id), String(tournament.id)));
+    expect(res.status).toBe(409);
+  });
 });
 
 describe('PUT /api/groups/external-access/[accessId]', () => {

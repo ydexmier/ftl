@@ -5,7 +5,10 @@ import { POST as assignDeck } from '../../app/api/rounds/[roundId]/matchs/[match
 import { POST as fetchRound } from '../../app/api/admin/fetchRound/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
-import { createTestUser, createAuthCookie, makeRequest } from '../test/helpers';
+import GroupModel from '@models/Group';
+import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
+import GroupTournamentModel from '@models/GroupTournament';
+import { createTestUser, createTestGroup, createAuthCookie, makeRequest } from '../test/helpers';
 import { NextRequest } from 'next/server';
 
 vi.mock('@/src/repositories/external/RavensburgerClient', () => ({
@@ -142,6 +145,42 @@ describe('POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck', () => {
     }, cookie);
     const res = await assignDeck(req, matchParams(String(rid), String(mid)));
     expect(res.status).toBe(200);
+  });
+
+  it('assigne un deck avec portée groupe et retourne 200', async () => {
+    const owner = await createTestUser({ username: 'deckgroupuser1', email: 'deckgroupuser1@example.com' });
+    const group = await createTestGroup(owner._id, { name: 'assign-group-1' });
+    const rid = nextId();
+    const mid = nextId();
+    const tid = nextId();
+    await TournamentModel.create({ id: tid, name: 'GT', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: owner._id, status: 'ACTIVE' });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, 20, 21)] });
+    const cookie = await createAuthCookie(owner._id, 'USER');
+    const req = makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+      decks: [{ playerId: 20, decks: [['Amber', 'Sapphire']] }],
+      groupId: String(group._id),
+    }, cookie);
+    const res = await assignDeck(req, matchParams(String(rid), String(mid)));
+    expect(res.status).toBe(200);
+    const saved = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: String(group._id) });
+    expect(saved).not.toBeNull();
+  });
+
+  it('retourne 403 si l\'utilisateur n\'est pas membre du groupe demandé', async () => {
+    const owner = await createTestUser({ username: 'deckgroupuser2', email: 'deckgroupuser2@example.com' });
+    const outsider = await createTestUser({ username: 'deckgroupuser3', email: 'deckgroupuser3@example.com' });
+    const group = await createTestGroup(owner._id, { name: 'assign-group-2' });
+    const rid = nextId();
+    const mid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: nextId(), results: [makeMatch(mid, 30, 31)] });
+    const cookie = await createAuthCookie(outsider._id, 'USER');
+    const req = makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+      decks: [],
+      groupId: String(group._id),
+    }, cookie);
+    const res = await assignDeck(req, matchParams(String(rid), String(mid)));
+    expect(res.status).toBe(403);
   });
 });
 

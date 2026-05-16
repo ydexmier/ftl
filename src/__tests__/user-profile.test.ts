@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { PATCH as updateProfile } from '../../app/api/user/profile/route';
 import { PATCH as updatePassword } from '../../app/api/user/password/route';
+import { PATCH as patchOnboarding } from '../../app/api/user/onboarding/route';
 import UserModel from '@models/User';
 import { createTestUser, createAuthCookie, makeRequest, DEFAULT_PASSWORD } from '../test/helpers';
 import { verifyPassword } from '@/src/lib/auth/password';
@@ -158,6 +159,36 @@ describe('PATCH /api/user/password', () => {
       newPassword: DEFAULT_PASSWORD,
     }, cookie);
     const res = await updatePassword(req);
+    expect(res.status).toBe(200);
+  });
+});
+
+// ─── PATCH /api/user/onboarding ───────────────────────────────────────────────
+
+describe('PATCH /api/user/onboarding', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('PATCH', '/api/user/onboarding');
+    const res = await patchOnboarding(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('marque l\'onboarding comme terminé et retourne 200', async () => {
+    const user = await createTestUser({ username: 'ob1', email: 'ob1@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('PATCH', '/api/user/onboarding', undefined, cookie);
+    const res = await patchOnboarding(req);
+    expect(res.status).toBe(200);
+    const updated = await UserModel.findById(user._id);
+    expect(updated?.onboardingCompletedAt).not.toBeNull();
+  });
+
+  it('est idempotent (double appel → 200)', async () => {
+    const user = await createTestUser({ username: 'ob2', email: 'ob2@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req1 = makeRequest('PATCH', '/api/user/onboarding', undefined, cookie);
+    await patchOnboarding(req1);
+    const req2 = makeRequest('PATCH', '/api/user/onboarding', undefined, cookie);
+    const res = await patchOnboarding(req2);
     expect(res.status).toBe(200);
   });
 });

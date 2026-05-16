@@ -143,3 +143,19 @@ describe('POST /api/auth/logout', () => {
     expect(res.status).toBe(200);
   });
 });
+
+// ─── Cookie HMAC corrompu ─────────────────────────────────────────────────────
+
+describe('GET /api/auth/me avec cookie HMAC corrompu', () => {
+  it('retourne 401 (pas 500) pour un cookie avec signature invalide', async () => {
+    const req = makeRequest('GET', '/api/auth/me', undefined, 'sessionId.invalid_signature_xxx');
+    const res = await me(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 401 pour un cookie sans point séparateur', async () => {
+    const req = makeRequest('GET', '/api/auth/me', undefined, 'totallywrongformat');
+    const res = await me(req);
+    expect(res.status).toBe(401);
+  });
+});
