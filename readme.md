@@ -1,4 +1,4 @@
-[![Coverage](https://codecov.io/gh/ydexmier/ftl/branch/main/graph/badge.svg)](https://codecov.io/gh/ydexmier/ftl)
+[![codecov](https://codecov.io/github/ydexmier/ftl/graph/badge.svg?token=21E4F2J8KG)](https://codecov.io/github/ydexmier/ftl)
 
 ## Pour installer le projet
 
