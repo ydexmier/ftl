@@ -12,6 +12,7 @@ export default defineConfig({
       provider: 'v8',
       include: ['app/api/**/*.ts', 'src/lib/**/*.ts'],
       exclude: ['src/lib/emails/**'],
+      reporter: ['text', 'lcov'],
     },
   },
 });
