@@ -7,6 +7,7 @@ import TournamentCard, { type TournamentCardData } from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
 import { TournamentsTour } from '@components/ui/TournamentsTour';
+import { mergeTournamentsWithoutDuplicates } from '@/src/domain/rules/tournamentRules';
 
 interface TournamentSummary extends TournamentCardData {
   // TournamentCardData already covers all fields needed
@@ -215,11 +216,7 @@ export function TournamentsPageClient({
 
   // Sync new tournaments from server (additive only — handles fetchAndLink + router.refresh())
   useEffect(() => {
-    setLocalPersonal((prev) => {
-      const existingIds = new Set(prev.map((t) => t.id));
-      const fresh = personalTournaments.filter((t) => !existingIds.has(t.id));
-      return fresh.length > 0 ? [...fresh, ...prev] : prev;
-    });
+    setLocalPersonal((prev) => mergeTournamentsWithoutDuplicates(prev, personalTournaments));
   }, [personalTournaments]);
 
   const setCardRef = useCallback((id: number) => (el: HTMLDivElement | null) => {

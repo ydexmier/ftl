@@ -1,68 +1,13 @@
 'use client';
-import { useReducer, useEffect } from 'react';
+import { useEffect } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import InkButton, { types } from '@components/ui/InkButton';
 import DeckSelection from '@components/ui/DeckSelection';
+import { useMatchState } from '@/src/hooks/useMatchState';
 import type { Match } from '@/src/types/match';
-
-/* ─── State / Reducer (logique inchangée) ─────────────────────── */
-
-interface CombinationState {
-	decks: string[][];
-	playerId: number | null;
-}
-
-interface ModalState {
-	combination1: CombinationState;
-	combination2: CombinationState;
-}
-
-type ModalAction =
-	| { type: 'SELECT_INK'; combo: 'combination1' | 'combination2'; ink: string }
-	| { type: 'SELECT_DECK'; combo: 'combination1' | 'combination2'; deck: string[] }
-	| { type: 'ASSIGN_PLAYER'; combo: 'combination1' | 'combination2'; playerId: number; otherPlayId: number }
-	| { type: 'COPY_DECKS'; combo: 'combination1' | 'combination2' }
-	| { type: 'INITIALIZE_COMBINATION'; combo: 'combination1' | 'combination2'; decks: string[][]; playerId: number | null }
-	| { type: 'RESET' };
-
-const initialState: ModalState = {
-	combination1: { decks: [], playerId: null },
-	combination2: { decks: [], playerId: null },
-};
-
-function reducer(state: ModalState, action: ModalAction): ModalState {
-	switch (action.type) {
-		case 'SELECT_INK': {
-			const { combo, ink } = action;
-			const current = state[combo].decks.at(0) ?? [];
-			const next = current.includes(ink) ? current.filter((i) => i !== ink) : [...current, ink];
-			return { ...state, [combo]: { ...state[combo], decks: [next] } };
-		}
-		case 'SELECT_DECK':
-			return { ...state, [action.combo]: { ...state[action.combo], decks: [action.deck] } };
-		case 'ASSIGN_PLAYER': {
-			const other = action.combo === 'combination1' ? 'combination2' : 'combination1';
-			return {
-				...state,
-				[action.combo]: { ...state[action.combo], playerId: action.playerId },
-				[other]: { ...state[other], playerId: action.otherPlayId },
-			};
-		}
-		case 'COPY_DECKS': {
-			const other = action.combo === 'combination1' ? 'combination2' : 'combination1';
-			return { ...state, [other]: { ...state[other], decks: state[action.combo].decks } };
-		}
-		case 'INITIALIZE_COMBINATION':
-			return { ...state, [action.combo]: { decks: action.decks, playerId: action.playerId } };
-		case 'RESET':
-			return initialState;
-		default:
-			return state;
-	}
-}
 
 /* ─── Props ───────────────────────────────────────────────────── */
 
@@ -77,7 +22,7 @@ interface MatchModalProps {
 /* ─── Component ───────────────────────────────────────────────── */
 
 const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: MatchModalProps) => {
-	const [state, dispatch] = useReducer(reducer, initialState);
+	const [state, dispatch] = useMatchState();
 
 	const getOtherPlayer = (playerId: number) => {
 		if (!match || match.player_match_relationships.length < 2) return null;

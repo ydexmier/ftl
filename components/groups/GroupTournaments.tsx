@@ -9,6 +9,7 @@ import { AddTournamentModal } from './AddTournamentModal';
 import { ExternalAccessModal } from './ExternalAccessModal';
 import { AdminConflictModal } from './AdminConflictModal';
 import { UncertaintyModal } from './UncertaintyModal';
+import { countConflictsByTournament } from '@/src/domain/rules/conflictRules';
 
 interface GroupTournamentEntry {
   _id: string;
@@ -81,15 +82,8 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
       .catch(() => {});
   }, [groupId]);
 
-  const conflictCountByTournament = adminConflicts.reduce<Record<number, number>>((acc, c) => {
-    acc[c.tournamentId] = (acc[c.tournamentId] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const uncertaintyCountByTournament = uncertainties.reduce<Record<number, number>>((acc, c) => {
-    acc[c.tournamentId] = (acc[c.tournamentId] ?? 0) + 1;
-    return acc;
-  }, {});
+  const conflictCountByTournament = countConflictsByTournament(adminConflicts);
+  const uncertaintyCountByTournament = countConflictsByTournament(uncertainties);
 
   const handleConflictResolved = (conflictId: string) => {
     setAdminConflicts((prev) => {
