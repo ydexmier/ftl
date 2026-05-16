@@ -9,11 +9,12 @@ import DeckbuildingRound from '@components/round/DeckbuildingRound';
 import { useTournament } from '@/src/hooks/useTournament';
 import FetchButton from '@components/ui/FetchButton';
 import { Spinner } from '@components/ui/Spinner';
-import { ConflictResolutionModal } from '@components/tournament/ConflictResolutionModal';
+import { ConflictResolutionModal, type ConflictGroup } from '@components/tournament/ConflictResolutionModal';
 import { TournamentSidebar, type TournamentTab } from '@components/tournament/TournamentSidebar';
 import { PlayersTab } from '@components/tournament/PlayersTab';
 import { ReportsTab } from '@components/tournament/ReportsTab';
 import { TournamentTour } from '@components/ui/TournamentTour';
+import type { Tournament as TournamentType } from '@/src/types/tournament';
 import type { RoundType } from '@/src/types/round';
 
 interface TournamentProps {
@@ -29,20 +30,20 @@ export default function Tournament({ id }: TournamentProps) {
 	const groupId = searchParams.get('groupId') ?? null;
 
 	const [roundId, setRoundId] = useState(queryRoundId);
-	const [conflicts, setConflicts] = useState<unknown[]>([]);
+	const [conflicts, setConflicts] = useState<ConflictGroup[]>([]);
 	const [showConflictModal, setShowConflictModal] = useState(false);
 	const [activeTab, setActiveTab] = useState<TournamentTab>('scouting');
 	const [groupRole, setGroupRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
 	const [appRole, setAppRole] = useState<string>('USER');
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
-	const { lastFetchedAt } = (tournament as { lastFetchedAt?: string }) || {};
+	const { lastFetchedAt } = (tournament as (TournamentType & { lastFetchedAt?: string }) | null) ?? {};
 
 	useEffect(() => {
 		fetch(`/api/tournaments/${id}/conflicts`)
 			.then((res) => (res.ok ? res.json() : { conflicts: [] }))
 			.then((data) => {
-				const list = data.conflicts ?? [];
+				const list: ConflictGroup[] = data.conflicts ?? [];
 				setConflicts(list);
 				if (list.length > 0) setShowConflictModal(true);
 			})
@@ -63,22 +64,21 @@ export default function Tournament({ id }: TournamentProps) {
 
 	const handleConflictResolved = (conflictId: string) => {
 		setConflicts((prev) => {
-			const next = prev.filter((c) => (c as { _id: string })._id !== conflictId);
+			const next = prev.filter((c) => c._id !== conflictId);
 			if (next.length === 0) setShowConflictModal(false);
 			return next;
 		});
 	};
 
-	const selectedRoundType: RoundType | undefined = (tournament as any)?.tournament_phases
-		?.flatMap((p: any) => p.rounds ?? [])
-		.find((r: any) => String(r.id) === String(roundId))?.round_type;
+	const selectedRoundType: RoundType | undefined = tournament?.tournament_phases
+		?.flatMap((p) => p.rounds ?? [])
+		.find((r) => String(r.id) === String(roundId))?.round_type;
 
 	const handleRoundChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const value = e.target.value;
 		if (value) setRoundId(value);
 	};
 
-	// Tabs that are visible based on role
 	const showReports = groupId !== null && (groupRole === 'ADMIN' || appRole === 'ADMIN' || appRole === 'SUPERUSER');
 	const visibleTabs: TournamentTab[] = ['scouting', 'players', ...(showReports ? ['reports' as TournamentTab] : [])];
 	const showSidebar = visibleTabs.length >= 2;
@@ -93,8 +93,8 @@ export default function Tournament({ id }: TournamentProps) {
 	if (error) return <p className="text-destructive">Erreur : {String(error)}</p>;
 	if (!tournament) return <p className="text-muted-foreground">Aucune donnée disponible.</p>;
 
-	const roundOptions = (tournament as any).tournament_phases?.flatMap((phase: any) =>
-		(phase.rounds ?? []).map((round: any) => ({
+	const roundOptions = tournament.tournament_phases?.flatMap((phase) =>
+		phase.rounds.map((round) => ({
 			value: round.id,
 			label: getRoundName(phase, round),
 		})),
@@ -106,7 +106,7 @@ export default function Tournament({ id }: TournamentProps) {
 			{showConflictModal && conflicts.length > 0 && (
 				<ConflictResolutionModal
 					tournamentId={Number(id)}
-					conflicts={conflicts as any}
+					conflicts={conflicts}
 					onConflictResolved={handleConflictResolved}
 					onClose={() => setShowConflictModal(false)}
 				/>
@@ -116,10 +116,10 @@ export default function Tournament({ id }: TournamentProps) {
 				<div data-tour="tournament-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
 					<div className="flex flex-col gap-0.5">
 						<h1 className="text-lg sm:text-xl font-bold text-foreground">
-							{(tournament as any).name}
+							{tournament.name}
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							{(tournament as any).registered_user_count}/{(tournament as any).capacity} joueurs
+							{tournament.registered_user_count}/{tournament.capacity} joueurs
 						</p>
 					</div>
 					<div data-tour="tournament-fetch-btn" className="self-start sm:self-auto shrink-0">
@@ -161,7 +161,7 @@ export default function Tournament({ id }: TournamentProps) {
 							className="h-10 sm:h-9 w-full rounded-md border border-white/25 bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
 						>
 							<option value="">-- sélectionner une round --</option>
-							{roundOptions.map((opt: { value: number; label: string }) => (
+							{roundOptions.map((opt) => (
 								<option key={opt.value} value={opt.value}>
 									{opt.label}
 								</option>
@@ -169,7 +169,7 @@ export default function Tournament({ id }: TournamentProps) {
 						</select>
 
 						{roundId && selectedRoundType === 'DECKBUILDING' && (
-							<DeckbuildingRound playerCount={(tournament as any)?.registered_user_count} />
+							<DeckbuildingRound playerCount={tournament.registered_user_count} />
 						)}
 						{roundId && selectedRoundType !== 'DECKBUILDING' && (
 							<Round
