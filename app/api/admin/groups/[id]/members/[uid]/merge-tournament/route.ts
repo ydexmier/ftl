@@ -27,9 +27,9 @@ export async function POST(request: NextRequest, { params }: Params) {
     const hasAccess = await GroupTournamentRepository.hasAccess(groupId, tournamentId);
     if (!hasAccess) return ApiResponse.notFound('Tournoi introuvable dans ce groupe');
 
-    await DataMergeService.mergeUserForTournament(userId, groupId, tournamentId);
+    const conflicts = await DataMergeService.mergeUserForTournament(userId, groupId, tournamentId);
 
-    return ApiResponse.ok({ success: true });
+    return ApiResponse.ok({ success: true, conflicts });
   } catch (err) {
     return ApiResponse.serverError(err);
   }
