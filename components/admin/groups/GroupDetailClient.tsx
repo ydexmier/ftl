@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge } from 'lucide-react';
+import { UserPlus, Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, Zap } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 
@@ -127,16 +127,18 @@ function AddTournamentModal({ groupId, onClose, onSuccess }: { groupId: string; 
   );
 }
 
-function MergeMemberModal({
+function MergeModal({
   groupId,
   member,
   tournaments,
+  force,
   onClose,
   onSuccess,
 }: {
   groupId: string;
   member: Member;
   tournaments: Tournament[];
+  force: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }) {
@@ -145,12 +147,16 @@ function MergeMemberModal({
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
+  const endpoint = force
+    ? `/api/admin/groups/${groupId}/members/${member.userId}/force-merge`
+    : `/api/admin/groups/${groupId}/members/${member.userId}/merge-tournament`;
+
   const submit = async () => {
     if (!tournamentId) { setError('Sélectionnez un tournoi'); return; }
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/admin/groups/${groupId}/members/${member.userId}/merge-tournament`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tournamentId }),
@@ -170,11 +176,19 @@ function MergeMemberModal({
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold text-foreground">Fusionner les données de {member.username}</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          {force ? 'Forcer la fusion' : 'Fusionner les données'} — {member.username}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Les données de scouting personnelles de ce membre seront importées dans le groupe pour le tournoi sélectionné.
-          Des conflits seront créés si les encres diffèrent.
+          {force
+            ? 'Les encres du scouting solo écraseront directement celles du groupe sans création de conflit. Le scope solo sera supprimé.'
+            : 'Les données de scouting personnelles seront importées dans le groupe. Des conflits seront créés si les encres diffèrent.'}
         </p>
+        {force && (
+          <div className="rounded-md border border-yellow-700 bg-yellow-900/20 px-3 py-2 text-xs text-yellow-400">
+            Action irréversible — les encres groupe existantes seront écrasées.
+          </div>
+        )}
         {done ? (
           <p className="text-sm text-success">Fusion effectuée avec succès.</p>
         ) : (
@@ -198,9 +212,9 @@ function MergeMemberModal({
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={loading}>Fermer</Button>
           {!done && tournaments.length > 0 && (
-            <Button onClick={submit} loading={loading}>
-              <GitMerge className="h-4 w-4" />
-              Fusionner
+            <Button onClick={submit} loading={loading} variant={force ? 'destructive' : 'default'}>
+              {force ? <Zap className="h-4 w-4" /> : <GitMerge className="h-4 w-4" />}
+              {force ? 'Forcer' : 'Fusionner'}
             </Button>
           )}
         </div>
@@ -217,7 +231,7 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
   const [roleLoading, setRoleLoading] = useState<string | null>(null);
   const [removeLoading, setRemoveLoading] = useState<string | null>(null);
   const [removeTournamentLoading, setRemoveTournamentLoading] = useState<number | null>(null);
-  const [mergeTarget, setMergeTarget] = useState<Member | null>(null);
+  const [mergeTarget, setMergeTarget] = useState<{ member: Member; force: boolean } | null>(null);
 
   const onMutationSuccess = () => {
     setInviteOpen(false);
@@ -316,11 +330,18 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
                             <button
-                              onClick={() => setMergeTarget(m)}
+                              onClick={() => setMergeTarget({ member: m, force: false })}
                               className="p-1.5 rounded-md text-muted-foreground hover:text-indigo-400 hover:bg-indigo-900/20 transition-colors"
                               title="Fusionner les données de scouting"
                             >
                               <GitMerge className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => setMergeTarget({ member: m, force: true })}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-yellow-400 hover:bg-yellow-900/20 transition-colors"
+                              title="Forcer la fusion (écrase les données groupe)"
+                            >
+                              <Zap className="h-3.5 w-3.5" />
                             </button>
                             <div className="relative">
                               <select
@@ -416,10 +437,11 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
         <AddTournamentModal groupId={groupId} onClose={() => setAddTournamentOpen(false)} onSuccess={onMutationSuccess} />
       )}
       {mergeTarget && (
-        <MergeMemberModal
+        <MergeModal
           groupId={groupId}
-          member={mergeTarget}
+          member={mergeTarget.member}
           tournaments={tournaments}
+          force={mergeTarget.force}
           onClose={() => setMergeTarget(null)}
           onSuccess={() => { setMergeTarget(null); router.refresh(); }}
         />

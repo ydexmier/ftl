@@ -86,4 +86,42 @@ export const DataMergeService = {
       UserTournamentRepository.deleteByUserAndTournament(userId, tournamentId),
     ]);
   },
+
+  async adminForceMerge(userId: string, groupId: string, tournamentId: number): Promise<{ merged: number }> {
+    const userDeck = await TournamentPlayersDeckRepository.findByScope(tournamentId, { userId });
+    if (!userDeck) throw new Error('NO_USER_DATA');
+
+    const playersWithDecks = userDeck.players.filter((p) => hasInks(p.decks));
+    if (playersWithDecks.length === 0) throw new Error('NO_USER_DATA');
+
+    const groupDeck = await TournamentPlayersDeckRepository.findByScope(tournamentId, { groupId });
+
+    const groupPlayerMap = new Map((groupDeck?.players ?? []).map((p) => [p.playerId, { ...p }]));
+
+    for (const p of playersWithDecks) {
+      const existing = groupPlayerMap.get(p.playerId);
+      if (existing) {
+        existing.decks = p.decks;
+      } else {
+        groupPlayerMap.set(p.playerId, {
+          playerId: p.playerId,
+          best_identifier: p.best_identifier,
+          event_best_identifier: p.event_best_identifier,
+          pronouns: p.pronouns,
+          decks: p.decks,
+        });
+      }
+    }
+
+    const mergedPlayers = Array.from(groupPlayerMap.values());
+
+    await TournamentPlayersDeckRepository.upsert(tournamentId, mergedPlayers, { groupId });
+
+    await Promise.all([
+      TournamentPlayersDeckRepository.deleteUserScope(tournamentId, userId),
+      UserTournamentRepository.deleteByUserAndTournament(userId, tournamentId),
+    ]);
+
+    return { merged: playersWithDecks.length };
+  },
 };
