@@ -75,6 +75,11 @@ export const TournamentPlayersDeckRepository = {
     return TournamentPlayersDeckModel.deleteMany({ groupId });
   },
 
+  async deleteUserScope(tournamentId: number, userId: string) {
+    await connectToMongoDB();
+    return TournamentPlayersDeckModel.findOneAndDelete({ tournamentId, userId, groupId: null });
+  },
+
   // Adds players (decks: []) to one scope without overwriting existing deck assignments.
   async upsertMissingPlayers(tournamentId: number, players: PlayerInfo[], scope: DeckScope) {
     await connectToMongoDB();
@@ -83,11 +88,16 @@ export const TournamentPlayersDeckRepository = {
     const toInsert = players.map(toPlayerDoc);
 
     if (!doc) {
-      await TournamentPlayersDeckModel.findOneAndUpdate(
-        query,
-        { $setOnInsert: { ...query, players: toInsert } },
-        { upsert: true },
-      );
+      try {
+        await TournamentPlayersDeckModel.findOneAndUpdate(
+          query,
+          { $setOnInsert: { ...query, players: toInsert } },
+          { upsert: true },
+        );
+      } catch (err: unknown) {
+        // Stale unique index on tournamentId from before group scoping — ignore.
+        if ((err as { code?: number }).code !== 11000) throw err;
+      }
       return;
     }
 
@@ -201,8 +211,7 @@ export const TournamentPlayersDeckRepository = {
       try {
         doc = await TournamentPlayersDeckModel.create({ ...query, players: [] });
       } catch (err: unknown) {
-        // MongoDB E11000: old unique index on tournamentId still exists from before group scoping.
-        // Drop it with: db.tournamentplayersdecks.dropIndex("tournamentId_1")
+        // Stale unique index on tournamentId from before group scoping — ignore.
         if ((err as { code?: number }).code === 11000) {
           doc = await TournamentPlayersDeckModel.findOne({ tournamentId });
           if (!doc) throw err;

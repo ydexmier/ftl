@@ -102,4 +102,9 @@ export const TournamentConflictRepository = {
     await connectToMongoDB();
     return TournamentConflictModel.deleteMany({ groupId });
   },
+
+  async deleteById(conflictId: string) {
+    await connectToMongoDB();
+    return TournamentConflictModel.findByIdAndDelete(conflictId);
+  },
 };

@@ -7,6 +7,8 @@ import { Badge } from '@components/ui/Badge';
 import InkButton, { types } from '@components/ui/InkButton';
 import DeckSelection from '@components/ui/DeckSelection';
 import { useMatchState } from '@/src/hooks/useMatchState';
+import { deduplicateDecks } from '@/src/domain/rules/scoutingRules';
+import type { Deck } from '@/src/types/ink';
 import type { Match } from '@/src/types/match';
 
 /* ─── Props ───────────────────────────────────────────────────── */
@@ -42,15 +44,16 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		const { combination1, combination2 } = state;
 		const dataToSend: Record<string, unknown> = {};
 		if ([combination1, combination2].every((d) => !d.playerId)) {
+			const mergedDecks = deduplicateDecks([...combination1.decks, ...combination2.decks] as Deck[]);
 			dataToSend.combination1 = {
 				...combination1,
-				decks: [...combination1.decks, ...combination2.decks],
+				decks: mergedDecks,
 				playerId: match!.player_match_relationships[0].player.id,
 			};
 			if (match!.player_match_relationships.length > 1) {
 				dataToSend.combination2 = {
 					...combination2,
-					decks: [...combination1.decks, ...combination2.decks],
+					decks: mergedDecks,
 					playerId: match!.player_match_relationships[1].player.id,
 				};
 			}
