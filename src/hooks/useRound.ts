@@ -44,7 +44,7 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 	const { assignDecks } = useDeckAssignment(roundId, groupId);
 
 	const { data: round, loading, error, setData } = useFetch<PaginatedMatches>(
-		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}`,
+		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}`,
 	);
 
 	const {
@@ -62,12 +62,11 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		if (!matchToShow) return;
 		try {
 			const data = await assignDecks(matchToShow.id, [payload.combination1, payload.combination2]);
-			setData({
-				...round,
-				results: data.matchs,
-				playersDecks: mergePlayersDecks(playersDecks, data.playersDecks),
-				pagination,
-			});
+			setData((prev) =>
+				prev
+					? { ...prev, playersDecks: mergePlayersDecks(prev.playersDecks ?? { players: [] }, data.playersDecks) }
+					: prev,
+			);
 			closeMatchModal();
 		} catch {
 			// erreur silencieuse — l'état précédent est conservé
