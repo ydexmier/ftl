@@ -184,6 +184,165 @@ describe('POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck', () => {
   });
 });
 
+describe('Cycle complet bicolorite — assign puis GET', () => {
+  it('portee user — assigne puis GET retourne les bicolorites', async () => {
+    const user = await createTestUser({ username: 'bicolo1', email: 'bicolo1@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const rid = nextId();
+    const tid = nextId();
+    const mid = nextId();
+    const p1 = nextId();
+    const p2 = nextId();
+
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
+
+    const assignRes = await assignDeck(
+      makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+        decks: [
+          { playerId: p1, decks: [['Ambre', 'Rubis']] },
+          { playerId: p2, decks: [['Ambre', 'Rubis']] },
+        ],
+      }, cookie),
+      matchParams(String(rid), String(mid)),
+    );
+    expect(assignRes.status).toBe(200);
+
+    const getRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs`, undefined, cookie),
+      roundParams(String(rid)),
+    );
+    const data = await getRes.json();
+
+    expect(getRes.status).toBe(200);
+    const player1 = data.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
+    expect(player1).toBeDefined();
+    expect(player1.decks).toEqual([['Ambre', 'Rubis']]);
+  });
+
+  it('portee groupe — assigne puis GET avec groupId retourne les bicolorites', async () => {
+    const owner = await createTestUser({ username: 'bicolo2', email: 'bicolo2@test.com' });
+    const group = await createTestGroup(owner._id, { name: 'bicolo-group-1' });
+    const cookie = await createAuthCookie(owner._id, 'USER');
+    const rid = nextId();
+    const tid = nextId();
+    const mid = nextId();
+    const p1 = nextId();
+    const p2 = nextId();
+
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: owner._id, status: 'ACTIVE' });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
+
+    const assignRes = await assignDeck(
+      makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+        decks: [
+          { playerId: p1, decks: [['Acier', 'Emeraude']] },
+          { playerId: p2, decks: [['Acier', 'Emeraude']] },
+        ],
+        groupId: String(group._id),
+      }, cookie),
+      matchParams(String(rid), String(mid)),
+    );
+    expect(assignRes.status).toBe(200);
+
+    const getRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs?groupId=${group._id}`),
+      roundParams(String(rid)),
+    );
+    const data = await getRes.json();
+
+    expect(getRes.status).toBe(200);
+    const player1 = data.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
+    expect(player1).toBeDefined();
+    expect(player1.decks).toEqual([['Acier', 'Emeraude']]);
+  });
+
+  it('isolation — deck portee user invisible en portee groupe', async () => {
+    const user = await createTestUser({ username: 'bicolo3', email: 'bicolo3@test.com' });
+    const group = await createTestGroup(user._id, { name: 'bicolo-group-2' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const rid = nextId();
+    const tid = nextId();
+    const mid = nextId();
+    const p1 = nextId();
+    const p2 = nextId();
+
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: user._id, status: 'ACTIVE' });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
+
+    await assignDeck(
+      makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+        decks: [{ playerId: p1, decks: [['Ambre', 'Rubis']] }],
+      }, cookie),
+      matchParams(String(rid), String(mid)),
+    );
+
+    const getRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs?groupId=${group._id}`),
+      roundParams(String(rid)),
+    );
+    const data = await getRes.json();
+
+    expect(getRes.status).toBe(200);
+    expect(data.playersDecks).toBeNull();
+  });
+
+  it('reassignation — un second POST met a jour les bicolorites', async () => {
+    const user = await createTestUser({ username: 'bicolo4', email: 'bicolo4@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const rid = nextId();
+    const tid = nextId();
+    const mid = nextId();
+    const p1 = nextId();
+    const p2 = nextId();
+
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
+
+    await assignDeck(
+      makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+        decks: [{ playerId: p1, decks: [['Ambre', 'Rubis']] }],
+      }, cookie),
+      matchParams(String(rid), String(mid)),
+    );
+
+    await assignDeck(
+      makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
+        decks: [{ playerId: p1, decks: [['Acier', 'Saphir']] }],
+      }, cookie),
+      matchParams(String(rid), String(mid)),
+    );
+
+    const getRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs`, undefined, cookie),
+      roundParams(String(rid)),
+    );
+    const data = await getRes.json();
+
+    expect(getRes.status).toBe(200);
+    const player1 = data.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
+    expect(player1).toBeDefined();
+    expect(player1.decks).toEqual([['Acier', 'Saphir']]);
+  });
+
+  it('sans assignation prealable — playersDecks est null', async () => {
+    const rid = nextId();
+    const tid = nextId();
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(nextId())] });
+
+    const getRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs`),
+      roundParams(String(rid)),
+    );
+    const data = await getRes.json();
+
+    expect(getRes.status).toBe(200);
+    expect(data.playersDecks).toBeNull();
+  });
+});
+
 describe('POST /api/admin/fetchRound', () => {
   it('retourne 400 sans tournamentId', async () => {
     const req = makeRequest('POST', '/api/admin/fetchRound', { roundId: 1 });
