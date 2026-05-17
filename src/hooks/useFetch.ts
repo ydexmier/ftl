@@ -1,4 +1,4 @@
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, useEffect, Dispatch, SetStateAction, useCallback } from 'react';
 import { apiFetch, ApiError } from '@/src/lib/api/apiFetch';
 
 export interface UseFetchResult<T> {
@@ -6,12 +6,14 @@ export interface UseFetchResult<T> {
 	loading: boolean;
 	error: string | null;
 	setData: Dispatch<SetStateAction<T | null>>;
+	refetch: () => void;
 }
 
 export function useFetch<T>(url: string | null): UseFetchResult<T> {
 	const [data, setData] = useState<T | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [refetchKey, setRefetchKey] = useState(0);
 
 	useEffect(() => {
 		if (!url) return;
@@ -33,7 +35,9 @@ export function useFetch<T>(url: string | null): UseFetchResult<T> {
 			}
 		};
 		fetchData();
-	}, [url]);
+	}, [url, refetchKey]);
 
-	return { data, loading, error, setData };
+	const refetch = useCallback(() => setRefetchKey((k) => k + 1), []);
+
+	return { data, loading, error, setData, refetch };
 }

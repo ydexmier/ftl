@@ -8,6 +8,11 @@ export const GroupRepository = {
     return GroupModel.findById(id).lean();
   },
 
+  async findAll() {
+    await connectToMongoDB();
+    return GroupModel.find().sort({ name: 1 }).select('_id name').lean();
+  },
+
   async findByMemberId(userId: string) {
     await connectToMongoDB();
     return GroupModel.find({ 'members.userId': userId }).lean();
@@ -83,20 +88,12 @@ export const GroupRepository = {
 
   async isMember(groupId: string, userId: string): Promise<boolean> {
     await connectToMongoDB();
-    const count = await GroupModel.countDocuments({
-      _id: groupId,
-      'members.userId': userId,
-    });
-    return count > 0;
+    return (await GroupModel.exists({ _id: groupId, 'members.userId': userId })) !== null;
   },
 
   async isAdmin(groupId: string, userId: string): Promise<boolean> {
     await connectToMongoDB();
-    const count = await GroupModel.countDocuments({
-      _id: groupId,
-      members: { $elemMatch: { userId, role: 'ADMIN' } },
-    });
-    return count > 0;
+    return (await GroupModel.exists({ _id: groupId, members: { $elemMatch: { userId, role: 'ADMIN' } } })) !== null;
   },
 
   async getMemberRole(groupId: string, userId: string): Promise<'ADMIN' | 'MEMBER' | null> {

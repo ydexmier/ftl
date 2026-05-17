@@ -26,7 +26,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       if (hasIt) return ApiResponse.conflict('Ce tournoi est déjà géré par un de vos groupes');
     }
 
-    const alreadyLinked = await UserTournamentRepository.exists(session.userId, tournamentId);
+    const alreadyLinked = await UserTournamentRepository.existsByUserAndTournament(session.userId, tournamentId);
     if (alreadyLinked) return ApiResponse.conflict('Tournoi déjà lié');
 
     const link = await UserTournamentRepository.create(session.userId, tournamentId);

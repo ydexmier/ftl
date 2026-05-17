@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
@@ -20,31 +19,21 @@ export async function PATCH(request: NextRequest) {
     return ApiResponse.badRequest('Email invalide');
   }
 
-  await connectToMongoDB();
-
   if (username) {
-    const existing = await UserModel.findOne({
-      username: username.toLowerCase().trim(),
-      _id: { $ne: auth.userId },
-    });
-    if (existing) return ApiResponse.conflict('Ce pseudo est déjà utilisé');
+    const exists = await UserRepository.existsByUsername(username.toLowerCase().trim(), auth.userId);
+    if (exists) return ApiResponse.conflict('Ce pseudo est déjà utilisé');
   }
 
   if (email) {
-    const existing = await UserModel.findOne({
-      email: email.toLowerCase().trim(),
-      _id: { $ne: auth.userId },
-    });
-    if (existing) return ApiResponse.conflict('Cet email est déjà utilisé');
+    const exists = await UserRepository.existsByEmail(email.toLowerCase().trim(), auth.userId);
+    if (exists) return ApiResponse.conflict('Cet email est déjà utilisé');
   }
 
   const update: Record<string, string> = {};
   if (username) update.username = username.toLowerCase().trim();
   if (email) update.email = email.toLowerCase().trim();
 
-  const user = await UserModel.findByIdAndUpdate(auth.userId, update, { new: true })
-    .select('-passwordHash')
-    .lean();
+  const user = await UserRepository.update(auth.userId, update);
 
   await AuditLogRepository.create({
     action: 'USER_UPDATED',

@@ -38,7 +38,7 @@ export const InvitationRepository = {
 
   async findPendingByEmail(email: string): Promise<boolean> {
     await connectToMongoDB();
-    return (await InvitationModel.countDocuments({ email, status: 'PENDING' })) > 0;
+    return (await InvitationModel.exists({ email, status: 'PENDING' })) !== null;
   },
 
   async create(data: {

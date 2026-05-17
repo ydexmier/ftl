@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { useRouter } from 'next/navigation';
 import { Search, Link2, Check, Download, Loader2 } from 'lucide-react';
 import { cn } from '@components/ui/cn';
@@ -49,7 +50,7 @@ export function TournamentSearchBar({ onLinked }: Props) {
 	const [fetching, setFetching] = useState(false);
 	const [linkedId, setLinkedId] = useState<number | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
-	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const debouncedQuery = useDebounce(query, 300);
 
 	const search = useCallback(async (q: string) => {
 		if (q.length < 1) {
@@ -66,16 +67,12 @@ export function TournamentSearchBar({ onLinked }: Props) {
 	}, []);
 
 	useEffect(() => {
-		if (debounceRef.current) clearTimeout(debounceRef.current);
-		if (query.length < 1) {
+		if (debouncedQuery.length < 1) {
 			setResponse(null);
 			return;
 		}
-		debounceRef.current = setTimeout(() => search(query), 300);
-		return () => {
-			if (debounceRef.current) clearTimeout(debounceRef.current);
-		};
-	}, [query, search]);
+		search(debouncedQuery);
+	}, [debouncedQuery, search]);
 
 	useEffect(() => {
 		function handleClick(e: MouseEvent) {

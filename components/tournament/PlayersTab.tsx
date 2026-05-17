@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useDebounce } from '@/src/hooks/useDebounce';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import { Button } from '@components/ui/Button';
@@ -40,15 +41,10 @@ export function PlayersTab({ tournamentId, groupId }: PlayersTabProps) {
   const [pagination, setPagination] = useState<Pagination>(DEFAULT_PAGINATION);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [selected, setSelected] = useState<PlayerRow | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
 
   useEffect(() => {
     setLoading(true);

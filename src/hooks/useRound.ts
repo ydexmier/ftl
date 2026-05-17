@@ -43,8 +43,8 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 	const debouncedSearch = useDebounce(search, 300);
 	const { assignDecks } = useDeckAssignment(roundId, groupId);
 
-	const { data: round, loading, error, setData } = useFetch<PaginatedMatches>(
-		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}`,
+	const { data: round, loading, error, setData, refetch } = useFetch<PaginatedMatches>(
+		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}`,
 	);
 
 	const {
@@ -62,15 +62,17 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		if (!matchToShow) return;
 		try {
 			const data = await assignDecks(matchToShow.id, [payload.combination1, payload.combination2]);
-			setData({
-				...round,
-				results: data.matchs,
-				playersDecks: mergePlayersDecks(playersDecks, data.playersDecks),
-				pagination,
-			});
+			// Mise à jour optimiste immédiate
+			setData((prev) =>
+				prev
+					? { ...prev, playersDecks: mergePlayersDecks(prev.playersDecks ?? { players: [] }, data.playersDecks) }
+					: prev,
+			);
 			closeMatchModal();
-		} catch (err) {
-			console.error('Error:', err);
+			// Re-fetch autoritatif pour garantir la cohérence avec le serveur
+			refetch();
+		} catch {
+			// erreur silencieuse — l'état précédent est conservé
 		}
 	};
 

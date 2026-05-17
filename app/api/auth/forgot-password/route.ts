@@ -1,40 +1,33 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
-import PasswordResetModel from '@models/PasswordReset';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { PasswordResetRepository } from '@/src/repositories/db/PasswordResetRepository';
 import { sendPasswordResetEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { isValidEmail } from '@/src/lib/validation';
+import { validateForgotPasswordBody } from '@/src/lib/validation';
 
 export async function POST(request: NextRequest) {
-  const { email } = await request.json();
+  const body = await request.json();
+  const v = validateForgotPasswordBody(body);
+  if (!v.ok) return ApiResponse.badRequest(v.error);
 
-  if (!email || !isValidEmail(email)) {
-    return ApiResponse.badRequest('Email invalide');
-  }
-
-  await connectToMongoDB();
-
-  const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+  const user = await UserRepository.findByEmail(v.data.email);
 
   // Réponse identique que l'email existe ou non (sécurité : pas d'énumération)
   if (!user) {
     return ApiResponse.ok({ sent: true });
   }
 
-  // Invalider les anciens tokens en attente pour cet utilisateur
-  await PasswordResetModel.deleteMany({ userId: user._id });
+  await PasswordResetRepository.invalidateForUser(String(user._id));
 
   const token = crypto.randomUUID();
   const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 heure
 
-  await PasswordResetModel.create({ userId: user._id, token, expiresAt });
+  await PasswordResetRepository.create({ userId: String(user._id), token, expiresAt });
 
   try {
     await sendPasswordResetEmail(user.email, token);
-  } catch (e) {
-    console.error('[forgot-password] Échec envoi email:', e);
-    await PasswordResetModel.deleteOne({ token });
+  } catch {
+    await PasswordResetRepository.deleteByToken(token);
     return ApiResponse.serverError('Erreur lors de l\'envoi de l\'email');
   }
 

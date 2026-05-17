@@ -4,7 +4,7 @@ import { X, AlertTriangle, HelpCircle, Send } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import Ink from '@components/ui/Ink';
 
-interface ConflictGroup {
+export interface ConflictGroup {
   _id: string;
   groupId: { _id: string; name: string } | string;
   playerId: number;

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const limit = 50;
   const status = searchParams.get('status') as FeedbackStatus | null;
 
-  const { feedbacks, total } = await FeedbackRepository.findAll(page, limit, status ?? undefined);
+  const { feedbacks, total } = await FeedbackRepository.findWithFilters(page, limit, status ?? undefined);
 
   return ApiResponse.ok({
     feedbacks,

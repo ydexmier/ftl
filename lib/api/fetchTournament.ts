@@ -1,4 +1,4 @@
-export async function fetchTournament(tournamentId) {
+export async function fetchTournament(tournamentId: number | string): Promise<{ message: string; datas: { id: number } }> {
   const res = await fetch('/api/admin/fetchTournament', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -6,7 +6,7 @@ export async function fetchTournament(tournamentId) {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
+    const body = await res.json().catch(() => ({})) as { error?: string };
     throw new Error(body.error ?? 'Erreur lors de la récupération du tournoi');
   }
 

@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { hashPassword, verifyPassword, validatePasswordStrength } from '@/src/lib/auth/password';
@@ -19,16 +18,13 @@ export async function PATCH(request: NextRequest) {
   const check = validatePasswordStrength(newPassword);
   if (!check.valid) return ApiResponse.badRequest(check.message!);
 
-  await connectToMongoDB();
-
-  const user = await UserModel.findById(auth.userId);
+  const user = await UserRepository.findByIdWithPassword(auth.userId);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
   const valid = await verifyPassword(user.passwordHash, currentPassword);
   if (!valid) return ApiResponse.badRequest('Mot de passe actuel incorrect');
 
-  user.passwordHash = await hashPassword(newPassword);
-  await user.save();
+  await UserRepository.updatePassword(auth.userId, await hashPassword(newPassword));
 
   await AuditLogRepository.create({
     action: 'PASSWORD_CHANGED',
