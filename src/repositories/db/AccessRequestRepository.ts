@@ -9,7 +9,7 @@ export const AccessRequestRepository = {
 
   async findPendingByEmail(email: string): Promise<boolean> {
     await connectToMongoDB();
-    return (await AccessRequestModel.countDocuments({ email, status: 'PENDING' })) > 0;
+    return (await AccessRequestModel.exists({ email, status: 'PENDING' })) !== null;
   },
 
   async findById(id: string) {

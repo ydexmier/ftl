@@ -15,7 +15,7 @@ export const FeedbackRepository = {
     return FeedbackModel.create(data);
   },
 
-  async findAll(page: number, limit: number, status?: FeedbackStatus) {
+  async findWithFilters(page: number, limit: number, status?: FeedbackStatus) {
     await connectToMongoDB();
     const query = status ? { status } : {};
     const [feedbacks, total] = await Promise.all([

@@ -72,6 +72,23 @@ describe('POST /api/access-requests', () => {
     expect(doc!.reason).toBe('Je veux jouer');
     expect(doc!.status).toBe('PENDING');
   });
+
+  it('retourne 429 après trop de requêtes depuis la même IP', async () => {
+    const { NextRequest } = await import('next/server');
+    const ip = 'ip-ar-ratelimit-test';
+    let lastStatus = 0;
+    for (let i = 0; i < 10; i++) {
+      const req = new NextRequest('http://localhost:3000/api/access-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+        body: JSON.stringify({ email: `rlt${i}@test.com`, captchaToken: 'tok' }),
+      });
+      const res = await postRequest(req);
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
+  });
 });
 
 // ─── GET /api/admin/access-requests ─────────────────────────────────────────

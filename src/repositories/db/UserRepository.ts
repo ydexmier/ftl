@@ -31,6 +31,21 @@ export const UserRepository = {
     return UserModel.findById(id).select('-passwordHash').lean();
   },
 
+  async findByUsername(username: string) {
+    await connectToMongoDB();
+    return UserModel.findOne({ username }).lean();
+  },
+
+  async findByEmail(email: string) {
+    await connectToMongoDB();
+    return UserModel.findOne({ email }).select('-passwordHash').lean();
+  },
+
+  async findByIdWithPassword(id: string) {
+    await connectToMongoDB();
+    return UserModel.findById(id).lean();
+  },
+
   async findByIds(ids: string[]) {
     await connectToMongoDB();
     return UserModel.find({ _id: { $in: ids } })
@@ -42,14 +57,14 @@ export const UserRepository = {
     await connectToMongoDB();
     const query: Record<string, unknown> = { username };
     if (excludeId) query._id = { $ne: excludeId };
-    return (await UserModel.countDocuments(query)) > 0;
+    return (await UserModel.exists(query)) !== null;
   },
 
   async existsByEmail(email: string, excludeId?: string): Promise<boolean> {
     await connectToMongoDB();
     const query: Record<string, unknown> = { email };
     if (excludeId) query._id = { $ne: excludeId };
-    return (await UserModel.countDocuments(query)) > 0;
+    return (await UserModel.exists(query)) !== null;
   },
 
   async create(data: { username: string; email: string; passwordHash: string; role: string }) {

@@ -4,6 +4,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { validateResetPasswordBody } from '@/src/lib/validation';
 
 export async function GET(
   _request: NextRequest,
@@ -23,10 +24,12 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> },
 ) {
   const { token } = await params;
-  const { password } = await request.json();
+  const v = validateResetPasswordBody(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
 
-  const check = validatePasswordStrength(password ?? '');
+  const check = validatePasswordStrength(v.data.password);
   if (!check.valid) return ApiResponse.badRequest(check.message!);
+  const { password } = v.data;
 
   const reset = await PasswordResetRepository.findByToken(token);
   if (!reset || reset.usedAt) return ApiResponse.badRequest('Lien invalide ou déjà utilisé');

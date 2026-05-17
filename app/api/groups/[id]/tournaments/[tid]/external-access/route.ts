@@ -40,6 +40,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (err) {
     const msg = (err as Error).message;
     if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
+    if (msg.includes('déjà membre') || msg.includes('déjà un accès actif')) return ApiResponse.conflict(msg);
     return ApiResponse.badRequest(msg);
   }
 }

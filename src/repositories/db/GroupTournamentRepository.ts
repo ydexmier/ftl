@@ -41,7 +41,6 @@ export const GroupTournamentRepository = {
 
   async hasAccess(groupId: string, tournamentId: number): Promise<boolean> {
     await connectToMongoDB();
-    const count = await GroupTournamentModel.countDocuments({ groupId, tournamentId });
-    return count > 0;
+    return (await GroupTournamentModel.exists({ groupId, tournamentId })) !== null;
   },
 };

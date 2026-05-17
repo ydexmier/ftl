@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { validatePasswordStrength } from '@/src/lib/auth/password';
 import { hasRole } from '@/src/lib/auth/rbac';
+import { signCookie, verifyCookie } from '@/src/lib/auth/cookieSign';
 import type { UserRole } from '@models/User';
 
 describe('validatePasswordStrength', () => {
@@ -77,5 +78,38 @@ describe('hasRole', () => {
 
   it('SUPERUSER a le rôle SUPERUSER', () => {
     expect(hasRole('SUPERUSER' as UserRole, 'SUPERUSER' as UserRole)).toBe(true);
+  });
+});
+
+describe('cookieSign', () => {
+  it('signCookie retourne une chaîne non vide', async () => {
+    const signed = await signCookie('test-session-id', 'USER');
+    expect(typeof signed).toBe('string');
+    expect(signed.length).toBeGreaterThan(0);
+  });
+
+  it('round-trip : verifyCookie retrouve sessionId et role exacts', async () => {
+    const sessionId = 'abc-123-def';
+    const role = 'ADMIN';
+    const signed = await signCookie(sessionId, role);
+    const result = await verifyCookie(signed);
+    expect(result).toEqual({ sessionId, role });
+  });
+
+  it('verifyCookie retourne null pour un cookie avec signature modifiée', async () => {
+    const signed = await signCookie('session-id', 'USER');
+    const tampered = signed.slice(0, -3) + 'xxx';
+    const result = await verifyCookie(tampered);
+    expect(result).toBeNull();
+  });
+
+  it('verifyCookie retourne null pour une chaîne vide', async () => {
+    const result = await verifyCookie('');
+    expect(result).toBeNull();
+  });
+
+  it('verifyCookie retourne null pour une chaîne sans séparateurs valides', async () => {
+    const result = await verifyCookie('not-a-valid-cookie');
+    expect(result).toBeNull();
   });
 });

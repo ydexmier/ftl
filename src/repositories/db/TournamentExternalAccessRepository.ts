@@ -65,14 +65,13 @@ export const TournamentExternalAccessRepository = {
 
   async hasActiveAccess(userId: string, groupId: string, tournamentId: number): Promise<boolean> {
     await connectToMongoDB();
-    const count = await TournamentExternalAccessModel.countDocuments({
+    return (await TournamentExternalAccessModel.exists({
       userId,
       groupId,
       tournamentId,
       status: 'ACCEPTED',
       expiresAt: { $gt: new Date() },
-    });
-    return count > 0;
+    })) !== null;
   },
 
   async expireOldAccess() {

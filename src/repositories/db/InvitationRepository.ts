@@ -1,4 +1,5 @@
 import InvitationModel from '@models/Invitation';
+import '@models/User';
 import connectToMongoDB from '@/src/lib/db';
 
 export const InvitationRepository = {
@@ -38,7 +39,7 @@ export const InvitationRepository = {
 
   async findPendingByEmail(email: string): Promise<boolean> {
     await connectToMongoDB();
-    return (await InvitationModel.countDocuments({ email, status: 'PENDING' })) > 0;
+    return (await InvitationModel.exists({ email, status: 'PENDING' })) !== null;
   },
 
   async create(data: {

@@ -1,5 +1,6 @@
 import TournamentConflictModel from '@models/TournamentConflict';
 import type { ITournamentConflict, ConflictStatus } from '@models/TournamentConflict';
+import '@models/User';
 import connectToMongoDB from '@/src/lib/db';
 
 export interface ConflictInput {

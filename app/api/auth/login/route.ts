@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
-import UserModel from '@models/User';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { verifyPassword } from '@/src/lib/auth/password';
 import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
 import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/src/lib/auth/rateLimit';
 import { signCookie } from '@/src/lib/auth/cookieSign';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { validateLoginBody } from '@/src/lib/validation';
 
 function getIp(req: NextRequest) {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
@@ -17,14 +17,19 @@ export async function POST(request: NextRequest) {
   const rl = checkRateLimit(ip);
   if (!rl.allowed) return NextResponse.json({ error: 'Trop de tentatives.' }, { status: 429 });
 
-  const { username, password } = await request.json();
-  await connectToMongoDB();
-  const user = await UserModel.findOne({ username: username?.toLowerCase() });
+  const body = await request.json();
+  const v = validateLoginBody(body);
+  if (!v.ok) {
+    recordFailedAttempt(ip);
+    return NextResponse.json({ error: 'Identifiants invalides' }, { status: 401 });
+  }
+  const { username, password } = v.data;
+  const user = await UserRepository.findByUsername(username);
   const ERR = { error: 'Identifiants invalides' };
 
   if (!user) {
     recordFailedAttempt(ip);
-    await AuditLogRepository.create({ action: 'LOGIN_FAIL', username: username ?? '', ipAddress: ip, userAgent: ua });
+    await AuditLogRepository.create({ action: 'LOGIN_FAIL', username: username, ipAddress: ip, userAgent: ua });
     return NextResponse.json(ERR, { status: 401 });
   }
 
