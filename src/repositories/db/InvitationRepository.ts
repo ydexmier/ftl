@@ -1,4 +1,5 @@
 import InvitationModel from '@models/Invitation';
+import '@models/User';
 import connectToMongoDB from '@/src/lib/db';
 
 export const InvitationRepository = {
