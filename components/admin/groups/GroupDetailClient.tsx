@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { UserPlus, Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
+import { AdminConflictModal } from '@components/groups/AdminConflictModal';
 
 interface Member {
   userId: string;
@@ -19,6 +20,21 @@ interface Tournament {
   name: string;
   start_datetime: string | null;
   status: 'ACTIVE' | 'ARCHIVED';
+}
+
+interface RawConflict {
+  _id: string;
+  tournamentId: number;
+  playerId: number;
+  playerName: string;
+  previousInks: string[][];
+  proposedInks: string[][];
+}
+
+interface ConflictModalState {
+  conflicts: RawConflict[];
+  tournamentName: string;
+  member: Member;
 }
 
 interface Props {
@@ -132,12 +148,14 @@ function MergeMemberModal({
   member,
   tournaments,
   onClose,
+  onConflicts,
   onSuccess,
 }: {
   groupId: string;
   member: Member;
   tournaments: Tournament[];
   onClose: () => void;
+  onConflicts: (conflicts: RawConflict[], tournamentName: string) => void;
   onSuccess: () => void;
 }) {
   const [tournamentId, setTournamentId] = useState<number | ''>(tournaments[0]?.tournamentId ?? '');
@@ -160,8 +178,14 @@ function MergeMemberModal({
         setError(data.message ?? 'Erreur lors de la fusion');
         return;
       }
-      setDone(true);
-      onSuccess();
+      const data = await res.json();
+      if (data.conflicts?.length > 0) {
+        const t = tournaments.find((t) => t.tournamentId === tournamentId);
+        onConflicts(data.conflicts, t?.name ?? String(tournamentId));
+      } else {
+        setDone(true);
+        onSuccess();
+      }
     } finally {
       setLoading(false);
     }
@@ -170,10 +194,11 @@ function MergeMemberModal({
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold text-foreground">Fusionner les données de {member.username}</h2>
+        <h2 className="text-lg font-semibold text-foreground">
+          Fusionner les données — {member.username}
+        </h2>
         <p className="text-sm text-muted-foreground">
-          Les données de scouting personnelles de ce membre seront importées dans le groupe pour le tournoi sélectionné.
-          Des conflits seront créés si les encres diffèrent.
+          Les données de scouting personnelles seront importées dans le groupe. Des conflits seront créés si les encres diffèrent.
         </p>
         {done ? (
           <p className="text-sm text-success">Fusion effectuée avec succès.</p>
@@ -218,6 +243,7 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
   const [removeLoading, setRemoveLoading] = useState<string | null>(null);
   const [removeTournamentLoading, setRemoveTournamentLoading] = useState<number | null>(null);
   const [mergeTarget, setMergeTarget] = useState<Member | null>(null);
+  const [conflictModal, setConflictModal] = useState<ConflictModalState | null>(null);
 
   const onMutationSuccess = () => {
     setInviteOpen(false);
@@ -248,6 +274,12 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
     await fetch(`/api/admin/groups/${groupId}/tournaments/${tournamentId}`, { method: 'DELETE' });
     setRemoveTournamentLoading(null);
     router.refresh();
+  };
+
+  const handleMergeConflicts = (conflicts: RawConflict[], tournamentName: string) => {
+    const member = mergeTarget!;
+    setMergeTarget(null);
+    setConflictModal({ conflicts, tournamentName, member });
   };
 
   return (
@@ -421,7 +453,24 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
           member={mergeTarget}
           tournaments={tournaments}
           onClose={() => setMergeTarget(null)}
+          onConflicts={handleMergeConflicts}
           onSuccess={() => { setMergeTarget(null); router.refresh(); }}
+        />
+      )}
+      {conflictModal && (
+        <AdminConflictModal
+          groupId={groupId}
+          tournamentName={conflictModal.tournamentName}
+          conflicts={conflictModal.conflicts.map((c) => ({
+            ...c,
+            userId: { _id: conflictModal.member.userId, username: conflictModal.member.username },
+          }))}
+          onConflictResolved={(id) => {
+            setConflictModal((prev) =>
+              prev ? { ...prev, conflicts: prev.conflicts.filter((c) => c._id !== id) } : null,
+            );
+          }}
+          onClose={() => { setConflictModal(null); router.refresh(); }}
         />
       )}
     </>

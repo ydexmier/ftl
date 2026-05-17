@@ -229,10 +229,9 @@ export const TournamentPlayersDeckRepository = {
       if (idx !== -1) {
         if (!decks || decks.length === 0) {
           doc.players.splice(idx, 1);
-          doc.markModified('players');
           modified.push({ playerId, decks });
         } else {
-          doc.set(`players.${idx}.decks`, decks);
+          doc.players[idx].decks = decks;
           modified.push({ ...doc.players[idx], decks });
         }
       } else if (decks.length > 0) {
@@ -241,6 +240,8 @@ export const TournamentPlayersDeckRepository = {
       }
     }
 
+    // Explicit markModified needed for subdocuments without _id (Mongoose dirty tracking).
+    doc.markModified('players');
     await doc.save();
     return modified;
   },

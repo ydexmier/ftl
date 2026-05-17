@@ -4,17 +4,26 @@ import { UserTournamentRepository } from '@/src/repositories/db/UserTournamentRe
 import type { ConflictInput } from '@/src/repositories/db/TournamentConflictRepository';
 import type { Deck } from '@/src/types/ink';
 
+export interface CreatedConflict {
+  _id: string;
+  tournamentId: number;
+  playerId: number;
+  playerName: string;
+  previousInks: string[][];
+  proposedInks: string[][];
+}
+
 function hasInks(decks: string[][]): boolean {
   return decks.length > 0 && decks.some((d) => d.length > 0);
 }
 
-async function mergeUserDataIntoGroup(userId: string, groupId: string, tournamentId: number): Promise<void> {
+async function mergeUserDataIntoGroup(userId: string, groupId: string, tournamentId: number): Promise<CreatedConflict[]> {
   const [userDeck, groupDeck] = await Promise.all([
     TournamentPlayersDeckRepository.findByScope(tournamentId, { userId }),
     TournamentPlayersDeckRepository.findByScope(tournamentId, { groupId }),
   ]);
 
-  if (!userDeck || userDeck.players.length === 0) return;
+  if (!userDeck || userDeck.players.length === 0) return [];
 
   const groupPlayerMap = new Map(
     (groupDeck?.players ?? []).map((p) => [p.playerId, p]),
@@ -60,14 +69,23 @@ async function mergeUserDataIntoGroup(userId: string, groupId: string, tournamen
     }
   }
 
-  await Promise.all([
+  const [, createdConflicts] = await Promise.all([
     toAssign.length > 0
       ? TournamentPlayersDeckRepository.assignDecks(tournamentId, toAssign, { groupId })
-      : Promise.resolve(),
+      : Promise.resolve(null),
     conflictInputs.length > 0
       ? TournamentConflictRepository.createMany(conflictInputs)
-      : Promise.resolve(),
+      : Promise.resolve([]),
   ]);
+
+  return (createdConflicts ?? []).map((c) => ({
+    _id: String(c._id),
+    tournamentId: c.tournamentId,
+    playerId: c.playerId,
+    playerName: c.playerName,
+    previousInks: c.previousInks,
+    proposedInks: c.proposedInks,
+  }));
 }
 
 export const DataMergeService = {
@@ -79,11 +97,12 @@ export const DataMergeService = {
     return userDeck.players.some((p) => hasInks(p.decks));
   },
 
-  async mergeUserForTournament(userId: string, groupId: string, tournamentId: number): Promise<void> {
-    await mergeUserDataIntoGroup(userId, groupId, tournamentId);
+  async mergeUserForTournament(userId: string, groupId: string, tournamentId: number): Promise<CreatedConflict[]> {
+    const conflicts = await mergeUserDataIntoGroup(userId, groupId, tournamentId);
     await Promise.all([
       TournamentPlayersDeckRepository.deleteUserScope(tournamentId, userId),
       UserTournamentRepository.deleteByUserAndTournament(userId, tournamentId),
     ]);
+    return conflicts;
   },
 };
