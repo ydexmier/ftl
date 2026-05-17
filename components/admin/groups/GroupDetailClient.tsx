@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, Trash2, ChevronDown, Trophy, ArrowLeft } from 'lucide-react';
+import { UserPlus, Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 
@@ -59,7 +59,6 @@ function InviteMemberModal({ groupId, onClose, onSuccess }: { groupId: string; o
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 flex flex-col gap-4">
         <h2 className="text-lg font-semibold text-foreground">Inviter un membre</h2>
-        <p className="text-sm text-muted-foreground">L'utilisateur recevra une invitation qu'il devra accepter. Le merge de scouting se déclenchera à l'acceptation.</p>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <input
           className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
@@ -109,7 +108,6 @@ function AddTournamentModal({ groupId, onClose, onSuccess }: { groupId: string; 
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 flex flex-col gap-4">
         <h2 className="text-lg font-semibold text-foreground">Lier un tournoi</h2>
-        <p className="text-sm text-muted-foreground">Le scouting personnel des membres sur ce tournoi sera automatiquement fusionné dans le groupe.</p>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <input
           className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
@@ -129,6 +127,88 @@ function AddTournamentModal({ groupId, onClose, onSuccess }: { groupId: string; 
   );
 }
 
+function MergeMemberModal({
+  groupId,
+  member,
+  tournaments,
+  onClose,
+  onSuccess,
+}: {
+  groupId: string;
+  member: Member;
+  tournaments: Tournament[];
+  onClose: () => void;
+  onSuccess: () => void;
+}) {
+  const [tournamentId, setTournamentId] = useState<number | ''>(tournaments[0]?.tournamentId ?? '');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(false);
+
+  const submit = async () => {
+    if (!tournamentId) { setError('Sélectionnez un tournoi'); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/members/${member.userId}/merge-tournament`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tournamentId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.message ?? 'Erreur lors de la fusion');
+        return;
+      }
+      setDone(true);
+      onSuccess();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-xl w-full max-w-md p-6 flex flex-col gap-4" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-semibold text-foreground">Fusionner les données de {member.username}</h2>
+        <p className="text-sm text-muted-foreground">
+          Les données de scouting personnelles de ce membre seront importées dans le groupe pour le tournoi sélectionné.
+          Des conflits seront créés si les encres diffèrent.
+        </p>
+        {done ? (
+          <p className="text-sm text-success">Fusion effectuée avec succès.</p>
+        ) : (
+          <>
+            {tournaments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun tournoi lié à ce groupe.</p>
+            ) : (
+              <select
+                value={tournamentId}
+                onChange={(e) => setTournamentId(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-md border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                {tournaments.map((t) => (
+                  <option key={t.tournamentId} value={t.tournamentId}>{t.name}</option>
+                ))}
+              </select>
+            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </>
+        )}
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose} disabled={loading}>Fermer</Button>
+          {!done && tournaments.length > 0 && (
+            <Button onClick={submit} loading={loading}>
+              <GitMerge className="h-4 w-4" />
+              Fusionner
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function GroupDetailClient({ groupId, groupName, description, members, tournaments }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<'members' | 'tournaments'>('members');
@@ -137,6 +217,7 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
   const [roleLoading, setRoleLoading] = useState<string | null>(null);
   const [removeLoading, setRemoveLoading] = useState<string | null>(null);
   const [removeTournamentLoading, setRemoveTournamentLoading] = useState<number | null>(null);
+  const [mergeTarget, setMergeTarget] = useState<Member | null>(null);
 
   const onMutationSuccess = () => {
     setInviteOpen(false);
@@ -234,6 +315,13 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => setMergeTarget(m)}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-indigo-400 hover:bg-indigo-900/20 transition-colors"
+                              title="Fusionner les données de scouting"
+                            >
+                              <GitMerge className="h-3.5 w-3.5" />
+                            </button>
                             <div className="relative">
                               <select
                                 value={m.role}
@@ -326,6 +414,15 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
       )}
       {addTournamentOpen && (
         <AddTournamentModal groupId={groupId} onClose={() => setAddTournamentOpen(false)} onSuccess={onMutationSuccess} />
+      )}
+      {mergeTarget && (
+        <MergeMemberModal
+          groupId={groupId}
+          member={mergeTarget}
+          tournaments={tournaments}
+          onClose={() => setMergeTarget(null)}
+          onSuccess={() => { setMergeTarget(null); router.refresh(); }}
+        />
       )}
     </>
   );

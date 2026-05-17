@@ -3,8 +3,10 @@ import {
   getPlayerDecksInk,
   getMatchPlayerInks,
   mergePlayersDecks,
+  deduplicateDecks,
 } from '@/src/domain/rules/scoutingRules';
-import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
+import type { PlayersDecksMap, PlayerDecksEntry } from '@/src/domain/rules/scoutingRules';
+import type { Deck } from '@/src/types/ink';
 
 const DECK_A = [['Ambre', 'Rubis']];
 const DECK_B = [['Saphir', 'Émeraude']];
@@ -96,5 +98,35 @@ describe('mergePlayersDecks', () => {
     expect(result.players).toHaveLength(2);
     expect(result.players[0].decks).toEqual(DECK_A);
     expect(result.players[1].decks).toEqual([['Acier']]);
+  });
+});
+
+describe('deduplicateDecks', () => {
+  it('retourne le tableau tel quel si aucun doublon', () => {
+    const decks = [['Ambre', 'Rubis'], ['Saphir', 'Émeraude']] as unknown as Deck[];
+    expect(deduplicateDecks(decks)).toEqual(decks);
+  });
+
+  it('supprime les entrées dupliquées identiques', () => {
+    const decks = [['Ambre', 'Rubis'], ['Ambre', 'Rubis']] as unknown as Deck[];
+    expect(deduplicateDecks(decks)).toHaveLength(1);
+    expect(deduplicateDecks(decks)[0]).toEqual(['Ambre', 'Rubis']);
+  });
+
+  it('retourne un tableau vide pour une entrée vide', () => {
+    expect(deduplicateDecks([])).toEqual([]);
+  });
+
+  it('conserve la première occurrence en cas de doublon', () => {
+    const decks = [['Ambre', 'Rubis'], ['Saphir'], ['Ambre', 'Rubis']] as unknown as Deck[];
+    const result = deduplicateDecks(decks);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual(['Ambre', 'Rubis']);
+    expect(result[1]).toEqual(['Saphir']);
+  });
+
+  it('ne déduplique pas des entrées d\'ordre différent', () => {
+    const decks = [['Ambre', 'Rubis'], ['Rubis', 'Ambre']] as unknown as Deck[];
+    expect(deduplicateDecks(decks)).toHaveLength(2);
   });
 });

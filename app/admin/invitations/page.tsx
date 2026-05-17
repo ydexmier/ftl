@@ -1,5 +1,7 @@
 import connectToMongoDB from '@/src/lib/db';
 import InvitationModel from '@models/Invitation';
+import '@models/User';
+import '@models/Group';
 import { InvitationsPageClient } from '@components/admin/invitations/InvitationsPageClient';
 
 interface SearchParams {

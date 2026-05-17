@@ -1,7 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertTriangle, BarChart2 } from 'lucide-react';
+import { AlertTriangle, BarChart2, HelpCircle } from 'lucide-react';
 
 import { getRoundName } from '@/src/domain/rules/roundRules';
 import Round from '@components/round/Round';
@@ -14,8 +14,29 @@ import { TournamentSidebar, type TournamentTab } from '@components/tournament/To
 import { PlayersTab } from '@components/tournament/PlayersTab';
 import { ReportsTab } from '@components/tournament/ReportsTab';
 import { TournamentTour } from '@components/ui/TournamentTour';
+import { AdminConflictModal } from '@components/groups/AdminConflictModal';
+import { UncertaintyModal } from '@components/groups/UncertaintyModal';
 import type { Tournament as TournamentType } from '@/src/types/tournament';
 import type { RoundType } from '@/src/types/round';
+
+interface AdminConflict {
+	_id: string;
+	tournamentId: number;
+	playerId: number;
+	playerName: string;
+	previousInks: string[][];
+	proposedInks: string[][];
+	userId: { _id: string; username: string } | string;
+}
+
+interface UncertaintyConflict {
+	_id: string;
+	tournamentId: number;
+	playerId: number;
+	playerName: string;
+	previousInks: string[][];
+	proposedInks: string[][];
+}
 
 interface TournamentProps {
 	id: number | string;
@@ -37,20 +58,24 @@ export default function Tournament({ id }: TournamentProps) {
 	const [appRole, setAppRole] = useState<string>('USER');
 	const [hasPendingMerge, setHasPendingMerge] = useState(false);
 	const [merging, setMerging] = useState(false);
+	const [adminConflicts, setAdminConflicts] = useState<AdminConflict[]>([]);
+	const [uncertainties, setUncertainties] = useState<UncertaintyConflict[]>([]);
+	const [showAdminConflictModal, setShowAdminConflictModal] = useState(false);
+	const [showUncertaintyModal, setShowUncertaintyModal] = useState(false);
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
 	const { lastFetchedAt } = (tournament as (TournamentType & { lastFetchedAt?: string }) | null) ?? {};
 
-	useEffect(() => {
-		fetch(`/api/tournaments/${id}/conflicts`)
+	const fetchUserConflicts = useCallback(async () => {
+		const data = await fetch(`/api/tournaments/${id}/conflicts`)
 			.then((res) => (res.ok ? res.json() : { conflicts: [] }))
-			.then((data) => {
-				const list: ConflictGroup[] = data.conflicts ?? [];
-				setConflicts(list);
-				if (list.length > 0) setShowConflictModal(true);
-			})
-			.catch(() => {});
+			.catch(() => ({ conflicts: [] }));
+		const list: ConflictGroup[] = data.conflicts ?? [];
+		setConflicts(list);
+		if (list.length > 0) setShowConflictModal(true);
 	}, [id]);
+
+	useEffect(() => { fetchUserConflicts(); }, [fetchUserConflicts]);
 
 	useEffect(() => {
 		if (!groupId) return;
@@ -72,12 +97,31 @@ export default function Tournament({ id }: TournamentProps) {
 			.catch(() => {});
 	}, [groupId, id]);
 
+	useEffect(() => {
+		if (!groupId || groupRole !== 'ADMIN') return;
+		fetch(`/api/groups/${groupId}/conflicts`)
+			.then((res) => (res.ok ? res.json() : { conflicts: [] }))
+			.then((data) => setAdminConflicts((data.conflicts ?? []).filter((c: AdminConflict) => c.tournamentId === Number(id))))
+			.catch(() => {});
+	}, [groupId, groupRole, id]);
+
+	useEffect(() => {
+		if (!groupId || groupRole !== 'ADMIN') return;
+		fetch(`/api/groups/${groupId}/uncertainties`)
+			.then((res) => (res.ok ? res.json() : { uncertainties: [] }))
+			.then((data) => setUncertainties((data.uncertainties ?? []).filter((c: UncertaintyConflict) => c.tournamentId === Number(id))))
+			.catch(() => {});
+	}, [groupId, groupRole, id]);
+
 	const handleMerge = async () => {
 		if (!groupId) return;
 		setMerging(true);
 		try {
 			const res = await fetch(`/api/groups/${groupId}/tournaments/${id}/merge`, { method: 'POST' });
-			if (res.ok) setHasPendingMerge(false);
+			if (res.ok) {
+				setHasPendingMerge(false);
+				await fetchUserConflicts();
+			}
 		} finally {
 			setMerging(false);
 		}
@@ -91,6 +135,22 @@ export default function Tournament({ id }: TournamentProps) {
 		});
 	};
 
+	const handleAdminConflictResolved = (conflictId: string) => {
+		setAdminConflicts((prev) => {
+			const next = prev.filter((c) => c._id !== conflictId);
+			if (next.length === 0) setShowAdminConflictModal(false);
+			return next;
+		});
+	};
+
+	const handleUncertaintyDismissed = (conflictId: string) => {
+		setUncertainties((prev) => {
+			const next = prev.filter((c) => c._id !== conflictId);
+			if (next.length === 0) setShowUncertaintyModal(false);
+			return next;
+		});
+	};
+
 	const selectedRoundType: RoundType | undefined = tournament?.tournament_phases
 		?.flatMap((p) => p.rounds ?? [])
 		.find((r) => String(r.id) === String(roundId))?.round_type;
@@ -100,7 +160,8 @@ export default function Tournament({ id }: TournamentProps) {
 		if (value) setRoundId(value);
 	};
 
-	const showReports = groupId !== null && (groupRole === 'ADMIN' || appRole === 'ADMIN' || appRole === 'SUPERUSER');
+	const isGroupAdmin = groupRole === 'ADMIN';
+	const showReports = groupId !== null && (isGroupAdmin || appRole === 'ADMIN' || appRole === 'SUPERUSER');
 	const visibleTabs: TournamentTab[] = ['scouting', 'players', ...(showReports ? ['reports' as TournamentTab] : [])];
 	const showSidebar = visibleTabs.length >= 2;
 
@@ -121,6 +182,8 @@ export default function Tournament({ id }: TournamentProps) {
 		})),
 	) ?? [];
 
+	const tournamentName = tournament.name;
+
 	return (
 		<>
 			<TournamentTour />
@@ -132,12 +195,30 @@ export default function Tournament({ id }: TournamentProps) {
 					onClose={() => setShowConflictModal(false)}
 				/>
 			)}
+			{showAdminConflictModal && adminConflicts.length > 0 && groupId && (
+				<AdminConflictModal
+					groupId={groupId}
+					tournamentName={tournamentName}
+					conflicts={adminConflicts}
+					onConflictResolved={handleAdminConflictResolved}
+					onClose={() => setShowAdminConflictModal(false)}
+				/>
+			)}
+			{showUncertaintyModal && uncertainties.length > 0 && (
+				<UncertaintyModal
+					tournamentName={tournamentName}
+					conflicts={uncertainties}
+					groupId={groupId ?? ''}
+					onDismissed={handleUncertaintyDismissed}
+					onClose={() => setShowUncertaintyModal(false)}
+				/>
+			)}
 
 			<div className="flex flex-col gap-4">
 				<div data-tour="tournament-header" className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
 					<div className="flex flex-col gap-0.5">
 						<h1 className="text-lg sm:text-xl font-bold text-foreground">
-							{tournament.name}
+							{tournamentName}
 						</h1>
 						<p className="text-sm text-muted-foreground">
 							{tournament.registered_user_count}/{tournament.capacity} joueurs
@@ -153,15 +234,35 @@ export default function Tournament({ id }: TournamentProps) {
 					</div>
 				</div>
 
-				{conflicts.length > 0 && !showConflictModal && (
-					<button
-						onClick={() => setShowConflictModal(true)}
-						className="flex items-center gap-2 self-start rounded-md border border-yellow-700 bg-yellow-900/20 px-3 py-1.5 text-sm text-yellow-400 hover:bg-yellow-900/40 transition-colors"
-					>
-						<AlertTriangle className="h-4 w-4 shrink-0" />
-						{conflicts.length} conflit{conflicts.length > 1 ? 's' : ''} d&apos;encres en attente
-					</button>
-				)}
+				<div className="flex flex-wrap gap-2">
+					{conflicts.length > 0 && !showConflictModal && (
+						<button
+							onClick={() => setShowConflictModal(true)}
+							className="inline-flex items-center gap-2 rounded-md border border-yellow-700 bg-yellow-900/20 px-3 py-1.5 text-sm text-yellow-400 hover:bg-yellow-900/40 transition-colors"
+						>
+							<AlertTriangle className="h-4 w-4 shrink-0" />
+							{conflicts.length} conflit{conflicts.length > 1 ? 's' : ''} d&apos;encres en attente
+						</button>
+					)}
+					{isGroupAdmin && adminConflicts.length > 0 && (
+						<button
+							onClick={() => setShowAdminConflictModal(true)}
+							className="inline-flex items-center gap-2 rounded-md border border-yellow-700 bg-yellow-900/20 px-3 py-1.5 text-sm text-yellow-400 hover:bg-yellow-900/40 transition-colors"
+						>
+							<AlertTriangle className="h-4 w-4 shrink-0" />
+							{adminConflicts.length} proposition{adminConflicts.length > 1 ? 's' : ''} à valider
+						</button>
+					)}
+					{isGroupAdmin && uncertainties.length > 0 && (
+						<button
+							onClick={() => setShowUncertaintyModal(true)}
+							className="inline-flex items-center gap-2 rounded-md border border-blue-700 bg-blue-900/20 px-3 py-1.5 text-sm text-blue-400 hover:bg-blue-900/40 transition-colors"
+						>
+							<HelpCircle className="h-4 w-4 shrink-0" />
+							{uncertainties.length} incertitude{uncertainties.length > 1 ? 's' : ''}
+						</button>
+					)}
+				</div>
 
 				{hasPendingMerge && (
 					<div className="flex items-center gap-3 rounded-md border border-blue-700 bg-blue-900/20 px-3 py-2 text-sm text-blue-300">

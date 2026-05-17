@@ -292,6 +292,16 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
         <UncertaintyModal
           tournamentName={uncertaintyModal.name}
           conflicts={uncertaintiesForModal}
+          groupId={groupId}
+          onDismissed={(conflictId) => {
+            setUncertainties((prev) => {
+              const next = prev.filter((c) => c._id !== conflictId);
+              if (next.filter((c) => c.tournamentId === uncertaintyModal.tournamentId).length === 0) {
+                setUncertaintyModal(null);
+              }
+              return next;
+            });
+          }}
           onClose={() => setUncertaintyModal(null)}
         />
       )}

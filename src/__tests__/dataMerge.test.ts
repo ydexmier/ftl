@@ -205,7 +205,7 @@ describe('respondToInvitation : pas de merge automatique', () => {
 // ─── mergeUserForTournament (déclenchement manuel) ────────────────────────────
 
 describe('DataMergeService.mergeUserForTournament', () => {
-  it('copie les decks solo dans le scope groupe et supprime le UserTournament', async () => {
+  it('copie les decks solo dans le scope groupe, supprime le scope user et le UserTournament', async () => {
     const { UserTournamentRepository } = await import('@/src/repositories/db/UserTournamentRepository');
     const admin = await createTestUser({ username: 'dm10', email: 'dm10@test.com' });
     const user = await createTestUser({ username: 'dm11', email: 'dm11@test.com' });
@@ -220,10 +220,18 @@ describe('DataMergeService.mergeUserForTournament', () => {
 
     await DataMergeService.mergeUserForTournament(String(user._id), String(group._id), tid);
 
+    // Données copiées dans le scope groupe
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
     expect(groupDeck).not.toBeNull();
     expect(groupDeck!.players[0].decks).toEqual([['Amethyst', 'Steel']]);
 
+    // Scope user supprimé → hasPendingPersonalData retourne false
+    const userDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, userId: user._id, groupId: null });
+    expect(userDeck).toBeNull();
+    const hasPending = await DataMergeService.hasPendingPersonalData(String(user._id), String(group._id), tid);
+    expect(hasPending).toBe(false);
+
+    // UserTournament supprimé
     const ut = await UserTournamentRepository.findByUserAndTournament(String(user._id), tid);
     expect(ut).toBeNull();
   });
