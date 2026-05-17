@@ -170,10 +170,10 @@ describe('DataMergeService.mergeUserDataIntoGroup', () => {
   });
 });
 
-// ─── mergeOnGroupJoin via respondToInvitation ─────────────────────────────
+// ─── Pas de merge automatique à l'acceptation d'invitation ───────────────────
 
-describe('DataMergeService.mergeOnGroupJoin (via acceptation d\'invitation)', () => {
-  it('auto-assigne les decks utilisateur au groupe lors de l\'acceptation', async () => {
+describe('respondToInvitation : pas de merge automatique', () => {
+  it('accepter une invitation n\'entraîne pas de merge des données solo', async () => {
     const admin = await createTestUser({ username: 'dm8', email: 'dm8@test.com' });
     const member = await createTestUser({ username: 'dm9', email: 'dm9@test.com' });
     const group = await createTestGroup(admin._id, { name: 'dm-grp-8' });
@@ -181,7 +181,6 @@ describe('DataMergeService.mergeOnGroupJoin (via acceptation d\'invitation)', ()
 
     await TournamentModel.create({ id: tid, name: `T-${tid}`, event_status: 'ENDED', start_datetime: new Date() });
     await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: admin._id, status: 'ACTIVE' });
-
     await TournamentPlayersDeckModel.create({
       tournamentId: tid, userId: member._id, groupId: null,
       players: [{ ...BASE_P1, decks: [['Amethyst', 'Steel']] }],
@@ -196,75 +195,60 @@ describe('DataMergeService.mergeOnGroupJoin (via acceptation d\'invitation)', ()
     const res = await respondToInvitation(req, invParams(String(inv._id)));
     expect(res.status).toBe(200);
 
+    // Pas de merge auto : aucun scope groupe créé, aucun conflit
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
-    expect(groupDeck).not.toBeNull();
-    expect(groupDeck!.players).toHaveLength(1);
-    expect(groupDeck!.players[0].decks).toEqual([['Amethyst', 'Steel']]);
+    expect(groupDeck).toBeNull();
     expect(await TournamentConflictModel.countDocuments({})).toBe(0);
   });
+});
 
-  it('crée un conflit PENDING si les encres diffèrent lors de l\'acceptation', async () => {
+// ─── mergeUserForTournament (déclenchement manuel) ────────────────────────────
+
+describe('DataMergeService.mergeUserForTournament', () => {
+  it('copie les decks solo dans le scope groupe et supprime le UserTournament', async () => {
+    const { UserTournamentRepository } = await import('@/src/repositories/db/UserTournamentRepository');
     const admin = await createTestUser({ username: 'dm10', email: 'dm10@test.com' });
-    const member = await createTestUser({ username: 'dm11', email: 'dm11@test.com' });
+    const user = await createTestUser({ username: 'dm11', email: 'dm11@test.com' });
     const group = await createTestGroup(admin._id, { name: 'dm-grp-9' });
     const tid = nextTid();
 
-    await TournamentModel.create({ id: tid, name: `T-${tid}`, event_status: 'ENDED', start_datetime: new Date() });
-    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: admin._id, status: 'ACTIVE' });
+    await TournamentPlayersDeckModel.create({
+      tournamentId: tid, userId: user._id, groupId: null,
+      players: [{ ...BASE_P1, decks: [['Amethyst', 'Steel']] }],
+    });
+    await UserTournamentRepository.create(String(user._id), tid);
+
+    await DataMergeService.mergeUserForTournament(String(user._id), String(group._id), tid);
+
+    const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
+    expect(groupDeck).not.toBeNull();
+    expect(groupDeck!.players[0].decks).toEqual([['Amethyst', 'Steel']]);
+
+    const ut = await UserTournamentRepository.findByUserAndTournament(String(user._id), tid);
+    expect(ut).toBeNull();
+  });
+
+  it('crée un conflit PENDING si les encres diffèrent avec le scope groupe', async () => {
+    const admin = await createTestUser({ username: 'dm12', email: 'dm12@test.com' });
+    const user = await createTestUser({ username: 'dm13', email: 'dm13@test.com' });
+    const group = await createTestGroup(admin._id, { name: 'dm-grp-10' });
+    const tid = nextTid();
 
     await TournamentPlayersDeckModel.create({
       tournamentId: tid, groupId: group._id, userId: null,
       players: [{ ...BASE_P1, decks: [['Ruby', 'Amber']] }],
     });
     await TournamentPlayersDeckModel.create({
-      tournamentId: tid, userId: member._id, groupId: null,
+      tournamentId: tid, userId: user._id, groupId: null,
       players: [{ ...BASE_P1, decks: [['Steel', 'Sapphire']] }],
     });
 
-    const inv = await GroupInvitationModel.create({
-      groupId: group._id, invitedUserId: member._id, invitedBy: admin._id,
-      expiresAt: new Date(Date.now() + 86400000),
-    });
-    const cookie = await createAuthCookie(member._id, 'USER');
-    const req = makeRequest('PUT', `/api/groups/invitations/${inv._id}`, { status: 'ACCEPTED' }, cookie);
-    const res = await respondToInvitation(req, invParams(String(inv._id)));
-    expect(res.status).toBe(200);
+    await DataMergeService.mergeUserForTournament(String(user._id), String(group._id), tid);
 
     const conflicts = await TournamentConflictModel.find({ groupId: group._id });
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].status).toBe('PENDING');
     expect(conflicts[0].proposedInks).toEqual([['Steel', 'Sapphire']]);
     expect(conflicts[0].previousInks).toEqual([['Ruby', 'Amber']]);
-    // Group inks must remain unchanged
-    const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
-    expect(groupDeck!.players[0].decks).toEqual([['Ruby', 'Amber']]);
-  });
-
-  it('ne déclenche pas de merge si le tournoi du groupe est archivé', async () => {
-    const admin = await createTestUser({ username: 'dm12', email: 'dm12@test.com' });
-    const member = await createTestUser({ username: 'dm13', email: 'dm13@test.com' });
-    const group = await createTestGroup(admin._id, { name: 'dm-grp-10' });
-    const tid = nextTid();
-
-    await TournamentModel.create({ id: tid, name: `T-${tid}`, event_status: 'ENDED', start_datetime: new Date() });
-    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: admin._id, status: 'ARCHIVED' });
-
-    await TournamentPlayersDeckModel.create({
-      tournamentId: tid, userId: member._id, groupId: null,
-      players: [{ ...BASE_P1, decks: [['Amber', 'Steel']] }],
-    });
-
-    const inv = await GroupInvitationModel.create({
-      groupId: group._id, invitedUserId: member._id, invitedBy: admin._id,
-      expiresAt: new Date(Date.now() + 86400000),
-    });
-    const cookie = await createAuthCookie(member._id, 'USER');
-    const req = makeRequest('PUT', `/api/groups/invitations/${inv._id}`, { status: 'ACCEPTED' }, cookie);
-    const res = await respondToInvitation(req, invParams(String(inv._id)));
-    expect(res.status).toBe(200);
-
-    // Archived tournament → no merge → no group deck entry created
-    expect(await TournamentPlayersDeckModel.countDocuments({ groupId: group._id })).toBe(0);
-    expect(await TournamentConflictModel.countDocuments({})).toBe(0);
   });
 });

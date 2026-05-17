@@ -70,6 +70,11 @@ export const TournamentPlayersDeckRepository = {
     return TournamentPlayersDeckModel.deleteMany({ tournamentId });
   },
 
+  async deleteManyByGroupId(groupId: string) {
+    await connectToMongoDB();
+    return TournamentPlayersDeckModel.deleteMany({ groupId });
+  },
+
   // Adds players (decks: []) to one scope without overwriting existing deck assignments.
   async upsertMissingPlayers(tournamentId: number, players: PlayerInfo[], scope: DeckScope) {
     await connectToMongoDB();

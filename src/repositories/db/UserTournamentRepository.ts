@@ -38,4 +38,10 @@ export const UserTournamentRepository = {
     await connectToMongoDB();
     return UserTournamentModel.deleteMany({ userId });
   },
+
+  async deleteByUserAndTournament(userId: string, tournamentId: number) {
+    await connectToMongoDB();
+    return UserTournamentModel.findOneAndDelete({ userId, tournamentId });
+  },
+
 };

@@ -2,13 +2,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Trophy, Shield, Users, Mail, MessageSquare, ClipboardList, Menu, X, LogOut } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shield, Users, Mail, MessageSquare, ClipboardList, Menu, X, LogOut, UsersRound } from 'lucide-react';
 import { cn } from '@components/ui/cn';
 
 const NAV = [
 	{ href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 	{ href: '/admin/tournaments', label: 'Tournois', icon: Trophy },
 	{ href: '/admin/users', label: 'Utilisateurs', icon: Users },
+	{ href: '/admin/groups', label: 'Groupes', icon: UsersRound },
 	{ href: '/admin/invitations', label: 'Invitations', icon: Mail },
 	{ href: '/admin/access-requests', label: 'Demandes d\'accès', icon: ClipboardList },
 	{ href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },

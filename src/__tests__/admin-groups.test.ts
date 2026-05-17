@@ -1,0 +1,546 @@
+import { describe, it, expect } from 'vitest';
+import mongoose from 'mongoose';
+import { GET as listGroups, POST as createGroup } from '../../app/api/admin/groups/route';
+import { GET as getGroup, PATCH as updateGroup, DELETE as deleteGroup } from '../../app/api/admin/groups/[id]/route';
+import { POST as inviteMember } from '../../app/api/admin/groups/[id]/members/route';
+import { PATCH as updateRole, DELETE as removeMember } from '../../app/api/admin/groups/[id]/members/[uid]/route';
+import { POST as addTournament } from '../../app/api/admin/groups/[id]/tournaments/route';
+import { DELETE as removeTournament } from '../../app/api/admin/groups/[id]/tournaments/[tid]/route';
+import { GET as getMergeStatus } from '../../app/api/groups/[id]/tournaments/[tid]/merge-status/route';
+import { POST as triggerMerge } from '../../app/api/groups/[id]/tournaments/[tid]/merge/route';
+import GroupModel from '@models/Group';
+import GroupInvitationModel from '@models/GroupInvitation';
+import GroupTournamentModel from '@models/GroupTournament';
+import TournamentModel from '@models/Tournament';
+import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
+import TournamentConflictModel from '@models/TournamentConflict';
+import UserTournamentModel from '@models/UserTournament';
+import { createTestUser, createAdminUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
+
+function groupParams(id: string) {
+  return { params: Promise.resolve({ id }) };
+}
+function memberParams(id: string, uid: string) {
+  return { params: Promise.resolve({ id, uid }) };
+}
+function tournamentParams(id: string, tid: string) {
+  return { params: Promise.resolve({ id, tid }) };
+}
+
+async function createTestTournament(overrides: Partial<{ id: number; name: string; start_datetime: Date }> = {}) {
+  const id = overrides.id ?? Math.floor(Math.random() * 900000) + 100000;
+  return TournamentModel.create({
+    id,
+    name: overrides.name ?? `Tournoi ${id}`,
+    start_datetime: overrides.start_datetime ?? new Date('2020-01-01'),
+    end_datetime: null,
+    description: '',
+    full_header_image_url: '',
+    timer_end_datetime: null,
+    timer_paused_at_datetime: null,
+    timer_is_running: false,
+    registered_user_count: 0,
+    full_address: '',
+    latitude: 0,
+    longitude: 0,
+    game_type: '',
+    event_status: 'COMPLETE',
+    event_format: '',
+    event_type: '',
+    rules_enforcement_level: '',
+    store: { id: 1, name: '', full_address: '', administrative_area_level_1_short: '', country: '', website: '', latitude: 0, longitude: 0 },
+    settings: { id: 1, decklist_status: '', event_lifecycle_status: '', show_registration_button: false, round_duration_in_minutes: 50, payment_in_store: false, payment_on_spicerack: false, maximum_number_of_game_wins_per_match: 2, maximum_number_of_draws_per_match: null, checkin_methods: [], stripe_price_id: null },
+    tournament_phases: [],
+    gameplay_format: { id: '1', name: '', description: '' },
+    cost_in_cents: 0,
+    currency: 'EUR',
+    capacity: 0,
+    number_of_days: 1,
+    url: null,
+    timezone: null,
+  });
+}
+
+// ─── GET /api/admin/groups ────────────────────────────────────────────────────
+
+describe('GET /api/admin/groups', () => {
+  it('retourne 403 pour un USER', async () => {
+    const user = await createTestUser({ username: 'ag-list-user1', email: 'ag-list-user1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', '/api/admin/groups', undefined, cookie);
+    const res = await listGroups(req);
+    expect(res.status).toBe(403);
+  });
+
+  it('retourne la liste enrichie pour un ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'ag-list-admin1', email: 'ag-list-admin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    await createTestGroup(admin._id, { name: 'ag-listed-group' });
+
+    const req = makeRequest('GET', '/api/admin/groups', undefined, cookie);
+    const res = await listGroups(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(Array.isArray(data.groups)).toBe(true);
+    const found = data.groups.find((g: { name: string }) => g.name === 'ag-listed-group');
+    expect(found).toBeDefined();
+    expect(found.memberCount).toBe(1);
+    expect(found.tournamentCount).toBe(0);
+  });
+});
+
+// ─── POST /api/admin/groups ───────────────────────────────────────────────────
+
+describe('POST /api/admin/groups', () => {
+  it('crée un groupe et retourne 201', async () => {
+    const admin = await createAdminUser({ username: 'ag-create-admin', email: 'ag-create-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('POST', '/api/admin/groups', { name: 'ag-new-group', description: 'desc' }, cookie);
+    const res = await createGroup(req);
+    const data = await res.json();
+
+    expect(res.status).toBe(201);
+    expect(data.name).toBe('ag-new-group');
+    const inDb = await GroupModel.findOne({ name: 'ag-new-group' });
+    expect(inDb).not.toBeNull();
+  });
+
+  it('retourne 400 si le nom est déjà pris', async () => {
+    const admin = await createAdminUser({ username: 'ag-create-admin2', email: 'ag-create-admin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    await createTestGroup(admin._id, { name: 'ag-taken-name' });
+
+    const req = makeRequest('POST', '/api/admin/groups', { name: 'ag-taken-name' }, cookie);
+    const res = await createGroup(req);
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── GET /api/admin/groups/[id] ──────────────────────────────────────────────
+
+describe('GET /api/admin/groups/[id]', () => {
+  it('retourne le détail du groupe avec membres et tournois', async () => {
+    const admin = await createAdminUser({ username: 'ag-detail-admin', email: 'ag-detail-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-detail-group' });
+    const tournament = await createTestTournament({ name: 'AG Detail Tournoi' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const req = makeRequest('GET', `/api/admin/groups/${group._id}`, undefined, cookie);
+    const res = await getGroup(req, groupParams(String(group._id)));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.name).toBe('ag-detail-group');
+    expect(data.members).toHaveLength(1);
+    expect(data.members[0].username).toBe('ag-detail-admin');
+    expect(data.tournaments).toHaveLength(1);
+    expect(data.tournaments[0].tournamentId).toBe(tournament.id);
+  });
+
+  it('retourne 404 pour un id inconnu', async () => {
+    const admin = await createAdminUser({ username: 'ag-detail-admin2', email: 'ag-detail-admin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const fakeId = new mongoose.Types.ObjectId();
+
+    const req = makeRequest('GET', `/api/admin/groups/${fakeId}`, undefined, cookie);
+    const res = await getGroup(req, groupParams(String(fakeId)));
+    expect(res.status).toBe(404);
+  });
+});
+
+// ─── PATCH /api/admin/groups/[id] ────────────────────────────────────────────
+
+describe('PATCH /api/admin/groups/[id]', () => {
+  it('met à jour le nom du groupe', async () => {
+    const admin = await createAdminUser({ username: 'ag-patch-admin', email: 'ag-patch-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-patch-before' });
+
+    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}`, { name: 'ag-patch-after' }, cookie);
+    const res = await updateGroup(req, groupParams(String(group._id)));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.name).toBe('ag-patch-after');
+  });
+});
+
+// ─── DELETE /api/admin/groups/[id] ───────────────────────────────────────────
+
+describe('DELETE /api/admin/groups/[id]', () => {
+  it('supprime le groupe sans tournois et cascade les données', async () => {
+    const admin = await createAdminUser({ username: 'ag-del-admin', email: 'ag-del-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-delete-group' });
+    await GroupInvitationModel.create({
+      groupId: group._id,
+      invitedUserId: admin._id,
+      invitedBy: admin._id,
+      status: 'PENDING',
+      expiresAt: new Date(Date.now() + 86400000),
+    });
+
+    const req = makeRequest('DELETE', `/api/admin/groups/${group._id}`, undefined, cookie);
+    const res = await deleteGroup(req, groupParams(String(group._id)));
+
+    expect(res.status).toBe(200);
+    expect(await GroupModel.findById(group._id)).toBeNull();
+    expect(await GroupInvitationModel.findOne({ groupId: group._id })).toBeNull();
+  });
+
+  it('refuse la suppression si un tournoi est encore actif', async () => {
+    const admin = await createAdminUser({ username: 'ag-del-active-admin', email: 'ag-del-active-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-delete-active-group' });
+    const tournament = await createTestTournament({ start_datetime: new Date() }); // aujourd'hui → J+3 pas encore atteint
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const req = makeRequest('DELETE', `/api/admin/groups/${group._id}`, undefined, cookie);
+    const res = await deleteGroup(req, groupParams(String(group._id)));
+    expect(res.status).toBe(409);
+  });
+
+  it('supprime avec cascade quand tous les tournois sont terminés (J+3)', async () => {
+    const admin = await createAdminUser({ username: 'ag-del-done-admin', email: 'ag-del-done-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-delete-done-group' });
+    const tournament = await createTestTournament({ start_datetime: new Date('2020-01-01') });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+    await TournamentPlayersDeckModel.create({ tournamentId: tournament.id, groupId: group._id, userId: null, players: [] });
+    await TournamentConflictModel.create({ groupId: group._id, userId: admin._id, tournamentId: tournament.id, playerId: 1, playerName: 'p', status: 'PENDING', previousInks: [], proposedInks: [] });
+
+    const req = makeRequest('DELETE', `/api/admin/groups/${group._id}`, undefined, cookie);
+    const res = await deleteGroup(req, groupParams(String(group._id)));
+
+    expect(res.status).toBe(200);
+    expect(await GroupModel.findById(group._id)).toBeNull();
+    expect(await GroupTournamentModel.findOne({ groupId: group._id })).toBeNull();
+    expect(await TournamentPlayersDeckModel.findOne({ groupId: group._id })).toBeNull();
+    expect(await TournamentConflictModel.findOne({ groupId: group._id })).toBeNull();
+  });
+});
+
+// ─── POST /api/admin/groups/[id]/members ─────────────────────────────────────
+
+describe('POST /api/admin/groups/[id]/members', () => {
+  it('crée une invitation pour l\'utilisateur cible', async () => {
+    const admin = await createAdminUser({ username: 'ag-inv-admin', email: 'ag-inv-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-inv-user', email: 'ag-inv-user@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-inv-group' });
+
+    const req = makeRequest('POST', `/api/admin/groups/${group._id}/members`, { userId: String(user._id) }, cookie);
+    const res = await inviteMember(req, groupParams(String(group._id)));
+    const data = await res.json();
+
+    expect(res.status).toBe(201);
+    expect(String(data.invitedUserId)).toBe(String(user._id));
+    const inv = await GroupInvitationModel.findOne({ groupId: group._id, invitedUserId: user._id });
+    expect(inv).not.toBeNull();
+  });
+
+  it('retourne 400 si l\'utilisateur est déjà membre', async () => {
+    const admin = await createAdminUser({ username: 'ag-inv-already-admin', email: 'ag-inv-already-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-inv-already-group' });
+
+    const req = makeRequest('POST', `/api/admin/groups/${group._id}/members`, { userId: String(admin._id) }, cookie);
+    const res = await inviteMember(req, groupParams(String(group._id)));
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── PATCH /api/admin/groups/[id]/members/[uid] ──────────────────────────────
+
+describe('PATCH /api/admin/groups/[id]/members/[uid]', () => {
+  it('change le rôle d\'un membre en ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'ag-role-admin', email: 'ag-role-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-role-user', email: 'ag-role-user@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-role-group' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+
+    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}/members/${user._id}`, { role: 'ADMIN' }, cookie);
+    const res = await updateRole(req, memberParams(String(group._id), String(user._id)));
+
+    expect(res.status).toBe(200);
+    const updated = await GroupModel.findById(group._id);
+    const member = updated!.members.find((m) => String(m.userId) === String(user._id));
+    expect(member?.role).toBe('ADMIN');
+  });
+
+  it('retourne 400 si on essaie de retirer le seul admin', async () => {
+    const admin = await createAdminUser({ username: 'ag-last-admin', email: 'ag-last-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-last-admin-group' });
+
+    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}/members/${admin._id}`, { role: 'MEMBER' }, cookie);
+    const res = await updateRole(req, memberParams(String(group._id), String(admin._id)));
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── DELETE /api/admin/groups/[id]/members/[uid] ─────────────────────────────
+
+describe('DELETE /api/admin/groups/[id]/members/[uid]', () => {
+  it('retire un membre du groupe', async () => {
+    const admin = await createAdminUser({ username: 'ag-rem-admin', email: 'ag-rem-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-rem-user', email: 'ag-rem-user@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-rem-group' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+
+    const req = makeRequest('DELETE', `/api/admin/groups/${group._id}/members/${user._id}`, undefined, cookie);
+    const res = await removeMember(req, memberParams(String(group._id), String(user._id)));
+
+    expect(res.status).toBe(200);
+    const updated = await GroupModel.findById(group._id);
+    expect(updated!.members.some((m) => String(m.userId) === String(user._id))).toBe(false);
+  });
+});
+
+// ─── POST /api/admin/groups/[id]/tournaments ─────────────────────────────────
+
+describe('POST /api/admin/groups/[id]/tournaments', () => {
+  it('lie un tournoi sans merge automatique — les données solo restent intactes', async () => {
+    const admin = await createAdminUser({ username: 'ag-tour-admin', email: 'ag-tour-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-tour-user', email: 'ag-tour-user@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-tour-group' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+    const tournament = await createTestTournament({ name: 'AG Tour Merge' });
+
+    // Scouting solo du user pour ce tournoi
+    await TournamentPlayersDeckModel.create({
+      tournamentId: tournament.id,
+      groupId: null,
+      userId: user._id,
+      players: [{ playerId: 1, best_identifier: 'Player A', event_best_identifier: '', pronouns: null, decks: [['Ambre', 'Rubis']] }],
+    });
+    await UserTournamentModel.create({ userId: user._id, tournamentId: tournament.id, status: 'ACTIVE' });
+
+    const req = makeRequest('POST', `/api/admin/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
+    const res = await addTournament(req, groupParams(String(group._id)));
+
+    expect(res.status).toBe(201);
+
+    // Pas de merge automatique : le scope groupe ne doit PAS exister
+    const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tournament.id, groupId: group._id, userId: null });
+    expect(groupDeck).toBeNull();
+
+    // Le UserTournament doit toujours exister (pas supprimé automatiquement)
+    const ut = await UserTournamentModel.findOne({ userId: user._id, tournamentId: tournament.id });
+    expect(ut).not.toBeNull();
+  });
+
+  it('retourne 400 si le tournoi est déjà dans le groupe', async () => {
+    const admin = await createAdminUser({ username: 'ag-tour-dup-admin', email: 'ag-tour-dup-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-tour-dup-group' });
+    const tournament = await createTestTournament({ name: 'AG Tour Dup' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const req = makeRequest('POST', `/api/admin/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
+    const res = await addTournament(req, groupParams(String(group._id)));
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── DELETE /api/admin/groups/[id]/tournaments/[tid] ─────────────────────────
+
+describe('DELETE /api/admin/groups/[id]/tournaments/[tid]', () => {
+  it('retire un tournoi du groupe', async () => {
+    const admin = await createAdminUser({ username: 'ag-tour-del-admin', email: 'ag-tour-del-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const group = await createTestGroup(admin._id, { name: 'ag-tour-del-group' });
+    const tournament = await createTestTournament({ name: 'AG Tour Del' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const req = makeRequest('DELETE', `/api/admin/groups/${group._id}/tournaments/${tournament.id}`, undefined, cookie);
+    const res = await removeTournament(req, tournamentParams(String(group._id), String(tournament.id)));
+
+    expect(res.status).toBe(200);
+    expect(await GroupTournamentModel.findOne({ groupId: group._id, tournamentId: tournament.id })).toBeNull();
+  });
+});
+
+// ─── Rejoindre un groupe ne déclenche plus le merge automatique ───────────────
+
+describe('respondToInvitation : pas de merge automatique à l\'acceptation', () => {
+  it('le UserTournament reste intact quand un user rejoint un groupe', async () => {
+    const admin = await createAdminUser({ username: 'ag-join-admin', email: 'ag-join-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-join-user', email: 'ag-join-user@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'ag-join-group' });
+    const tournament = await createTestTournament({ name: 'AG Join Tournoi' });
+
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+    await TournamentPlayersDeckModel.create({
+      tournamentId: tournament.id,
+      groupId: null,
+      userId: user._id,
+      players: [{ playerId: 1, best_identifier: 'Player A', event_best_identifier: '', pronouns: null, decks: [['Ambre', 'Rubis']] }],
+    });
+    await UserTournamentModel.create({ userId: user._id, tournamentId: tournament.id, status: 'ACTIVE' });
+
+    const { GroupService } = await import('../../src/services/GroupService');
+    const { GroupInvitationRepository } = await import('../../src/repositories/db/GroupInvitationRepository');
+
+    await GroupInvitationRepository.create(String(group._id), String(user._id), String(admin._id));
+    const inv = await GroupInvitationModel.findOne({ groupId: group._id, invitedUserId: user._id });
+    await GroupService.respondToInvitation(String(inv!._id), String(user._id), 'ACCEPTED');
+
+    // Pas de merge auto : UserTournament doit toujours exister
+    const ut = await UserTournamentModel.findOne({ userId: user._id, tournamentId: tournament.id });
+    expect(ut).not.toBeNull();
+
+    // Données solo non mergées dans le groupe
+    const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tournament.id, groupId: group._id, userId: null });
+    expect(groupDeck).toBeNull();
+  });
+});
+
+// ─── GET /api/groups/[id]/tournaments/[tid]/merge-status ─────────────────────
+
+describe('GET /api/groups/[id]/tournaments/[tid]/merge-status', () => {
+  function mergeStatusParams(id: string, tid: string) {
+    return { params: Promise.resolve({ id, tid }) };
+  }
+
+  it('retourne hasPendingPersonalData: true si l\'user a du scouting solo', async () => {
+    const admin = await createAdminUser({ username: 'ms-admin', email: 'ms-admin@example.com' });
+    const user = await createTestUser({ username: 'ms-user', email: 'ms-user@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'ms-group' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+    const tournament = await createTestTournament({ name: 'MS Tournoi' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+    await TournamentPlayersDeckModel.create({
+      tournamentId: tournament.id,
+      groupId: null,
+      userId: user._id,
+      players: [{ playerId: 1, best_identifier: 'Player A', event_best_identifier: '', pronouns: null, decks: [['Ambre', 'Rubis']] }],
+    });
+
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', `/api/groups/${group._id}/tournaments/${tournament.id}/merge-status`, undefined, cookie);
+    const res = await getMergeStatus(req, mergeStatusParams(String(group._id), String(tournament.id)));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.hasPendingPersonalData).toBe(true);
+  });
+
+  it('retourne hasPendingPersonalData: false si l\'user n\'a pas de scouting solo', async () => {
+    const admin = await createAdminUser({ username: 'ms-admin2', email: 'ms-admin2@example.com' });
+    const user = await createTestUser({ username: 'ms-user2', email: 'ms-user2@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'ms-group2' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+    const tournament = await createTestTournament({ name: 'MS Tournoi2' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', `/api/groups/${group._id}/tournaments/${tournament.id}/merge-status`, undefined, cookie);
+    const res = await getMergeStatus(req, mergeStatusParams(String(group._id), String(tournament.id)));
+    const data = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(data.hasPendingPersonalData).toBe(false);
+  });
+
+  it('retourne 403 si l\'user n\'est pas membre du groupe', async () => {
+    const admin = await createAdminUser({ username: 'ms-admin3', email: 'ms-admin3@example.com' });
+    const outsider = await createTestUser({ username: 'ms-outsider', email: 'ms-outsider@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'ms-group3' });
+    const tournament = await createTestTournament({ name: 'MS Tournoi3' });
+
+    const cookie = await createAuthCookie(outsider._id, 'USER');
+    const req = makeRequest('GET', `/api/groups/${group._id}/tournaments/${tournament.id}/merge-status`, undefined, cookie);
+    const res = await getMergeStatus(req, mergeStatusParams(String(group._id), String(tournament.id)));
+    expect(res.status).toBe(403);
+  });
+});
+
+// ─── POST /api/groups/[id]/tournaments/[tid]/merge ───────────────────────────
+
+describe('POST /api/groups/[id]/tournaments/[tid]/merge', () => {
+  function mergeParams(id: string, tid: string) {
+    return { params: Promise.resolve({ id, tid }) };
+  }
+
+  it('fusionne les données solo dans le groupe et supprime le UserTournament', async () => {
+    const admin = await createAdminUser({ username: 'mg-admin', email: 'mg-admin@example.com' });
+    const user = await createTestUser({ username: 'mg-user', email: 'mg-user@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'mg-group' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: user._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+    const tournament = await createTestTournament({ name: 'MG Tournoi' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+    await TournamentPlayersDeckModel.create({
+      tournamentId: tournament.id,
+      groupId: null,
+      userId: user._id,
+      players: [{ playerId: 1, best_identifier: 'Player A', event_best_identifier: '', pronouns: null, decks: [['Ambre', 'Rubis']] }],
+    });
+    await UserTournamentModel.create({ userId: user._id, tournamentId: tournament.id, status: 'ACTIVE' });
+
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/merge`, undefined, cookie);
+    const res = await triggerMerge(req, mergeParams(String(group._id), String(tournament.id)));
+
+    expect(res.status).toBe(200);
+
+    // Les données doivent être dans le scope groupe
+    const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tournament.id, groupId: group._id, userId: null });
+    expect(groupDeck).not.toBeNull();
+    const p = groupDeck!.players.find((p) => p.playerId === 1);
+    expect(p?.decks).toEqual([['Ambre', 'Rubis']]);
+
+    // Le UserTournament doit être supprimé
+    const ut = await UserTournamentModel.findOne({ userId: user._id, tournamentId: tournament.id });
+    expect(ut).toBeNull();
+  });
+
+  it('retourne 403 si l\'user n\'est pas membre du groupe', async () => {
+    const admin = await createAdminUser({ username: 'mg-admin2', email: 'mg-admin2@example.com' });
+    const outsider = await createTestUser({ username: 'mg-outsider', email: 'mg-outsider@example.com' });
+    const group = await createTestGroup(admin._id, { name: 'mg-group2' });
+    const tournament = await createTestTournament({ name: 'MG Tournoi2' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: admin._id, status: 'ACTIVE' });
+
+    const cookie = await createAuthCookie(outsider._id, 'USER');
+    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/merge`, undefined, cookie);
+    const res = await triggerMerge(req, mergeParams(String(group._id), String(tournament.id)));
+    expect(res.status).toBe(403);
+  });
+});
+
+// ─── Blocage création solo si tournoi dans un groupe ─────────────────────────
+
+describe('POST /api/tournaments/[id]/link : blocage si tournoi dans un groupe', () => {
+  it('retourne 409 si le tournoi est déjà dans un groupe de l\'utilisateur', async () => {
+    const { POST: linkTournament } = await import('../../app/api/tournaments/[id]/link/route');
+    const admin = await createAdminUser({ username: 'ag-block-admin', email: 'ag-block-admin@example.com' });
+    const user = await createTestUser({ username: 'ag-block-user', email: 'ag-block-user@example.com' });
+    const group = await createTestGroup(user._id, { name: 'ag-block-group' });
+    const tournament = await createTestTournament({ name: 'AG Block Tournoi' });
+    await GroupTournamentModel.create({ groupId: group._id, tournamentId: tournament.id, addedBy: user._id, status: 'ACTIVE' });
+
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', `/api/tournaments/${tournament.id}/link`, undefined, cookie);
+    const res = await linkTournament(req, { params: Promise.resolve({ id: String(tournament.id) }) });
+    expect(res.status).toBe(409);
+  });
+});

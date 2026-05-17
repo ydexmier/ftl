@@ -3,9 +3,13 @@ import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournament
 import { GroupInvitationRepository } from '@/src/repositories/db/GroupInvitationRepository';
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
+import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import { TournamentConflictRepository } from '@/src/repositories/db/TournamentConflictRepository';
+import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
-import { DataMergeService } from '@/src/services/DataMergeService';
 import type { GroupMemberRole } from '@/src/types/group';
+
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
 
 async function assertGroupAdmin(groupId: string, userId: string) {
   const isAdmin = await GroupRepository.isAdmin(groupId, userId);
@@ -15,6 +19,27 @@ async function assertGroupAdmin(groupId: string, userId: string) {
 async function assertGroupMember(groupId: string, userId: string) {
   const isMember = await GroupRepository.isMember(groupId, userId);
   if (!isMember) throw new Error('FORBIDDEN');
+}
+
+async function checkTournamentsFinished(groupId: string) {
+  const groupTournaments = await GroupTournamentRepository.findByGroupId(groupId);
+  for (const gt of groupTournaments) {
+    const tournament = await TournamentRepository.findById(gt.tournamentId);
+    if (!tournament) continue;
+    const cutoff = new Date(tournament.start_datetime.getTime() + THREE_DAYS_MS);
+    if (cutoff > new Date()) throw new Error('TOURNAMENT_ACTIVE');
+  }
+}
+
+async function cascadeDeleteGroup(groupId: string) {
+  await Promise.all([
+    TournamentPlayersDeckRepository.deleteManyByGroupId(groupId),
+    TournamentConflictRepository.deleteManyByGroupId(groupId),
+    ScoutingReportRepository.deleteManyByGroupId(groupId),
+    GroupTournamentRepository.deleteByGroupId(groupId),
+    GroupInvitationRepository.deleteManyByGroupId(groupId),
+  ]);
+  return GroupRepository.delete(groupId);
 }
 
 export const GroupService = {
@@ -62,7 +87,8 @@ export const GroupService = {
 
   async deleteGroup(groupId: string, userId: string) {
     await assertGroupAdmin(groupId, userId);
-    return GroupRepository.delete(groupId);
+    await checkTournamentsFinished(groupId);
+    return cascadeDeleteGroup(groupId);
   },
 
   // ─── Members ───────────────────────────────────────────────────────────────
@@ -135,7 +161,6 @@ export const GroupService = {
     if (status === 'ACCEPTED') {
       const groupId = String(invitation.groupId);
       await GroupRepository.addMember(groupId, userId, String(invitation.invitedBy), 'MEMBER');
-      await DataMergeService.mergeOnGroupJoin(userId, groupId);
     }
 
     return { status };
@@ -228,5 +253,119 @@ export const GroupService = {
     if (access.status !== 'PENDING') throw new Error('Cet accès a déjà été traité');
     if (access.expiresAt < new Date()) throw new Error('Cet accès a expiré');
     return TournamentExternalAccessRepository.updateStatus(accessId, status);
+  },
+
+  // ─── Admin-only operations (bypass group membership check) ─────────────────
+
+  async adminGetGroupDetail(groupId: string) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const memberIds = group.members.map((m) => String(m.userId));
+    const [users, groupTournaments] = await Promise.all([
+      UserRepository.findByIds(memberIds),
+      GroupTournamentRepository.findByGroupId(groupId),
+    ]);
+    const userMap = Object.fromEntries(users.map((u) => [String(u._id), u]));
+
+    const tournamentIds = groupTournaments.map((gt) => gt.tournamentId);
+    const tournaments = tournamentIds.length > 0 ? await TournamentRepository.findByIds(tournamentIds) : [];
+    const tournamentMap = Object.fromEntries(tournaments.map((t) => [t.id, t]));
+
+    return {
+      _id: String(group._id),
+      name: group.name,
+      description: group.description,
+      createdAt: group.createdAt,
+      members: group.members.map((m) => ({
+        userId: String(m.userId),
+        username: userMap[String(m.userId)]?.username ?? '',
+        email: userMap[String(m.userId)]?.email ?? '',
+        role: m.role,
+        joinedAt: m.joinedAt,
+      })),
+      tournaments: groupTournaments.map((gt) => ({
+        tournamentId: gt.tournamentId,
+        name: tournamentMap[gt.tournamentId]?.name ?? String(gt.tournamentId),
+        start_datetime: tournamentMap[gt.tournamentId]?.start_datetime ?? null,
+        status: gt.status,
+      })),
+    };
+  },
+
+  async adminInviteMember(groupId: string, invitedBy: string, invitedUserId: string) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const alreadyMember = await GroupRepository.isMember(groupId, invitedUserId);
+    if (alreadyMember) throw new Error('Cet utilisateur est déjà membre du groupe');
+
+    const hasPending = await GroupInvitationRepository.hasPendingInvitation(groupId, invitedUserId);
+    if (hasPending) throw new Error('Une invitation est déjà en attente pour cet utilisateur');
+
+    const invitedUser = await UserRepository.findById(invitedUserId);
+    if (!invitedUser) throw new Error('Utilisateur introuvable');
+
+    return GroupInvitationRepository.create(groupId, invitedUserId, invitedBy);
+  },
+
+  async adminRemoveMember(groupId: string, userId: string) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const isMember = group.members.some((m) => String(m.userId) === userId);
+    if (!isMember) throw new Error('NOT_FOUND');
+
+    const admins = group.members.filter((m) => m.role === 'ADMIN');
+    const isTargetAdmin = admins.some((m) => String(m.userId) === userId);
+    if (isTargetAdmin && admins.length === 1) {
+      throw new Error('Impossible de retirer le seul administrateur du groupe');
+    }
+
+    return GroupRepository.removeMember(groupId, userId);
+  },
+
+  async adminUpdateMemberRole(groupId: string, userId: string, role: GroupMemberRole) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const isMember = group.members.some((m) => String(m.userId) === userId);
+    if (!isMember) throw new Error('NOT_FOUND');
+
+    if (role === 'MEMBER') {
+      const admins = group.members.filter((m) => m.role === 'ADMIN');
+      const isTargetAdmin = admins.some((m) => String(m.userId) === userId);
+      if (isTargetAdmin && admins.length === 1) {
+        throw new Error('Impossible de retirer le seul administrateur du groupe');
+      }
+    }
+
+    return GroupRepository.updateMemberRole(groupId, userId, role);
+  },
+
+  async adminAddTournament(groupId: string, addedBy: string, tournamentId: number) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const tournament = await TournamentRepository.findById(tournamentId);
+    if (!tournament) throw new Error('Tournoi introuvable');
+
+    const already = await GroupTournamentRepository.hasAccess(groupId, tournamentId);
+    if (already) throw new Error('Ce tournoi est déjà dans le groupe');
+
+    return GroupTournamentRepository.add(groupId, tournamentId, addedBy);
+  },
+
+  async adminRemoveTournament(groupId: string, tournamentId: number) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+    return GroupTournamentRepository.remove(groupId, tournamentId);
+  },
+
+  async adminDeleteGroup(groupId: string) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+    await checkTournamentsFinished(groupId);
+    return cascadeDeleteGroup(groupId);
   },
 };
