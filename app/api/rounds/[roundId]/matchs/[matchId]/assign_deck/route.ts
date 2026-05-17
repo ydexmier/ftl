@@ -15,26 +15,40 @@ export async function POST(request: NextRequest, { params }: Params) {
 		if (!auth) return ApiResponse.unauthorized();
 
 		const { roundId, matchId } = await params;
-		const { decks, groupId } = await request.json();
+		const { decks, groupId: requestedGroupId } = await request.json();
 
-		if (groupId) {
-			const round = await RoundRepository.findById(Number(roundId));
-			if (!round) return ApiResponse.notFound('Round not found');
+		const round = await RoundRepository.findById(Number(roundId));
+		if (!round) return ApiResponse.notFound('Round not found');
 
-			const isMember = await GroupRepository.isMember(groupId, auth.userId);
-			const hasGroupTournament = await GroupTournamentRepository.hasAccess(groupId, round.tournamentId);
+		let resolvedGroupId: string | null = null;
+
+		if (requestedGroupId) {
+			// Scope groupe explicite : valider l'accès
+			const isMember = await GroupRepository.isMember(requestedGroupId, auth.userId);
+			const hasGroupTournament = await GroupTournamentRepository.hasAccess(requestedGroupId, round.tournamentId);
 
 			if (!isMember || !hasGroupTournament) {
 				const externalAccess = await TournamentExternalAccessRepository.hasActiveAccess(
 					auth.userId,
-					groupId,
+					requestedGroupId,
 					round.tournamentId,
 				);
 				if (!externalAccess) return ApiResponse.forbidden('Accès refusé à ce tournoi de groupe');
 			}
+			resolvedGroupId = requestedGroupId;
+		} else {
+			// Pas de groupId fourni : détecter si l'user appartient à un groupe qui a ce tournoi
+			const userGroups = await GroupRepository.findByMemberId(auth.userId);
+			for (const group of userGroups) {
+				const hasAccess = await GroupTournamentRepository.hasAccess(String(group._id), round.tournamentId);
+				if (hasAccess) {
+					resolvedGroupId = String(group._id);
+					break;
+				}
+			}
 		}
 
-		const scope = groupId ? { groupId } : { userId: auth.userId };
+		const scope = resolvedGroupId ? { groupId: resolvedGroupId } : { userId: auth.userId };
 		const result = await ScoutingService.assignDecks(Number(roundId), Number(matchId), decks, scope, auth.userId);
 		return ApiResponse.ok(result);
 	} catch (err) {

@@ -25,6 +25,11 @@ export const ScoutingReportRepository = {
     ]);
   },
 
+  async deleteManyByGroupId(groupId: string) {
+    await connectToMongoDB();
+    return ScoutingReportModel.deleteMany({ groupId });
+  },
+
   async countGlobalByUser(userId: string) {
     await connectToMongoDB();
     const results = await ScoutingReportModel.aggregate<{ tournamentId: number; count: number }>([

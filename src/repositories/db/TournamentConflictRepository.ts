@@ -97,4 +97,9 @@ export const TournamentConflictRepository = {
     await connectToMongoDB();
     return TournamentConflictModel.findById(conflictId).lean() as Promise<ITournamentConflict | null>;
   },
+
+  async deleteManyByGroupId(groupId: string) {
+    await connectToMongoDB();
+    return TournamentConflictModel.deleteMany({ groupId });
+  },
 };
