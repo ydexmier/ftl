@@ -81,6 +81,9 @@ export const DataMergeService = {
 
   async mergeUserForTournament(userId: string, groupId: string, tournamentId: number): Promise<void> {
     await mergeUserDataIntoGroup(userId, groupId, tournamentId);
-    await UserTournamentRepository.deleteByUserAndTournament(userId, tournamentId);
+    await Promise.all([
+      TournamentPlayersDeckRepository.deleteUserScope(tournamentId, userId),
+      UserTournamentRepository.deleteByUserAndTournament(userId, tournamentId),
+    ]);
   },
 };

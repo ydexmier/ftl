@@ -13,6 +13,16 @@ declare global {
 const cached: MongooseCache = global.__mongoose ?? { conn: null, promise: null };
 global.__mongoose = cached;
 
+async function dropStaleIndexes(conn: typeof mongoose): Promise<void> {
+	try {
+		await conn.connection.db
+			?.collection('tournamentplayersdecks')
+			.dropIndex('tournamentId_1');
+	} catch {
+		// Index doesn't exist or was already dropped — no-op.
+	}
+}
+
 export default async function connectToMongoDB(): Promise<typeof mongoose> {
 	if (cached.conn) return cached.conn;
 
@@ -22,7 +32,7 @@ export default async function connectToMongoDB(): Promise<typeof mongoose> {
 	if (!cached.promise) {
 		cached.promise = mongoose
 			.connect(`${process.env.MONGO_URI}/${process.env.MONGO_DB_NAME}`)
-			.then((m) => m)
+			.then(async (m) => { await dropStaleIndexes(m); return m; })
 			.catch((err) => {
 				cached.promise = null;
 				throw err;

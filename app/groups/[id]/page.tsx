@@ -1,6 +1,8 @@
 import { redirect, notFound } from 'next/navigation';
 import { getServerUser } from '@/src/lib/auth/getServerUser';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
+import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
+import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
 import { GroupDetail } from '@components/groups/GroupDetail';
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
@@ -21,10 +23,15 @@ export default async function GroupPage({ params }: Params) {
   if (!isMember) redirect('/groups');
 
   const memberIds = group.members.map((m) => m.userId);
-  const users = await UserModel.find({ _id: { $in: memberIds } })
-    .select('_id username email')
-    .lean();
+  const [users, groupTournaments] = await Promise.all([
+    UserModel.find({ _id: { $in: memberIds } }).select('_id username email').lean(),
+    GroupTournamentRepository.findByGroupId(id),
+  ]);
   const userMap = Object.fromEntries(users.map((u) => [String(u._id), u]));
+
+  const tournamentIds = groupTournaments.map((gt) => gt.tournamentId);
+  const tournaments = tournamentIds.length > 0 ? await TournamentRepository.findByIds(tournamentIds) : [];
+  const tournamentMap = Object.fromEntries(tournaments.map((t) => [t.id, t]));
 
   const serialized = {
     _id: String(group._id),
@@ -43,7 +50,19 @@ export default async function GroupPage({ params }: Params) {
     updatedAt: group.updatedAt.toISOString(),
   };
 
+  const groupTournamentList = groupTournaments.map((gt) => ({
+    tournamentId: gt.tournamentId,
+    name: tournamentMap[gt.tournamentId]?.name ?? String(gt.tournamentId),
+  }));
+
   const myRole = group.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER';
 
-  return <GroupDetail group={serialized} currentUserId={user.userId} myRole={myRole} />;
+  return (
+    <GroupDetail
+      group={serialized}
+      currentUserId={user.userId}
+      myRole={myRole}
+      groupTournaments={groupTournamentList}
+    />
+  );
 }

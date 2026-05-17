@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { GET as getUncertainties } from '../../app/api/groups/[id]/uncertainties/route';
+import { DELETE as dismissUncertainty } from '../../app/api/groups/[id]/uncertainties/[conflictId]/route';
 import TournamentConflictModel from '@models/TournamentConflict';
 import GroupModel from '@models/Group';
 import { createTestUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
@@ -9,6 +10,10 @@ function nextTid() { return 500000 + ++_counter; }
 
 function groupParams(id: string) {
   return { params: Promise.resolve({ id }) };
+}
+
+function conflictParams(id: string, conflictId: string) {
+  return { params: Promise.resolve({ id, conflictId }) };
 }
 
 async function seedConflict(opts: {
@@ -122,5 +127,67 @@ describe('GET /api/groups/[id]/uncertainties', () => {
     }, {});
     expect(byTournament[tid1]).toBe(2);
     expect(byTournament[tid2]).toBe(1);
+  });
+});
+
+describe('DELETE /api/groups/[id]/uncertainties/[conflictId]', () => {
+  it('retourne 401 sans session', async () => {
+    const req = makeRequest('DELETE', '/api/groups/g1/uncertainties/c1');
+    const res = await dismissUncertainty(req, conflictParams('g1', 'c1'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si l\'utilisateur est membre non-admin', async () => {
+    const admin = await createTestUser({ username: 'ud1', email: 'ud1@test.com' });
+    const member = await createTestUser({ username: 'ud2', email: 'ud2@test.com' });
+    const group = await createTestGroup(admin._id, { name: 'ud-grp-1' });
+    await GroupModel.findByIdAndUpdate(group._id, {
+      $push: { members: { userId: member._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: admin._id } },
+    });
+    const conflict = await seedConflict({ userId: String(admin._id), groupId: String(group._id), tournamentId: nextTid(), status: 'UNCERTAINTY' });
+
+    const cookie = await createAuthCookie(member._id, 'USER');
+    const req = makeRequest('DELETE', `/api/groups/${group._id}/uncertainties/${conflict._id}`, undefined, cookie);
+    const res = await dismissUncertainty(req, conflictParams(String(group._id), String(conflict._id)));
+    expect(res.status).toBe(403);
+  });
+
+  it('supprime le conflit et retourne 200 pour un admin', async () => {
+    const admin = await createTestUser({ username: 'ud3', email: 'ud3@test.com' });
+    const group = await createTestGroup(admin._id, { name: 'ud-grp-2' });
+    const conflict = await seedConflict({ userId: String(admin._id), groupId: String(group._id), tournamentId: nextTid(), status: 'UNCERTAINTY' });
+
+    const cookie = await createAuthCookie(admin._id, 'USER');
+    const req = makeRequest('DELETE', `/api/groups/${group._id}/uncertainties/${conflict._id}`, undefined, cookie);
+    const res = await dismissUncertainty(req, conflictParams(String(group._id), String(conflict._id)));
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.success).toBe(true);
+
+    const deleted = await TournamentConflictModel.findById(conflict._id);
+    expect(deleted).toBeNull();
+  });
+
+  it('retourne 404 pour un conflictId inexistant', async () => {
+    const admin = await createTestUser({ username: 'ud4', email: 'ud4@test.com' });
+    const group = await createTestGroup(admin._id, { name: 'ud-grp-3' });
+
+    const { Types } = await import('mongoose');
+    const fakeId = new Types.ObjectId().toString();
+    const cookie = await createAuthCookie(admin._id, 'USER');
+    const req = makeRequest('DELETE', `/api/groups/${group._id}/uncertainties/${fakeId}`, undefined, cookie);
+    const res = await dismissUncertainty(req, conflictParams(String(group._id), fakeId));
+    expect(res.status).toBe(404);
+  });
+
+  it('retourne 400 si le conflit n\'est pas de statut UNCERTAINTY', async () => {
+    const admin = await createTestUser({ username: 'ud5', email: 'ud5@test.com' });
+    const group = await createTestGroup(admin._id, { name: 'ud-grp-4' });
+    const conflict = await seedConflict({ userId: String(admin._id), groupId: String(group._id), tournamentId: nextTid(), status: 'PENDING' });
+
+    const cookie = await createAuthCookie(admin._id, 'USER');
+    const req = makeRequest('DELETE', `/api/groups/${group._id}/uncertainties/${conflict._id}`, undefined, cookie);
+    const res = await dismissUncertainty(req, conflictParams(String(group._id), String(conflict._id)));
+    expect(res.status).toBe(400);
   });
 });

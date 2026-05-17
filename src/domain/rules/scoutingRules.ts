@@ -30,6 +30,12 @@ export function getMatchPlayerInks(
 	return inks.length ? inks : undefined;
 }
 
+export function deduplicateDecks(decks: Deck[]): Deck[] {
+	return decks.filter((deck, i) =>
+		decks.findIndex((d) => JSON.stringify(d) === JSON.stringify(deck)) === i,
+	);
+}
+
 export function mergePlayersDecks(current: PlayersDecksMap, updated: PlayersDecksMap): PlayersDecksMap {
 	if (!current || !Array.isArray(current.players)) return current;
 

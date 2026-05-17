@@ -28,6 +28,14 @@ export const ConflictService = {
     return TournamentConflictRepository.updateStatus(conflictId, status);
   },
 
+  async dismissUncertainty(conflictId: string, groupId: string) {
+    const conflict = await TournamentConflictRepository.findById(conflictId);
+    if (!conflict) throw new Error('NOT_FOUND');
+    if (String(conflict.groupId) !== groupId) throw new Error('FORBIDDEN');
+    if (conflict.status !== 'UNCERTAINTY') throw new Error('Ce conflit n\'est pas une incertitude');
+    return TournamentConflictRepository.deleteById(conflictId);
+  },
+
   async resolveAdminConflict(
     conflictId: string,
     adminId: string,
