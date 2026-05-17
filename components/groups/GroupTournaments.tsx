@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle, HelpCircle, GitMerge } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AddTournamentModal } from './AddTournamentModal';
@@ -66,6 +66,33 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
   const [uncertaintyModal, setUncertaintyModal] = useState<{ tournamentId: number; name: string } | null>(null);
 
   const isAdmin = myRole === 'ADMIN';
+  const [pendingMergeIds, setPendingMergeIds] = useState<Set<number>>(new Set());
+  const [mergingId, setMergingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (tournaments.length === 0) return;
+    Promise.all(
+      tournaments.map((t) =>
+        fetch(`/api/groups/${groupId}/tournaments/${t.tournamentId}/merge-status`)
+          .then((res) => (res.ok ? res.json() : null))
+          .then((data) => (data?.hasPendingPersonalData ? t.tournamentId : null))
+          .catch(() => null),
+      ),
+    ).then((results) => {
+      const ids = results.filter((id): id is number => id !== null);
+      setPendingMergeIds(new Set(ids));
+    });
+  }, [groupId, tournaments]);
+
+  const handleMerge = async (tournamentId: number) => {
+    setMergingId(tournamentId);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/tournaments/${tournamentId}/merge`, { method: 'POST' });
+      if (res.ok) setPendingMergeIds((prev) => { const next = new Set(prev); next.delete(tournamentId); return next; });
+    } finally {
+      setMergingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -181,6 +208,16 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
                         >
                           <HelpCircle className="h-3 w-3" />
                           {uncertaintyCount} incertitude{uncertaintyCount > 1 ? 's' : ''}
+                        </button>
+                      )}
+                      {pendingMergeIds.has(t.tournamentId) && (
+                        <button
+                          onClick={() => handleMerge(t.tournamentId)}
+                          disabled={mergingId === t.tournamentId}
+                          className="inline-flex items-center gap-1 rounded-md border border-indigo-700 bg-indigo-900/20 px-1.5 py-0.5 text-[10px] font-medium text-indigo-400 hover:bg-indigo-900/40 disabled:opacity-50 transition-colors"
+                        >
+                          <GitMerge className="h-3 w-3" />
+                          {mergingId === t.tournamentId ? 'Fusion…' : 'Fusionner mes données'}
                         </button>
                       )}
                     </div>

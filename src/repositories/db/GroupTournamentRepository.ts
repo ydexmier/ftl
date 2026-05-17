@@ -43,4 +43,9 @@ export const GroupTournamentRepository = {
     await connectToMongoDB();
     return (await GroupTournamentModel.exists({ groupId, tournamentId })) !== null;
   },
+
+  async deleteByGroupId(groupId: string) {
+    await connectToMongoDB();
+    return GroupTournamentModel.deleteMany({ groupId });
+  },
 };

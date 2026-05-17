@@ -258,7 +258,7 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
     expect(player1.decks).toEqual([['Acier', 'Emeraude']]);
   });
 
-  it('isolation — deck portee user invisible en portee groupe', async () => {
+  it('auto-scope — assign sans groupId va en scope groupe si le tournoi appartient au groupe de l\'user', async () => {
     const user = await createTestUser({ username: 'bicolo3', email: 'bicolo3@test.com' });
     const group = await createTestGroup(user._id, { name: 'bicolo-group-2' });
     const cookie = await createAuthCookie(user._id, 'USER');
@@ -272,6 +272,7 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
     await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: user._id, status: 'ACTIVE' });
     await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
 
+    // Assign sans groupId — le système doit détecter le groupe et utiliser le scope groupe
     await assignDeck(
       makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
         decks: [{ playerId: p1, decks: [['Ambre', 'Rubis']] }],
@@ -279,14 +280,21 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
       matchParams(String(rid), String(mid)),
     );
 
-    const getRes = await getMatches(
-      makeRequest('GET', `/api/rounds/${rid}/matchs?groupId=${group._id}`),
+    // Le scope groupe doit contenir le deck
+    const groupRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs?groupId=${group._id}`, undefined, cookie),
       roundParams(String(rid)),
     );
-    const data = await getRes.json();
+    const groupData = await groupRes.json();
+    expect(groupRes.status).toBe(200);
+    const player = groupData.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
+    expect(player).toBeDefined();
+    expect(player.decks).toEqual([['Ambre', 'Rubis']]);
 
-    expect(getRes.status).toBe(200);
-    expect(data.playersDecks).toBeNull();
+    // Aucun scope user indépendant ne doit avoir été créé
+    const TournamentPlayersDeckModel = (await import('@models/TournamentPlayersDeck')).default;
+    const userDoc = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, userId: user._id, groupId: null });
+    expect(userDoc).toBeNull();
   });
 
   it('reassignation — un second POST met a jour les bicolorites', async () => {

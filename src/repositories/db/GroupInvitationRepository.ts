@@ -49,4 +49,9 @@ export const GroupInvitationRepository = {
       expiresAt: { $gt: new Date() },
     })) !== null;
   },
+
+  async deleteManyByGroupId(groupId: string) {
+    await connectToMongoDB();
+    return GroupInvitationModel.deleteMany({ groupId });
+  },
 };

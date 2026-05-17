@@ -92,12 +92,19 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 
 	useEffect(() => {
 		if (!roundId) return;
-		const query = { tournamentId, roundId, page, perPage, ...(search ? { search } : {}) };
+		const query = {
+			tournamentId,
+			roundId,
+			page,
+			perPage,
+			...(search ? { search } : {}),
+			...(groupId ? { groupId } : {}),
+		};
 		const sp = new URLSearchParams(
 			Object.fromEntries(Object.entries(query).map(([k, v]) => [k, String(v)])),
 		);
 		router.replace(`${pathname}?${sp.toString()}`, { scroll: false });
-	}, [roundId, page, perPage, search]);
+	}, [roundId, page, perPage, search, groupId]);
 
 	return (
 		<>

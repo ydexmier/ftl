@@ -35,6 +35,8 @@ export default function Tournament({ id }: TournamentProps) {
 	const [activeTab, setActiveTab] = useState<TournamentTab>('scouting');
 	const [groupRole, setGroupRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
 	const [appRole, setAppRole] = useState<string>('USER');
+	const [hasPendingMerge, setHasPendingMerge] = useState(false);
+	const [merging, setMerging] = useState(false);
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
 	const { lastFetchedAt } = (tournament as (TournamentType & { lastFetchedAt?: string }) | null) ?? {};
@@ -61,6 +63,25 @@ export default function Tournament({ id }: TournamentProps) {
 			})
 			.catch(() => {});
 	}, [groupId]);
+
+	useEffect(() => {
+		if (!groupId) return;
+		fetch(`/api/groups/${groupId}/tournaments/${id}/merge-status`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => { if (data) setHasPendingMerge(data.hasPendingPersonalData); })
+			.catch(() => {});
+	}, [groupId, id]);
+
+	const handleMerge = async () => {
+		if (!groupId) return;
+		setMerging(true);
+		try {
+			const res = await fetch(`/api/groups/${groupId}/tournaments/${id}/merge`, { method: 'POST' });
+			if (res.ok) setHasPendingMerge(false);
+		} finally {
+			setMerging(false);
+		}
+	};
 
 	const handleConflictResolved = (conflictId: string) => {
 		setConflicts((prev) => {
@@ -140,6 +161,20 @@ export default function Tournament({ id }: TournamentProps) {
 						<AlertTriangle className="h-4 w-4 shrink-0" />
 						{conflicts.length} conflit{conflicts.length > 1 ? 's' : ''} d&apos;encres en attente
 					</button>
+				)}
+
+				{hasPendingMerge && (
+					<div className="flex items-center gap-3 rounded-md border border-blue-700 bg-blue-900/20 px-3 py-2 text-sm text-blue-300">
+						<AlertTriangle className="h-4 w-4 shrink-0 text-blue-400" />
+						<span className="flex-1">Vous avez du scouting personnel à fusionner dans ce groupe.</span>
+						<button
+							onClick={handleMerge}
+							disabled={merging}
+							className="shrink-0 rounded-md border border-blue-600 bg-blue-800/40 px-2.5 py-1 text-xs font-medium text-blue-200 hover:bg-blue-700/40 disabled:opacity-50 transition-colors"
+						>
+							{merging ? 'Fusion…' : 'Fusionner mes données'}
+						</button>
+					</div>
 				)}
 
 				{showSidebar && (
