@@ -184,7 +184,7 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Link
-                        href={`/tournaments/${t.tournamentId}?groupId=${groupId}`}
+                        href={`/groups/${groupId}/tournaments/${t.tournamentId}`}
                         className="font-medium text-foreground hover:underline truncate"
                       >
                         {t.name}

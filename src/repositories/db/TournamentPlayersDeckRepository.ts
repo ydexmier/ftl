@@ -198,6 +198,53 @@ export const TournamentPlayersDeckRepository = {
     if (ops.length > 0) await TournamentPlayersDeckModel.bulkWrite(ops);
   },
 
+  async getScoutingStats(tournamentId: number, scope: DeckScope) {
+    await connectToMongoDB();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const pipeline: any[] = [
+      { $match: { tournamentId, ...scopeQueryForAgg(scope) } },
+      { $unwind: '$players' },
+      {
+        $facet: {
+          totals: [
+            {
+              $group: {
+                _id: null,
+                total: { $sum: 1 },
+                scouted: {
+                  $sum: { $cond: [{ $gt: [{ $size: '$players.decks' }, 0] }, 1, 0] },
+                },
+              },
+            },
+          ],
+          deckDistribution: [
+            { $match: { 'players.decks.0': { $exists: true } } },
+            { $unwind: '$players.decks' },
+            { $group: { _id: '$players.decks', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+            { $limit: 15 },
+          ],
+        },
+      },
+    ];
+
+    const [result] = await TournamentPlayersDeckModel.aggregate(pipeline);
+    const totals = (result?.totals as Array<{ total: number; scouted: number }>)?.[0] ?? { total: 0, scouted: 0 };
+    const distribution = (result?.deckDistribution as Array<{ _id: string[]; count: number }> ?? []).map((d) => ({
+      inks: d._id,
+      count: d.count,
+    }));
+
+    return {
+      total: totals.total,
+      scouted: totals.scouted,
+      unscouted: totals.total - totals.scouted,
+      coverage: totals.total > 0 ? Math.round((totals.scouted / totals.total) * 100) : 0,
+      deckDistribution: distribution,
+    };
+  },
+
   async assignDecks(
     tournamentId: number,
     assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
