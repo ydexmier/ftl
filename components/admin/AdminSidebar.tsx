@@ -1,50 +1,79 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Trophy, Shield, Users, Mail, MessageSquare, ClipboardList, Menu, X, LogOut, UsersRound } from 'lucide-react';
 import { cn } from '@components/ui/cn';
 
-const NAV = [
+interface BadgeCounts {
+	invitations: number;
+	accessRequests: number;
+	feedback: number;
+}
+
+type BadgeKey = keyof BadgeCounts;
+
+const NAV: { href: string; label: string; icon: React.ElementType; badgeKey?: BadgeKey }[] = [
 	{ href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
 	{ href: '/admin/tournaments', label: 'Tournois', icon: Trophy },
 	{ href: '/admin/users', label: 'Utilisateurs', icon: Users },
 	{ href: '/admin/groups', label: 'Groupes', icon: UsersRound },
-	{ href: '/admin/invitations', label: 'Invitations', icon: Mail },
-	{ href: '/admin/access-requests', label: 'Demandes d\'accès', icon: ClipboardList },
-	{ href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
+	{ href: '/admin/invitations', label: 'Invitations', icon: Mail, badgeKey: 'invitations' },
+	{ href: '/admin/access-requests', label: 'Demandes d\'accès', icon: ClipboardList, badgeKey: 'accessRequests' },
+	{ href: '/admin/feedback', label: 'Feedback', icon: MessageSquare, badgeKey: 'feedback' },
 	{ href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
 ];
 
-function NavItems({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+function NavBadge({ count, active }: { count: number; active: boolean }) {
+	if (count === 0) return null;
+	return (
+		<span className={cn(
+			'ml-auto rounded-full px-1.5 py-px text-[10px] font-bold min-w-[18px] text-center leading-4',
+			active
+				? 'bg-primary-foreground/20 text-primary-foreground'
+				: 'bg-destructive text-white',
+		)}>
+			{count > 99 ? '99+' : count}
+		</span>
+	);
+}
+
+function NavItems({ pathname, counts, onNavigate }: { pathname: string; counts: BadgeCounts; onNavigate?: () => void }) {
 	return (
 		<nav className="flex-1 flex flex-col gap-1 p-3">
-			{NAV.map(({ href, label, icon: Icon }) => (
-				<Link
-					key={href}
-					href={href}
-					onClick={onNavigate}
-					className={cn(
-						'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-						pathname === href
-							? 'bg-primary text-primary-foreground'
-							: 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-					)}
-				>
-					<Icon className="h-4 w-4 shrink-0" />
-					{label}
-				</Link>
-			))}
+			{NAV.map(({ href, label, icon: Icon, badgeKey }) => {
+				const active = pathname === href;
+				const count = badgeKey ? counts[badgeKey] : 0;
+				return (
+					<Link
+						key={href}
+						href={href}
+						onClick={onNavigate}
+						className={cn(
+							'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+							active
+								? 'bg-primary text-primary-foreground'
+								: 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+						)}
+					>
+						<Icon className="h-4 w-4 shrink-0" />
+						{label}
+						<NavBadge count={count} active={active} />
+					</Link>
+				);
+			})}
 		</nav>
 	);
 }
 
 function SidebarContent({
 	pathname,
+	counts,
 	onNavigate,
 	onLogout,
 }: {
 	pathname: string;
+	counts: BadgeCounts;
 	onNavigate?: () => void;
 	onLogout: () => void;
 }) {
@@ -53,7 +82,7 @@ function SidebarContent({
 			<div className="h-14 flex items-center px-5 border-b border-border shrink-0">
 				<span className="font-bold text-foreground tracking-tight">Companion Admin</span>
 			</div>
-			<NavItems pathname={pathname} onNavigate={onNavigate} />
+			<NavItems pathname={pathname} counts={counts} onNavigate={onNavigate} />
 			<div className="p-3 border-t border-border shrink-0">
 				<button
 					onClick={onLogout}
@@ -67,10 +96,20 @@ function SidebarContent({
 	);
 }
 
+const EMPTY_COUNTS: BadgeCounts = { invitations: 0, accessRequests: 0, feedback: 0 };
+
 export function AdminSidebar() {
 	const [mobileOpen, setMobileOpen] = useState(false);
+	const [counts, setCounts] = useState<BadgeCounts>(EMPTY_COUNTS);
 	const pathname = usePathname();
 	const router = useRouter();
+
+	useEffect(() => {
+		fetch('/api/admin/badge-counts')
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => { if (data) setCounts(data); })
+			.catch(() => {});
+	}, [pathname]);
 
 	const logout = async () => {
 		await fetch('/api/auth/logout', { method: 'POST' });
@@ -81,7 +120,7 @@ export function AdminSidebar() {
 		<>
 			{/* Desktop sidebar */}
 			<aside className="hidden lg:block fixed inset-y-0 left-0 w-60 z-30">
-				<SidebarContent pathname={pathname} onLogout={logout} />
+				<SidebarContent pathname={pathname} counts={counts} onLogout={logout} />
 			</aside>
 
 			{/* Mobile top bar */}
@@ -110,7 +149,7 @@ export function AdminSidebar() {
 								<X className="h-4 w-4" />
 							</button>
 						</div>
-						<SidebarContent pathname={pathname} onNavigate={() => setMobileOpen(false)} onLogout={logout} />
+						<SidebarContent pathname={pathname} counts={counts} onNavigate={() => setMobileOpen(false)} onLogout={logout} />
 					</aside>
 				</>
 			)}
