@@ -4,7 +4,7 @@ import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password'
 import { getAdminSession } from '@/src/lib/auth/getAdminSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { isValidEmail } from '@/src/lib/validation';
+import { validateAdminUserCreate } from '@/src/lib/validation';
 
 export async function GET(request: NextRequest) {
   const auth = await getAdminSession(request);
@@ -30,29 +30,22 @@ export async function POST(request: NextRequest) {
   const auth = await getAdminSession(request);
   if (!auth) return ApiResponse.unauthorized();
 
-  const { username, email, password, role = 'USER' } = await request.json();
+  const v = validateAdminUserCreate(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
+  const { username, email, password, role } = v.data;
 
-  const check = validatePasswordStrength(password ?? '');
+  const check = validatePasswordStrength(password);
   if (!check.valid) return ApiResponse.badRequest(check.message!);
 
-  if (!email || !isValidEmail(email)) {
-    return ApiResponse.badRequest('Email invalide');
-  }
-
-  if (await UserRepository.existsByUsername(username?.toLowerCase())) {
+  if (await UserRepository.existsByUsername(username)) {
     return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
   }
-  if (await UserRepository.existsByEmail(email?.toLowerCase())) {
+  if (await UserRepository.existsByEmail(email)) {
     return ApiResponse.conflict('Cet email est déjà utilisé');
   }
 
   const passwordHash = await hashPassword(password);
-  const user = await UserRepository.create({
-    username: username.toLowerCase(),
-    email: email.toLowerCase(),
-    passwordHash,
-    role,
-  });
+  const user = await UserRepository.create({ username, email, passwordHash, role });
 
   const adminUser = await UserRepository.findById(String(auth.session.userId));
   await AuditLogRepository.create({
