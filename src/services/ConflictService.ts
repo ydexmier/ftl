@@ -1,5 +1,6 @@
 import { TournamentConflictRepository } from '@/src/repositories/db/TournamentConflictRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import type { Deck } from '@/src/types/ink';
 
 export const ConflictService = {
@@ -45,6 +46,9 @@ export const ConflictService = {
     if (!conflict) throw new Error('NOT_FOUND');
     if (conflict.status !== 'PENDING_ADMIN') throw new Error('Ce conflit ne peut plus être modifié');
 
+    const groupId = String(conflict.groupId);
+    const userId = String(conflict.userId);
+
     if (decision === 'APPROVED') {
       await TournamentPlayersDeckRepository.assignDecks(
         conflict.tournamentId,
@@ -54,7 +58,26 @@ export const ConflictService = {
           eventBestIdentifier: '',
           decks: conflict.proposedInks as Deck[],
         }],
-        { groupId: String(conflict.groupId) },
+        { groupId },
+      );
+      // Inks du membre acceptés : supprimer les anciens commentaires groupe, migrer les commentaires perso
+      await PlayerCommentRepository.deleteForPlayerAndGroup(
+        conflict.tournamentId,
+        conflict.playerId,
+        groupId,
+      );
+      await PlayerCommentRepository.migrateToGroup(
+        conflict.tournamentId,
+        [conflict.playerId],
+        userId,
+        groupId,
+      );
+    } else {
+      // Inks du groupe maintenus : supprimer les commentaires perso du membre
+      await PlayerCommentRepository.deleteForPlayerAndUser(
+        conflict.tournamentId,
+        conflict.playerId,
+        userId,
       );
     }
 

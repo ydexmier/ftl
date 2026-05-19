@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 
 import { Button } from '@components/ui/Button';
@@ -25,6 +25,7 @@ interface MatchModalProps {
 
 const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: MatchModalProps) => {
 	const [state, dispatch] = useMatchState();
+	const [comments, setComments] = useState({ combination1: '', combination2: '' });
 
 	const getOtherPlayer = (playerId: number) => {
 		if (!match || match.player_match_relationships.length < 2) return null;
@@ -38,7 +39,11 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		if (other) dispatch({ type: 'ASSIGN_PLAYER', combo, playerId, otherPlayId: other.id });
 	};
 
-	const handleCancel = () => { dispatch({ type: 'RESET' }); onClose(); };
+	const handleCancel = () => {
+		dispatch({ type: 'RESET' });
+		setComments({ combination1: '', combination2: '' });
+		onClose();
+	};
 
 	const handleValidate = () => {
 		const { combination1, combination2 } = state;
@@ -49,19 +54,28 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 				...combination1,
 				decks: mergedDecks,
 				playerId: match!.player_match_relationships[0].player.id,
+				comment: comments.combination1.trim() || undefined,
 			};
 			if (match!.player_match_relationships.length > 1) {
 				dataToSend.combination2 = {
 					...combination2,
 					decks: mergedDecks,
 					playerId: match!.player_match_relationships[1].player.id,
+					comment: comments.combination2.trim() || undefined,
 				};
 			}
 		} else {
-			dataToSend.combination1 = combination1;
-			dataToSend.combination2 = combination2;
+			dataToSend.combination1 = {
+				...combination1,
+				comment: comments.combination1.trim() || undefined,
+			};
+			dataToSend.combination2 = {
+				...combination2,
+				comment: comments.combination2.trim() || undefined,
+			};
 		}
 		onValidate(dataToSend);
+		setComments({ combination1: '', combination2: '' });
 	};
 
 	const getPlayerNameById = (id: number | null) => {
@@ -111,6 +125,34 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		);
 	};
 
+	const renderCommentInput = (combo: 'combination1' | 'combination2') => {
+		const currentDecks = state[combo].decks.flat();
+		const placeholder = currentDecks.length > 0
+			? `Note sur ${currentDecks.join(' + ')}…`
+			: 'Note (optionnel)…';
+		const charCount = comments[combo].length;
+		return (
+			<div className="space-y-1">
+				<textarea
+					value={comments[combo]}
+					onChange={(e) => setComments((prev) => ({ ...prev, [combo]: e.target.value.slice(0, 500) }))}
+					placeholder={placeholder}
+					rows={2}
+					className={[
+						'w-full resize-none rounded-lg border bg-background px-3 py-2',
+						'text-sm text-foreground placeholder:text-muted-foreground',
+						'border-border focus:border-white/40 focus:outline-none transition-colors',
+					].join(' ')}
+				/>
+				{charCount > 0 && (
+					<p className={['text-xs text-right', charCount > 450 ? 'text-amber-400' : 'text-muted-foreground'].join(' ')}>
+						{charCount}/500
+					</p>
+				)}
+			</div>
+		);
+	};
+
 	useEffect(() => {
 		if (!combinationsInitial) {
 			if (match?.match_is_bye) {
@@ -135,7 +177,10 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 	}, [combinationsInitial, match]);
 
 	useEffect(() => {
-		if (!open) dispatch({ type: 'RESET' });
+		if (!open) {
+			dispatch({ type: 'RESET' });
+			setComments({ combination1: '', combination2: '' });
+		}
 	}, [open]);
 
 	if (!match || !open) return null;
@@ -177,6 +222,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 							</Button>
 						</div>
 					)}
+					{renderCommentInput('combination1')}
 				</div>
 
 				{/* Combinaison 2 */}
@@ -201,6 +247,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 									Assigner à {p2.player.best_identifier}
 								</Button>
 							</div>
+							{renderCommentInput('combination2')}
 						</div>
 						<hr className="border-border" />
 					</>

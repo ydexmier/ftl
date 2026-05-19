@@ -7,6 +7,7 @@ import MatchCard from '@components/match/MatchCard';
 import MatchModal from '@components/match/MatchModal';
 import RoundHeader from '@components/round/RoundHeader';
 import RoundSearch from '@components/round/RoundSearch';
+import { PlayerCommentHistory } from '@components/ui/PlayerCommentHistory';
 import { useRound } from '@/src/hooks/useRound';
 
 interface RoundProps {
@@ -15,12 +16,16 @@ interface RoundProps {
 	perPage?: string | number;
 	search?: string;
 	groupId?: string | null;
+	currentUserId?: string;
+	isGroupAdmin?: boolean;
 }
 
-const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch, groupId }: RoundProps) => {
+const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: initialSearch, groupId, currentUserId = '', isGroupAdmin = false }: RoundProps) => {
 	const [page, setPage] = useState(parseInt(String(initialPage), 10) || 1);
 	const [perPage, setPerPage] = useState(parseInt(String(initialPerPage), 10) || 10);
 	const [search, setSearch] = useState(String(initialSearch || ''));
+	const [commentTarget, setCommentTarget] = useState<{ playerId: number; playerName: string } | null>(null);
+	const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 	const router = useRouter();
 	const pathname = usePathname();
 	const { tournamentId } = useParams<{ tournamentId: string }>();
@@ -91,6 +96,20 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	), [pagination, page, perPage]);
 
 	useEffect(() => {
+		if (!matchs.length) return;
+		const playerIds = matchs
+			.flatMap((m) => m.player_match_relationships.map((p) => p.player.id))
+			.filter((id, i, arr) => arr.indexOf(id) === i);
+		const params = new URLSearchParams();
+		params.set('playerIds', playerIds.join(','));
+		if (groupId) params.set('groupId', groupId);
+		fetch(`/api/tournaments/${tournamentId}/comment-counts?${params}`)
+			.then((r) => (r.ok ? r.json() : { counts: {} }))
+			.then((d) => setCommentCounts(d.counts ?? {}))
+			.catch(() => {});
+	}, [matchs, tournamentId, groupId]);
+
+	useEffect(() => {
 		if (!roundId) return;
 		const query = {
 			tournamentId,
@@ -148,6 +167,9 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 										match.player_match_relationships.find((p) => p.player_order === 2)!.player.id,
 									)
 								}
+								onCommentClick={(playerId, playerName) => setCommentTarget({ playerId, playerName })}
+								player1CommentCount={commentCounts[match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss)?.player.id ?? 0] ?? 0}
+								player2CommentCount={!match.match_is_bye && !match.match_is_loss ? (commentCounts[match.player_match_relationships.find((p) => p.player_order === 2)?.player.id ?? 0] ?? 0) : 0}
 							/>
 						))}
 					</div>
@@ -161,6 +183,21 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 				combinationsInitial={matchToShow && getMatchPlayerInks(matchToShow)}
 				onValidate={onValidateAssignDeck as (data: unknown) => Promise<void>}
 				onClose={closeMatchModal}
+			/>
+
+			<PlayerCommentHistory
+				open={!!commentTarget}
+				onClose={() => setCommentTarget(null)}
+				tournamentId={Number(tournamentId)}
+				playerId={commentTarget?.playerId ?? 0}
+				playerName={commentTarget?.playerName ?? ''}
+				groupId={groupId}
+				currentUserId={currentUserId}
+				isGroupAdmin={isGroupAdmin}
+				onCommentAdded={() => {
+					if (!commentTarget) return;
+					setCommentCounts((prev) => ({ ...prev, [commentTarget.playerId]: (prev[commentTarget.playerId] ?? 0) + 1 }));
+				}}
 			/>
 		</>
 	);
