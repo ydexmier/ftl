@@ -78,3 +78,94 @@ export function validateFeedbackBody(body: unknown): ValidationResult<{
   if (!b?.page || typeof b.page !== 'string') return err('Page manquante');
   return ok({ type: b.type as FeedbackType, title, description, page: b.page });
 }
+
+// ─── Admin schemas ────────────────────────────────────────────────────────────
+
+const USER_ROLES = ['USER', 'ADMIN', 'SUPERUSER'] as const;
+type UserRole = (typeof USER_ROLES)[number];
+
+const FEEDBACK_STATUSES = ['open', 'in-progress', 'done', 'closed'] as const;
+type FeedbackStatus = (typeof FEEDBACK_STATUSES)[number];
+
+export function validateAdminUserCreate(body: unknown): ValidationResult<{
+  username: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}> {
+  const b = body as Record<string, unknown>;
+  if (!b?.username || typeof b.username !== 'string' || !b.username.trim())
+    return err('Le pseudo est requis');
+  const username = b.username.trim();
+  if (username.length > 30) return err('Le pseudo ne peut pas dépasser 30 caractères');
+  if (!b?.email || typeof b.email !== 'string') return err('Email invalide');
+  const email = b.email.trim().toLowerCase();
+  if (!isValidEmail(email)) return err('Email invalide');
+  if (!b?.password || typeof b.password !== 'string') return err('Le mot de passe est requis');
+  const role: UserRole = USER_ROLES.includes(b.role as UserRole) ? (b.role as UserRole) : 'USER';
+  return ok({ username: username.toLowerCase(), email, password: b.password, role });
+}
+
+export function validateAdminUserUpdate(body: unknown): ValidationResult<{
+  username?: string;
+  email?: string;
+  role?: UserRole;
+  password?: string;
+}> {
+  const b = body as Record<string, unknown>;
+  const data: { username?: string; email?: string; role?: UserRole; password?: string } = {};
+  if (b.username !== undefined) {
+    if (typeof b.username !== 'string' || !b.username.trim()) return err('Le pseudo est invalide');
+    if (b.username.trim().length > 30) return err('Le pseudo ne peut pas dépasser 30 caractères');
+    data.username = b.username.trim().toLowerCase();
+  }
+  if (b.email !== undefined) {
+    if (typeof b.email !== 'string') return err('Email invalide');
+    const email = b.email.trim().toLowerCase();
+    if (!isValidEmail(email)) return err('Email invalide');
+    data.email = email;
+  }
+  if (b.role !== undefined) {
+    if (!USER_ROLES.includes(b.role as UserRole)) return err('Rôle invalide');
+    data.role = b.role as UserRole;
+  }
+  if (b.password !== undefined) {
+    if (typeof b.password !== 'string') return err('Mot de passe invalide');
+    data.password = b.password;
+  }
+  if (Object.keys(data).length === 0) return err('Aucun champ à mettre à jour');
+  return ok(data);
+}
+
+export function validateAdminGroupBody(body: unknown): ValidationResult<{
+  name: string;
+  description: string;
+}> {
+  const b = body as Record<string, unknown>;
+  if (!b?.name || typeof b.name !== 'string' || !b.name.trim()) return err('Le nom du groupe est requis');
+  const name = b.name.trim();
+  if (name.length > 100) return err('Le nom ne peut pas dépasser 100 caractères');
+  const description = typeof b.description === 'string' ? b.description.trim() : '';
+  if (description.length > 500) return err('La description ne peut pas dépasser 500 caractères');
+  return ok({ name, description });
+}
+
+export function validateAdminFeedbackStatus(body: unknown): ValidationResult<{ status: FeedbackStatus }> {
+  const b = body as Record<string, unknown>;
+  if (!FEEDBACK_STATUSES.includes(b?.status as FeedbackStatus))
+    return err('Statut invalide');
+  return ok({ status: b.status as FeedbackStatus });
+}
+
+export function validateAdminInvitationEmails(body: unknown): ValidationResult<{
+  emails: string[];
+  groupIds: string[];
+}> {
+  const b = body as Record<string, unknown>;
+  if (!Array.isArray(b?.emails) || b.emails.length === 0) return err('Au moins un email est requis');
+  if (b.emails.length > 100) return err('Maximum 100 emails par envoi');
+  const groupIds = Array.isArray(b.groupIds)
+    ? b.groupIds.filter((id): id is string => typeof id === 'string')
+    : [];
+  return ok({ emails: b.emails as string[], groupIds });
+}

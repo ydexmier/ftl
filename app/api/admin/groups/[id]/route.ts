@@ -3,6 +3,7 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { GroupService } from '@/src/services/GroupService';
 import { hasRole } from '@/src/lib/auth/rbac';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { validateAdminGroupBody } from '@/src/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -32,10 +33,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const { auth, error } = await getAdminAuth(request);
   if (!auth) return error!;
 
+  const v = validateAdminGroupBody(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
+
   try {
     const { id } = await params;
-    const body = await request.json();
-    const updated = await GroupService.updateGroup(id, auth.userId, body);
+    const updated = await GroupService.updateGroup(id, auth.userId, v.data);
     return ApiResponse.ok(updated);
   } catch (err) {
     const msg = (err as Error).message;
