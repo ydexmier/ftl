@@ -4,6 +4,7 @@ import { validateRegisterBody } from '@/src/lib/validation';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { InvitationService } from '@/src/services/InvitationService';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
 
 export async function GET(
   _request: NextRequest,
@@ -32,6 +33,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = checkRateLimit(`register-invite:${ip}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans 15 minutes.');
+
   const { token } = await params;
   const v = validateRegisterBody(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);

@@ -4,8 +4,16 @@ import { PasswordResetRepository } from '@/src/repositories/db/PasswordResetRepo
 import { sendPasswordResetEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateForgotPasswordBody } from '@/src/lib/validation';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
+
+function getIp(req: NextRequest) {
+  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+}
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit(`forgot-password:${getIp(request)}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans 15 minutes.');
+
   const body = await request.json();
   const v = validateForgotPasswordBody(body);
   if (!v.ok) return ApiResponse.badRequest(v.error);

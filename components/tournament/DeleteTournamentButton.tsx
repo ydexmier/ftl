@@ -23,7 +23,13 @@ const DeleteTournamentButton = ({ tournamentId, onDeleted }: DeleteTournamentBut
 				body: JSON.stringify({ id: tournamentId }),
 			});
 			setConfirmOpen(false);
-			onDeleted?.((response as any).data);
+			if (response.ok) {
+				const json = await response.json();
+				onDeleted?.(json);
+			} else {
+				const err = await response.json().catch(() => ({}));
+				setErrorMessage(err.error ?? 'Erreur lors de la suppression');
+			}
 		} catch (err) {
 			setErrorMessage(err instanceof Error ? err.message : 'Erreur inconnue');
 		} finally {
