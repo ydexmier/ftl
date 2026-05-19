@@ -8,31 +8,18 @@ import { FeedbackWidget } from './FeedbackWidget';
 
 interface BadgeCounts {
   groupInvitations: number;
-  groupAdminInvitations: number;
-  newGroupTournaments: number;
 }
 
-const EMPTY_COUNTS: BadgeCounts = {
-  groupInvitations: 0,
-  groupAdminInvitations: 0,
-  newGroupTournaments: 0,
-};
+const EMPTY_COUNTS: BadgeCounts = { groupInvitations: 0 };
 
 function groupsBadgeCount(counts: BadgeCounts): number {
-  return counts.groupInvitations + counts.groupAdminInvitations + counts.newGroupTournaments;
+  return counts.groupInvitations;
 }
 
-function NavBadge({ count, active }: { count: number; active: boolean }) {
+function NavBadge({ count }: { count: number }) {
   if (count === 0) return null;
   return (
-    <span
-      className={cn(
-        'ml-1.5 rounded-full px-1.5 py-px text-[10px] font-bold min-w-[18px] text-center leading-4',
-        active
-          ? 'bg-primary-foreground/20 text-primary-foreground'
-          : 'bg-destructive text-white',
-      )}
-    >
+    <span className="ml-1.5 rounded-full px-1.5 py-px text-[10px] font-bold min-w-[18px] text-center leading-4 bg-destructive text-white">
       {count > 99 ? '99+' : count}
     </span>
   );
@@ -104,7 +91,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               )}
             >
               Groupes
-              <NavBadge count={groupsCount} active={pathname === '/groups'} />
+              <NavBadge count={groupsCount} />
             </Link>
           </nav>
 
@@ -176,7 +163,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
               >
                 Groupes
-                <NavBadge count={groupsCount} active={pathname === '/groups'} />
+                <NavBadge count={groupsCount} />
               </Link>
               <button
                 onClick={() => { setMobileMenuOpen(false); logout(); }}
