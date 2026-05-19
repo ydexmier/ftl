@@ -1,10 +1,20 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { NextRequest } from 'next/server';
 import { GET as validateToken, POST as register } from '../../app/api/invitations/[token]/route';
 import InvitationModel from '@models/Invitation';
 import UserModel from '@models/User';
 import GroupModel from '@models/Group';
 import { createTestUser, createAdminUser, makeRequest } from '../test/helpers';
 import { sendWelcomeEmail } from '@/src/lib/email';
+import { resetRateLimit } from '@/src/lib/auth/rateLimit';
+
+function makeRegisterRequest(token: string, body: unknown, ip: string) {
+  return new NextRequest(`http://localhost:3000/api/invitations/${token}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+    body: JSON.stringify(body),
+  });
+}
 
 async function createInvitation(overrides: Partial<{
   email: string;
@@ -56,6 +66,10 @@ describe('GET /api/invitations/[token]', () => {
 });
 
 describe('POST /api/invitations/[token]', () => {
+  beforeEach(() => {
+    resetRateLimit('register-invite:unknown');
+  });
+
   it('crée un compte et marque le token comme utilisé', async () => {
     const inv = await createInvitation();
     const req = makeRequest('POST', `/api/invitations/${inv.token}`, {
@@ -128,6 +142,19 @@ describe('POST /api/invitations/[token]', () => {
     });
     const res = await register(req, { params: Promise.resolve({ token: inv.token }) });
     expect(res.status).toBe(400);
+  });
+
+  it('retourne 429 après trop de tentatives depuis la même IP', async () => {
+    const ip = 'ip-register-rate-limit';
+    const token = crypto.randomUUID();
+    let lastStatus = 404;
+    for (let i = 0; i < 10; i++) {
+      const req = makeRegisterRequest(token, { username: `user${i}`, password: 'StrongPass1!' }, ip);
+      const res = await register(req, { params: Promise.resolve({ token }) });
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
   });
 
   it('ne peut pas utiliser le même token deux fois', async () => {
