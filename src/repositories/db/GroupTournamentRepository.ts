@@ -44,6 +44,15 @@ export const GroupTournamentRepository = {
     return (await GroupTournamentModel.exists({ groupId, tournamentId })) !== null;
   },
 
+  async countRecentByGroupIds(groupIds: string[], since: Date): Promise<number> {
+    await connectToMongoDB();
+    return GroupTournamentModel.countDocuments({
+      groupId: { $in: groupIds },
+      status: 'ACTIVE',
+      createdAt: { $gt: since },
+    });
+  },
+
   async deleteByGroupId(groupId: string) {
     await connectToMongoDB();
     return GroupTournamentModel.deleteMany({ groupId });
