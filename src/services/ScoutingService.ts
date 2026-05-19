@@ -1,6 +1,7 @@
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentPlayersDeckRepository, type DeckScope } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
+import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
 
 export type { PlayerDecksEntry, PlayersDecksMap, DeckAssignment } from '@/src/domain/rules/scoutingRules';
@@ -47,6 +48,24 @@ export const ScoutingService = {
 			}));
 
 		await ScoutingReportRepository.createMany(reportsToLog);
+
+		const commentsToCreate = assignments.filter(
+			(a) => a.decks && a.decks.length > 0 && a.comment?.trim(),
+		);
+		if (commentsToCreate.length > 0) {
+			await Promise.all(
+				commentsToCreate.map((a) =>
+					PlayerCommentRepository.create({
+						tournamentId: round.tournamentId,
+						playerId: a.playerId,
+						authorId: reporterUserId,
+						groupId: scope.groupId ?? null,
+						inks: a.decks[0] ?? [],
+						content: a.comment!.trim(),
+					}),
+				),
+			);
+		}
 
 		return { matchs: round.results, playersDecks: { players: playersModified } };
 	},

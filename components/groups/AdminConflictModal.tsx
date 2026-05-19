@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { X, AlertTriangle, Check, Ban } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, AlertTriangle, Check, Ban, MessageSquare } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import Ink from '@components/ui/Ink';
 
@@ -12,6 +12,19 @@ interface AdminConflict {
   previousInks: string[][];
   proposedInks: string[][];
   userId: { _id: string; username: string } | string;
+}
+
+interface Comment {
+  _id: string;
+  content: string;
+  inks: string[];
+  authorId: { _id: string; username: string } | string;
+  createdAt: string;
+}
+
+interface ConflictComments {
+  groupComments: Comment[];
+  memberComments: Comment[];
 }
 
 interface Props {
@@ -27,6 +40,16 @@ function username(userId: AdminConflict['userId']): string {
   return String(userId);
 }
 
+function userId(u: AdminConflict['userId']): string {
+  if (typeof u === 'object' && '_id' in u) return u._id;
+  return String(u);
+}
+
+function authorName(authorId: Comment['authorId']): string {
+  if (typeof authorId === 'object' && 'username' in authorId) return authorId.username;
+  return 'Inconnu';
+}
+
 function InkDeck({ decks }: { decks: string[][] }) {
   if (decks.length === 0) return <span className="text-muted-foreground text-xs italic">Aucune encre</span>;
   return (
@@ -38,9 +61,50 @@ function InkDeck({ decks }: { decks: string[][] }) {
   );
 }
 
+function CommentList({ comments, label }: { comments: Comment[]; label: string }) {
+  if (comments.length === 0) return null;
+  return (
+    <div className="space-y-1.5">
+      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+        <MessageSquare className="h-3 w-3" /> {label}
+      </p>
+      {comments.map((c) => (
+        <div key={c._id} className="rounded-lg bg-muted/20 border border-border px-3 py-2">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-foreground">{authorName(c.authorId)}</span>
+            {c.inks.length > 0 && <Ink type={c.inks} width={16} />}
+          </div>
+          <p className="text-xs text-foreground/80">{c.content}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AdminConflictModal({ groupId, tournamentName, conflicts, onConflictResolved, onClose }: Props) {
   const [loading, setLoading] = useState<Record<string, 'APPROVED' | 'REJECTED' | null>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [conflictComments, setConflictComments] = useState<Record<string, ConflictComments>>({});
+
+  useEffect(() => {
+    conflicts.forEach((conflict) => {
+      if (conflictComments[conflict._id]) return;
+      const uid = userId(conflict.userId);
+      fetch(`/api/tournaments/${conflict.tournamentId}/players/${conflict.playerId}/comments?groupId=${groupId}&userId=${uid}`)
+        .then((r) => (r.ok ? r.json() : { comments: { groupComments: [], memberComments: [] } }))
+        .then((d) => {
+          const data = d.comments;
+          setConflictComments((prev) => ({
+            ...prev,
+            [conflict._id]: {
+              groupComments: Array.isArray(data) ? [] : (data.groupComments ?? []),
+              memberComments: Array.isArray(data) ? [] : (data.memberComments ?? []),
+            },
+          }));
+        })
+        .catch(() => {});
+    });
+  }, [conflicts, groupId]);
 
   const resolve = async (conflictId: string, decision: 'APPROVED' | 'REJECTED') => {
     setLoading((prev) => ({ ...prev, [conflictId]: decision }));
@@ -84,57 +148,66 @@ export function AdminConflictModal({ groupId, tournamentName, conflicts, onConfl
             rejetez pour conserver les encres actuelles.
           </p>
 
-          {conflicts.map((conflict) => (
-            <div key={conflict._id} className="border border-border rounded-lg p-4 space-y-3">
-              <div>
-                <p className="font-medium text-foreground text-sm">{conflict.playerName}</p>
-                <p className="text-xs text-muted-foreground">Proposé par {username(conflict.userId)}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Encres actuelles du groupe
-                  </p>
-                  <InkDeck decks={conflict.previousInks} />
+          {conflicts.map((conflict) => {
+            const comments = conflictComments[conflict._id];
+            return (
+              <div key={conflict._id} className="border border-border rounded-lg p-4 space-y-3">
+                <div>
+                  <p className="font-medium text-foreground text-sm">{conflict.playerName}</p>
+                  <p className="text-xs text-muted-foreground">Proposé par {username(conflict.userId)}</p>
                 </div>
-                <div className="space-y-1.5">
-                  <p className="text-xs font-medium text-yellow-400 uppercase tracking-wide">
-                    Version proposée
-                  </p>
-                  <InkDeck decks={conflict.proposedInks} />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Encres actuelles du groupe
+                    </p>
+                    <InkDeck decks={conflict.previousInks} />
+                    {comments && (
+                      <CommentList comments={comments.groupComments} label="Notes du groupe" />
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-yellow-400 uppercase tracking-wide">
+                      Version proposée
+                    </p>
+                    <InkDeck decks={conflict.proposedInks} />
+                    {comments && (
+                      <CommentList comments={comments.memberComments} label={`Notes de ${username(conflict.userId)}`} />
+                    )}
+                  </div>
+                </div>
+
+                {errors[conflict._id] && (
+                  <p className="text-xs text-destructive">{errors[conflict._id]}</p>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="success"
+                    loading={loading[conflict._id] === 'APPROVED'}
+                    disabled={!!loading[conflict._id]}
+                    onClick={() => resolve(conflict._id, 'APPROVED')}
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Approuver
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    loading={loading[conflict._id] === 'REJECTED'}
+                    disabled={!!loading[conflict._id]}
+                    onClick={() => resolve(conflict._id, 'REJECTED')}
+                    className="hover:text-destructive hover:border-destructive"
+                  >
+                    <Ban className="h-3.5 w-3.5" />
+                    Rejeter
+                  </Button>
                 </div>
               </div>
-
-              {errors[conflict._id] && (
-                <p className="text-xs text-destructive">{errors[conflict._id]}</p>
-              )}
-
-              <div className="flex gap-2 pt-1">
-                <Button
-                  size="sm"
-                  variant="success"
-                  loading={loading[conflict._id] === 'APPROVED'}
-                  disabled={!!loading[conflict._id]}
-                  onClick={() => resolve(conflict._id, 'APPROVED')}
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  Approuver
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  loading={loading[conflict._id] === 'REJECTED'}
-                  disabled={!!loading[conflict._id]}
-                  onClick={() => resolve(conflict._id, 'REJECTED')}
-                  className="hover:text-destructive hover:border-destructive"
-                >
-                  <Ban className="h-3.5 w-3.5" />
-                  Rejeter
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="border-t border-border p-4 flex justify-end shrink-0">

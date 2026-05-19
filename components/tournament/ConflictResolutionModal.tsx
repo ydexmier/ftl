@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { X, AlertTriangle, HelpCircle, Send } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, AlertTriangle, HelpCircle, Send, MessageSquare } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import Ink from '@components/ui/Ink';
 
@@ -36,9 +36,31 @@ function InkDeck({ decks }: { decks: string[][] }) {
   );
 }
 
+interface GroupComment {
+  _id: string;
+  content: string;
+  inks: string[];
+  authorId: { _id: string; username: string } | string;
+}
+
 export function ConflictResolutionModal({ tournamentId, conflicts, onConflictResolved, onClose }: Props) {
   const [loading, setLoading] = useState<Record<string, 'PENDING_ADMIN' | 'UNCERTAINTY' | null>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [groupComments, setGroupComments] = useState<Record<string, GroupComment[]>>({});
+
+  useEffect(() => {
+    conflicts.forEach((conflict) => {
+      if (groupComments[conflict._id] !== undefined) return;
+      const gid = typeof conflict.groupId === 'object' ? conflict.groupId._id : String(conflict.groupId);
+      fetch(`/api/tournaments/${tournamentId}/players/${conflict.playerId}/comments?groupId=${gid}`)
+        .then((r) => (r.ok ? r.json() : { comments: [] }))
+        .then((d) => {
+          const list = Array.isArray(d.comments) ? d.comments : [];
+          setGroupComments((prev) => ({ ...prev, [conflict._id]: list }));
+        })
+        .catch(() => setGroupComments((prev) => ({ ...prev, [conflict._id]: [] })));
+    });
+  }, [conflicts, tournamentId]);
 
   const resolve = async (conflictId: string, status: 'PENDING_ADMIN' | 'UNCERTAINTY') => {
     setLoading((prev) => ({ ...prev, [conflictId]: status }));
@@ -94,11 +116,23 @@ export function ConflictResolutionModal({ tournamentId, conflicts, onConflictRes
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     Version du groupe
                   </p>
                   <InkDeck decks={conflict.previousInks} />
+                  {(groupComments[conflict._id] ?? []).length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" /> Notes du groupe
+                      </p>
+                      {(groupComments[conflict._id] ?? []).map((c) => (
+                        <div key={c._id} className="rounded-lg bg-muted/20 border border-border px-3 py-2">
+                          <p className="text-xs text-foreground/80">{c.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1.5">
                   <p className="text-xs font-medium text-yellow-400 uppercase tracking-wide">

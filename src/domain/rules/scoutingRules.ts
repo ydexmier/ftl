@@ -3,6 +3,7 @@ import type { Deck } from '@/src/types/ink';
 export interface DeckAssignment {
 	playerId: number;
 	decks: Deck[];
+	comment?: string;
 }
 
 export interface PlayerDecksEntry {

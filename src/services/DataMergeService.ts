@@ -1,6 +1,7 @@
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { TournamentConflictRepository } from '@/src/repositories/db/TournamentConflictRepository';
 import { UserTournamentRepository } from '@/src/repositories/db/UserTournamentRepository';
+import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import type { ConflictInput } from '@/src/repositories/db/TournamentConflictRepository';
 import type { Deck } from '@/src/types/ink';
 
@@ -77,6 +78,15 @@ async function mergeUserDataIntoGroup(userId: string, groupId: string, tournamen
       ? TournamentConflictRepository.createMany(conflictInputs)
       : Promise.resolve([]),
   ]);
+
+  if (toAssign.length > 0) {
+    await PlayerCommentRepository.migrateToGroup(
+      tournamentId,
+      toAssign.map((p) => p.playerId),
+      userId,
+      groupId,
+    );
+  }
 
   return (createdConflicts ?? []).map((c) => ({
     _id: String(c._id),

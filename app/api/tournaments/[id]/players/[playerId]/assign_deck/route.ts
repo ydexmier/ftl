@@ -5,6 +5,7 @@ import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
+import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import type { Deck } from '@/src/types/ink';
 
 export async function POST(
@@ -20,7 +21,7 @@ export async function POST(
   if (isNaN(tournamentId) || isNaN(playerId)) return ApiResponse.badRequest('Paramètres invalides');
 
   const body = await req.json();
-  const { decks, groupId } = body as { decks: Deck[]; groupId?: string };
+  const { decks, groupId, comment } = body as { decks: Deck[]; groupId?: string; comment?: string };
 
   let scope: { groupId?: string | null; userId?: string | null };
   if (groupId) {
@@ -59,6 +60,18 @@ export async function POST(
           playerId,
         },
       ]);
+
+      const trimmedComment = comment?.trim();
+      if (trimmedComment) {
+        await PlayerCommentRepository.create({
+          tournamentId,
+          playerId,
+          authorId: auth.userId,
+          groupId: scope.groupId ?? null,
+          inks: decks[0] ?? [],
+          content: trimmedComment,
+        });
+      }
     }
 
     return ApiResponse.ok({ players: modified });

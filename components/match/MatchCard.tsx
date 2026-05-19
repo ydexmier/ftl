@@ -1,5 +1,6 @@
 import { Badge } from '@components/ui/Badge';
 import Ink from '@components/ui/Ink';
+import { MessageSquare } from 'lucide-react';
 import { getStatusFromMatch, showScoreFromMatch } from '@/src/domain/rules/matchRules';
 import type { Match, MatchStatusResult } from '@/src/types/match';
 
@@ -12,6 +13,9 @@ interface MatchCardProps {
 	player2Deck?: InkCombination | false;
 	onClick?: () => void;
 	className?: string;
+	onCommentClick?: (playerId: number, playerName: string) => void;
+	player1CommentCount?: number;
+	player2CommentCount?: number;
 }
 
 const DeckDisplay = ({ playerId, decks }: { playerId: number; decks: InkCombination }) => (
@@ -28,7 +32,7 @@ const DeckDisplay = ({ playerId, decks }: { playerId: number; decks: InkCombinat
 	</div>
 );
 
-const MatchCard = ({ match, player1Deck, player2Deck, onClick, className }: MatchCardProps) => {
+const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onCommentClick, player1CommentCount = 0, player2CommentCount = 0 }: MatchCardProps) => {
 	const status: MatchStatusResult = getStatusFromMatch(match);
 	const player1 = match.player_match_relationships.find(
 		(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
@@ -64,6 +68,17 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className }: Matc
 				{player1Deck && (
 					<DeckDisplay playerId={player1?.player.id ?? 0} decks={player1Deck} />
 				)}
+				{onCommentClick && player1 && (
+					<button
+						type="button"
+						onClick={(e) => { e.stopPropagation(); onCommentClick(player1.player.id, player1.player.best_identifier); }}
+						className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors self-center"
+						aria-label="Voir les commentaires"
+					>
+						<MessageSquare className="h-3.5 w-3.5" />
+						<span>{player1CommentCount > 0 ? player1CommentCount : 'Notes'}</span>
+					</button>
+				)}
 			</div>
 
 			{/* Score / BYE */}
@@ -86,6 +101,17 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className }: Matc
 					</div>
 					{player2Deck && (
 						<DeckDisplay playerId={player2.player.id} decks={player2Deck as InkCombination} />
+					)}
+					{onCommentClick && (
+						<button
+							type="button"
+							onClick={(e) => { e.stopPropagation(); onCommentClick(player2.player.id, player2.player.best_identifier); }}
+							className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors self-center"
+							aria-label="Voir les commentaires"
+						>
+							<MessageSquare className="h-3.5 w-3.5" />
+							<span>{player2CommentCount > 0 ? player2CommentCount : 'Notes'}</span>
+						</button>
 					)}
 				</div>
 			)}
