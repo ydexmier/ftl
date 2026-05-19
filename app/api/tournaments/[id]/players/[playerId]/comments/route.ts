@@ -50,7 +50,7 @@ export async function GET(req: NextRequest, { params }: Params) {
       ]);
       // Filter member comments to only this user's
       const filtered = memberComments.filter((c) => {
-        const id = typeof c.authorId === 'object' ? String((c.authorId as { _id: string })._id) : String(c.authorId);
+        const id = typeof c.authorId === 'object' ? String((c.authorId as unknown as { _id: string })._id) : String(c.authorId);
         return id === targetUserId;
       });
       comments = { groupComments, memberComments: filtered };
