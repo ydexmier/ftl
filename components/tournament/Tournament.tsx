@@ -79,6 +79,14 @@ export default function Tournament({ id }: TournamentProps) {
 	useEffect(() => { fetchUserConflicts(); }, [fetchUserConflicts]);
 
 	useEffect(() => {
+		if (roundId || !tournament) return;
+		fetch(`/api/tournaments/${id}/last-round`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => { if (data?.roundId) setRoundId(String(data.roundId)); })
+			.catch(() => {});
+	}, [tournament, id, roundId]);
+
+	useEffect(() => {
 		fetch('/api/auth/me')
 			.then((res) => (res.ok ? res.json() : null))
 			.then((data) => { if (data?.id) setCurrentUserId(data.id); })
