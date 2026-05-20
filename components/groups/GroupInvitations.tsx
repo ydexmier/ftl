@@ -42,6 +42,9 @@ export function GroupInvitations({ invitations, onDone }: Props) {
       <div className="flex items-center gap-2 text-sm font-medium text-foreground">
         <Bell className="h-4 w-4 text-primary" />
         Invitations en attente
+        <span className="rounded-full px-1.5 py-px text-[10px] font-bold min-w-[18px] text-center leading-4 bg-destructive text-white">
+          {pending.length > 99 ? '99+' : pending.length}
+        </span>
       </div>
       <div className="space-y-2">
         {pending.map((inv) => (

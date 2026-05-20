@@ -5,6 +5,7 @@ import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateResetPasswordBody } from '@/src/lib/validation';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
 
 export async function GET(
   _request: NextRequest,
@@ -23,6 +24,10 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  const rl = checkRateLimit(`reset-password:${ip}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans 15 minutes.');
+
   const { token } = await params;
   const v = validateResetPasswordBody(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);

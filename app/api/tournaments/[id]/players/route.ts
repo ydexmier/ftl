@@ -4,6 +4,7 @@ import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
+import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthSession(req);
@@ -47,10 +48,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     });
 
     const totalPages = Math.max(1, Math.ceil(result.total / perPage));
+    const playerIds = result.players.map((p) => p.playerId);
+    const commentCounts = playerIds.length > 0
+      ? await PlayerCommentRepository.countByPlayers(tournamentId, playerIds, scope)
+      : {};
 
     return ApiResponse.ok({
       players: result.players,
       pagination: { page, perPage, total: result.total, totalPages },
+      commentCounts,
     });
   } catch (err) {
     return ApiResponse.serverError(err);

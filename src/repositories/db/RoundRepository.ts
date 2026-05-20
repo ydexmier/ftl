@@ -153,6 +153,17 @@ export const RoundRepository = {
 		return null;
 	},
 
+	async findLastFetchedIdByTournament(tournamentId: number): Promise<number | null> {
+		await connectToMongoDB();
+		const round = await RoundModel.findOne(
+			{ tournamentId, lastFetchedAt: { $ne: null } },
+			{ id: 1 },
+		)
+			.sort({ lastFetchedAt: -1 })
+			.lean();
+		return round ? (round as { id: number }).id : null;
+	},
+
 	async mergeAndSave(id: number, tournamentId: number, newData: Record<string, unknown>) {
 		await connectToMongoDB();
 		const existing = await RoundModel.findOne({ id });

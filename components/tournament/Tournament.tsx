@@ -54,6 +54,7 @@ export default function Tournament({ id }: TournamentProps) {
 	const [conflicts, setConflicts] = useState<ConflictGroup[]>([]);
 	const [showConflictModal, setShowConflictModal] = useState(false);
 	const [activeTab, setActiveTab] = useState<TournamentTab>('scouting');
+	const [currentUserId, setCurrentUserId] = useState<string>('');
 	const [groupRole, setGroupRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
 	const [appRole, setAppRole] = useState<string>('USER');
 	const [hasPendingMerge, setHasPendingMerge] = useState(false);
@@ -76,6 +77,21 @@ export default function Tournament({ id }: TournamentProps) {
 	}, [id]);
 
 	useEffect(() => { fetchUserConflicts(); }, [fetchUserConflicts]);
+
+	useEffect(() => {
+		if (roundId || !tournament) return;
+		fetch(`/api/tournaments/${id}/last-round`)
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => { if (data?.roundId) setRoundId(String(data.roundId)); })
+			.catch(() => {});
+	}, [tournament, id, roundId]);
+
+	useEffect(() => {
+		fetch('/api/auth/me')
+			.then((res) => (res.ok ? res.json() : null))
+			.then((data) => { if (data?.id) setCurrentUserId(data.id); })
+			.catch(() => {});
+	}, []);
 
 	useEffect(() => {
 		if (!groupId) return;
@@ -314,13 +330,20 @@ export default function Tournament({ id }: TournamentProps) {
 								perPage={queryPerPage}
 								search={querySearch}
 								groupId={groupId}
+								currentUserId={currentUserId}
+								isGroupAdmin={isGroupAdmin}
 							/>
 						)}
 					</>
 				)}
 
 				{activeTab === 'players' && (
-					<PlayersTab tournamentId={Number(id)} groupId={groupId} />
+					<PlayersTab
+						tournamentId={Number(id)}
+						groupId={groupId}
+						currentUserId={currentUserId}
+						isGroupAdmin={isGroupAdmin}
+					/>
 				)}
 
 				{activeTab === 'stats' && (

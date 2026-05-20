@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { NextRequest } from 'next/server';
 import { POST as forgotPassword } from '../../app/api/auth/forgot-password/route';
 import { GET as validateReset, POST as resetPassword } from '../../app/api/auth/reset-password/[token]/route';
 import PasswordResetModel from '@models/PasswordReset';
@@ -6,6 +7,22 @@ import UserModel from '@models/User';
 import { createTestUser, makeRequest, DEFAULT_PASSWORD } from '../test/helpers';
 import { sendPasswordResetEmail } from '@/src/lib/email';
 import { verifyPassword } from '@/src/lib/auth/password';
+
+function makeForgotRequest(body: unknown, ip: string) {
+  return new NextRequest('http://localhost:3000/api/auth/forgot-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+    body: JSON.stringify(body),
+  });
+}
+
+function makeResetRequest(token: string, body: unknown, ip: string) {
+  return new NextRequest(`http://localhost:3000/api/auth/reset-password/${token}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+    body: JSON.stringify(body),
+  });
+}
 
 describe('POST /api/auth/forgot-password', () => {
   it('répond ok même si l\'email est inconnu (pas d\'énumération)', async () => {
@@ -60,6 +77,18 @@ describe('POST /api/auth/forgot-password', () => {
     const req = makeRequest('POST', '/api/auth/forgot-password', {});
     const res = await forgotPassword(req);
     expect(res.status).toBe(400);
+  });
+
+  it('retourne 429 après trop de tentatives depuis la même IP', async () => {
+    const ip = 'ip-forgot-rate-limit';
+    let lastStatus = 200;
+    for (let i = 0; i < 10; i++) {
+      const req = makeForgotRequest({ email: 'anyone@example.com' }, ip);
+      const res = await forgotPassword(req);
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
   });
 });
 
@@ -168,5 +197,18 @@ describe('POST /api/auth/reset-password/[token]', () => {
     const unchanged = await UserModel.findById(user._id);
     const stillOld = await verifyPassword(unchanged!.passwordHash, DEFAULT_PASSWORD);
     expect(stillOld).toBe(true);
+  });
+
+  it('retourne 429 après trop de tentatives depuis la même IP', async () => {
+    const ip = 'ip-reset-rate-limit';
+    const token = crypto.randomUUID();
+    let lastStatus = 400;
+    for (let i = 0; i < 10; i++) {
+      const req = makeResetRequest(token, { password: 'NewPassword1!' }, ip);
+      const res = await resetPassword(req, { params: Promise.resolve({ token }) });
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    expect(lastStatus).toBe(429);
   });
 });

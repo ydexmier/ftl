@@ -1,5 +1,6 @@
 import InvitationModel from '@models/Invitation';
 import '@models/User';
+import '@models/Group';
 import connectToMongoDB from '@/src/lib/db';
 
 export const InvitationRepository = {
@@ -35,6 +36,11 @@ export const InvitationRepository = {
   async findByTokenWithGroups(token: string) {
     await connectToMongoDB();
     return InvitationModel.findOne({ token }).populate('groupIds', 'name').lean();
+  },
+
+  async countPending(): Promise<number> {
+    await connectToMongoDB();
+    return InvitationModel.countDocuments({ status: 'PENDING' });
   },
 
   async findPendingByEmail(email: string): Promise<boolean> {

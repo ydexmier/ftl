@@ -29,6 +29,11 @@ export const FeedbackRepository = {
     return { feedbacks, total };
   },
 
+  async countOpen(): Promise<number> {
+    await connectToMongoDB();
+    return FeedbackModel.countDocuments({ status: 'open' });
+  },
+
   async updateStatus(id: string, status: FeedbackStatus) {
     await connectToMongoDB();
     return FeedbackModel.findByIdAndUpdate(id, { status }, { new: true }).lean();

@@ -5,7 +5,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { isValidEmail } from '@/src/lib/validation';
+import { isValidEmail, validateAdminInvitationEmails } from '@/src/lib/validation';
 
 export async function GET(request: NextRequest) {
   const auth = await getAdminSession(request);
@@ -39,11 +39,9 @@ export async function POST(request: NextRequest) {
   const auth = await getAdminSession(request);
   if (!auth) return ApiResponse.unauthorized();
 
-  const { emails, groupIds = [] } = await request.json();
-
-  if (!Array.isArray(emails) || emails.length === 0) {
-    return ApiResponse.badRequest('Au moins un email est requis');
-  }
+  const v = validateAdminInvitationEmails(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
+  const { emails, groupIds } = v.data;
 
   const normalized = emails.map((e: string) => e.trim().toLowerCase()).filter(Boolean);
   const unique = [...new Set(normalized)];

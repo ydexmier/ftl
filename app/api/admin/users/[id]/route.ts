@@ -5,7 +5,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { SessionRepository } from '@/src/repositories/db/SessionRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { isValidEmail } from '@/src/lib/validation';
+import { validateAdminUserUpdate } from '@/src/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -37,23 +37,24 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const user = await UserRepository.findById(id);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
-  const body = await request.json();
-  const { username, email, role, password } = body;
+  const v = validateAdminUserUpdate(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
+  const { username, email, role, password } = v.data;
+
   const updates: Record<string, unknown> = {};
 
   if (username !== undefined) {
-    if (await UserRepository.existsByUsername(username.toLowerCase(), id)) {
+    if (await UserRepository.existsByUsername(username, id)) {
       return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
     }
-    updates.username = username.toLowerCase();
+    updates.username = username;
   }
 
   if (email !== undefined) {
-    if (!isValidEmail(email)) return ApiResponse.badRequest('Email invalide');
-    if (await UserRepository.existsByEmail(email.toLowerCase(), id)) {
+    if (await UserRepository.existsByEmail(email, id)) {
       return ApiResponse.conflict('Cet email est déjà utilisé');
     }
-    updates.email = email.toLowerCase();
+    updates.email = email;
   }
 
   if (role !== undefined) updates.role = role;
