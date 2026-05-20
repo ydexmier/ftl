@@ -53,6 +53,29 @@ async function seedRound(tournamentId: number, playerId: number) {
   });
 }
 
+// ─── assign_deck — contrôle d'accès groupe ────────────────────────────────────
+
+describe('POST /api/tournaments/:id/players/:playerId/assign_deck — accès groupe', () => {
+  it('retourne 403 si l\'utilisateur n\'est pas membre du groupe fourni', async () => {
+    const tid = nextId();
+    const pid = nextId();
+    const owner = await createTestUser({ username: `owner-${pid}`, email: `owner${pid}@test.com` });
+    const outsider = await createTestUser({ username: `out-${pid}`, email: `out${pid}@test.com` });
+    const group = await createTestGroup(owner._id);
+    const cookie = await createAuthCookie(outsider._id, 'USER');
+    await seedRound(tid, pid);
+
+    const req = makeRequest(
+      'POST',
+      `/api/tournaments/${tid}/players/${pid}/assign_deck`,
+      { decks: [['Amber']], groupId: String(group._id) },
+      cookie,
+    );
+    const res = await assignDeckTournament(req, params(String(tid), String(pid)));
+    expect(res.status).toBe(403);
+  });
+});
+
 // ─── assign_deck tournament + comment ────────────────────────────────────────
 
 describe('POST /api/tournaments/:id/players/:playerId/assign_deck avec commentaire', () => {

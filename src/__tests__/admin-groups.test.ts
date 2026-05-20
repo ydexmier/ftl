@@ -95,6 +95,28 @@ describe('GET /api/admin/groups', () => {
   });
 });
 
+// ─── POST /api/admin/groups — validation ─────────────────────────────────────
+
+describe('POST /api/admin/groups — validation', () => {
+  it('retourne 400 si le nom est absent ou vide', async () => {
+    const admin = await createAdminUser({ username: 'ag-val-admin', email: 'ag-val-admin@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('POST', '/api/admin/groups', { name: '', description: '' }, cookie);
+    const res = await createGroup(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 si le nom dépasse 100 caractères', async () => {
+    const admin = await createAdminUser({ username: 'ag-val-admin2', email: 'ag-val-admin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('POST', '/api/admin/groups', { name: 'a'.repeat(101) }, cookie);
+    const res = await createGroup(req);
+    expect(res.status).toBe(400);
+  });
+});
+
 // ─── POST /api/admin/groups ───────────────────────────────────────────────────
 
 describe('POST /api/admin/groups', () => {
@@ -170,6 +192,21 @@ describe('PATCH /api/admin/groups/[id]', () => {
 
     expect(res.status).toBe(200);
     expect(data.name).toBe('ag-patch-after');
+  });
+});
+
+// ─── PATCH /api/admin/groups/[id] — FORBIDDEN ────────────────────────────────
+
+describe('PATCH /api/admin/groups/[id] — FORBIDDEN', () => {
+  it('retourne 403 si le système ADMIN n\'est pas admin du groupe', async () => {
+    const owner = await createAdminUser({ username: 'ag-patch-owner', email: 'ag-patch-owner@example.com' });
+    const sysAdmin = await createAdminUser({ username: 'ag-patch-sysadmin', email: 'ag-patch-sysadmin@example.com' });
+    const group = await createTestGroup(owner._id, { name: 'ag-patch-forbidden-group' });
+    const cookie = await createAuthCookie(sysAdmin._id, 'ADMIN');
+
+    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}`, { name: 'Nouveau nom' }, cookie);
+    const res = await updateGroup(req, groupParams(String(group._id)));
+    expect(res.status).toBe(403);
   });
 });
 
