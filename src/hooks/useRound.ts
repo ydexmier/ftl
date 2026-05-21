@@ -77,15 +77,15 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 	};
 
 	const refreshRound = useCallback(async () => {
-		const res = await fetchRoundFromAPI(tournamentId, roundId, {
+		await fetchRoundFromAPI(tournamentId, roundId, {
 			page,
 			perPage,
 			search,
 			excludeOnePlayerMatches,
 			mode: useAsyncFetch ? FETCH_ALL_ASYNC.mode : undefined,
 		});
-		setData(res.datas);
-	}, [tournamentId, roundId, search]);
+		refetch();
+	}, [tournamentId, roundId, search, refetch]);
 
 	return {
 		matchs,

@@ -36,16 +36,6 @@ export async function POST(request: NextRequest, { params }: Params) {
 				if (!externalAccess) return ApiResponse.forbidden('Accès refusé à ce tournoi de groupe');
 			}
 			resolvedGroupId = requestedGroupId;
-		} else {
-			// Pas de groupId fourni : détecter si l'user appartient à un groupe qui a ce tournoi
-			const userGroups = await GroupRepository.findByMemberId(auth.userId);
-			for (const group of userGroups) {
-				const hasAccess = await GroupTournamentRepository.hasAccess(String(group._id), round.tournamentId);
-				if (hasAccess) {
-					resolvedGroupId = String(group._id);
-					break;
-				}
-			}
 		}
 
 		const scope = resolvedGroupId ? { groupId: resolvedGroupId } : { userId: auth.userId };
