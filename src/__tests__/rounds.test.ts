@@ -258,7 +258,7 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
     expect(player1.decks).toEqual([['Acier', 'Emeraude']]);
   });
 
-  it('auto-scope — assign sans groupId va en scope groupe si le tournoi appartient au groupe de l\'user', async () => {
+  it('assign sans groupId va en scope user même si le tournoi appartient à un groupe de l\'user', async () => {
     const user = await createTestUser({ username: 'bicolo3', email: 'bicolo3@test.com' });
     const group = await createTestGroup(user._id, { name: 'bicolo-group-2' });
     const cookie = await createAuthCookie(user._id, 'USER');
@@ -272,7 +272,7 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
     await GroupTournamentModel.create({ groupId: group._id, tournamentId: tid, addedBy: user._id, status: 'ACTIVE' });
     await RoundModel.create({ id: rid, tournamentId: tid, results: [makeMatch(mid, p1, p2)] });
 
-    // Assign sans groupId — le système doit détecter le groupe et utiliser le scope groupe
+    // Assign sans groupId — doit utiliser le scope user (pas d'auto-détection de groupe)
     await assignDeck(
       makeRequest('POST', `/api/rounds/${rid}/matchs/${mid}/assign_deck`, {
         decks: [{ playerId: p1, decks: [['Ambre', 'Rubis']] }],
@@ -280,21 +280,21 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
       matchParams(String(rid), String(mid)),
     );
 
-    // Le scope groupe doit contenir le deck
-    const groupRes = await getMatches(
-      makeRequest('GET', `/api/rounds/${rid}/matchs?groupId=${group._id}`, undefined, cookie),
+    // Le scope user doit contenir le deck
+    const userRes = await getMatches(
+      makeRequest('GET', `/api/rounds/${rid}/matchs`, undefined, cookie),
       roundParams(String(rid)),
     );
-    const groupData = await groupRes.json();
-    expect(groupRes.status).toBe(200);
-    const player = groupData.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
+    const userData = await userRes.json();
+    expect(userRes.status).toBe(200);
+    const player = userData.playersDecks?.players?.find((p: { playerId: number }) => p.playerId === p1);
     expect(player).toBeDefined();
     expect(player.decks).toEqual([['Ambre', 'Rubis']]);
 
-    // Aucun scope user indépendant ne doit avoir été créé
+    // Le scope groupe ne doit pas contenir le deck
     const TournamentPlayersDeckModel = (await import('@models/TournamentPlayersDeck')).default;
-    const userDoc = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, userId: user._id, groupId: null });
-    expect(userDoc).toBeNull();
+    const groupDoc = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
+    expect(groupDoc?.players?.find((p) => p.playerId === p1)?.decks?.length ?? 0).toBe(0);
   });
 
   it('reassignation — un second POST met a jour les bicolorites', async () => {

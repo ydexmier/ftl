@@ -183,6 +183,47 @@ describe('PATCH /api/admin/users/[id]', () => {
     expect(res.status).toBe(409);
   });
 
+  it('retourne 400 si le body de mise à jour est invalide (aucun champ)', async () => {
+    const admin = await createAdminUser({ username: 'adminpatch4', email: 'adminpatch4@example.com' });
+    const target = await createTestUser({ username: 'patchtarget2', email: 'patchtarget2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('PATCH', `/api/admin/users/${target._id}`, {}, cookie);
+    const res = await updateUser(req, params(String(target._id)));
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 409 si l\'email cible est déjà utilisé', async () => {
+    const admin = await createAdminUser({ username: 'adminpatch5', email: 'adminpatch5@example.com' });
+    await createTestUser({ username: 'emailowner2', email: 'taken2@example.com' });
+    const target = await createTestUser({ username: 'patchtarget3', email: 'patchtarget3@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('PATCH', `/api/admin/users/${target._id}`, { email: 'taken2@example.com' }, cookie);
+    const res = await updateUser(req, params(String(target._id)));
+    expect(res.status).toBe(409);
+  });
+
+  it('retourne 400 si le mot de passe est trop faible', async () => {
+    const admin = await createAdminUser({ username: 'adminpatch6', email: 'adminpatch6@example.com' });
+    const target = await createTestUser({ username: 'patchtarget4', email: 'patchtarget4@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('PATCH', `/api/admin/users/${target._id}`, { password: 'weak' }, cookie);
+    const res = await updateUser(req, params(String(target._id)));
+    expect(res.status).toBe(400);
+  });
+
+  it('change le mot de passe avec un mot de passe fort et retourne 200', async () => {
+    const admin = await createAdminUser({ username: 'adminpatch7', email: 'adminpatch7@example.com' });
+    const target = await createTestUser({ username: 'patchtarget5', email: 'patchtarget5@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+
+    const req = makeRequest('PATCH', `/api/admin/users/${target._id}`, { password: 'StrongPass1!' }, cookie);
+    const res = await updateUser(req, params(String(target._id)));
+    expect(res.status).toBe(200);
+  });
+
   it('met à jour le rôle et retourne 200', async () => {
     const admin = await createAdminUser({ username: 'adminpatch3', email: 'adminpatch3@example.com' });
     const target = await createTestUser({ username: 'roletarget', email: 'roletarget@example.com' });

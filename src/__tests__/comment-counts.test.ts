@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { GET as getCommentCounts } from '../../app/api/tournaments/[id]/comment-counts/route';
 import TournamentExternalAccessModel from '@models/TournamentExternalAccess';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
-import { createTestUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
+import { createTestUser, createAdminUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
 
 function params(id: string) {
   return { params: Promise.resolve({ id }) };
@@ -102,6 +102,26 @@ describe('GET /api/tournaments/[id]/comment-counts', () => {
     const data = await res.json();
     expect(data.counts[p1]).toBe(1);
     expect(data.counts[p2]).toBeUndefined();
+  });
+
+  it('retourne 400 pour un ID de tournoi non numérique', async () => {
+    const user = await createTestUser({ username: 'cc-nan', email: 'cc-nan@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('GET', '/api/tournaments/abc/comment-counts?playerIds=1', undefined, cookie);
+    const res = await getCommentCounts(req, params('abc'));
+    expect(res.status).toBe(400);
+  });
+
+  it('un ADMIN peut accéder aux counts d\'un groupe dont il n\'est pas membre', async () => {
+    const owner = await createTestUser({ username: 'cc-owner2', email: 'cc-owner2@test.com' });
+    const admin = await createAdminUser({ username: 'cc-admin2', email: 'cc-admin2@test.com' });
+    const group = await createTestGroup(owner._id);
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = nextId();
+
+    const req = countsRequest(tid, [10], String(group._id), cookie);
+    const res = await getCommentCounts(req, params(String(tid)));
+    expect(res.status).toBe(200);
   });
 
   it('retourne les counts en portée groupe pour un membre', async () => {
