@@ -4,7 +4,9 @@ import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
+import { TournamentRegistrationRepository } from '@/src/repositories/db/TournamentRegistrationRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
+import { RegistrationService } from '@/src/services/RegistrationService';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthSession(req);
@@ -29,13 +31,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     scope = { groupId };
   } else {
     scope = { userId: auth.userId };
-    // Lazy init for personal scope: populate from rounds on first access
+    // Lazy init for personal scope: populate from rounds, or from registrations pre-tournament
     const existing = await TournamentPlayersDeckRepository.findByScope(tournamentId, scope);
     if (!existing || existing.players.length === 0) {
       const roundPlayers = await RoundRepository.findUniquePlayersByTournamentId(tournamentId);
       if (roundPlayers.length > 0) {
         await TournamentPlayersDeckRepository.upsertMissingPlayers(tournamentId, roundPlayers, scope);
         await TournamentPlayersDeckRepository.syncPlayerIdentifiers(tournamentId, roundPlayers);
+      } else {
+        const registration = await TournamentRegistrationRepository.findByTournamentId(tournamentId);
+        if (registration && registration.players.length > 0) {
+          await TournamentPlayersDeckRepository.upsertMissingPlayers(
+            tournamentId,
+            registration.players.map(RegistrationService.toPlayerInfo),
+            scope,
+          );
+        }
       }
     }
   }

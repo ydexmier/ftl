@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { Search, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, MessageSquare, RefreshCw, Users } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import { Button } from '@components/ui/Button';
 import { Select } from '@components/ui/Select';
@@ -21,6 +21,12 @@ interface Pagination {
   perPage: number;
   total: number;
   totalPages: number;
+}
+
+interface RegistrationStatus {
+  tournamentStarted: boolean;
+  lastFetchedAt: string | null;
+  totalCount: number;
 }
 
 interface PlayersTabProps {
@@ -50,8 +56,10 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
   const [perPage, setPerPage] = useState(25);
   const [selected, setSelected] = useState<PlayerRow | null>(null);
   const [historyPlayer, setHistoryPlayer] = useState<PlayerRow | null>(null);
+  const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus | null>(null);
+  const [fetchingRegistrations, setFetchingRegistrations] = useState(false);
 
-  useEffect(() => {
+  const loadPlayers = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (groupId) params.set('groupId', groupId);
@@ -70,6 +78,33 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
       .finally(() => setLoading(false));
   }, [tournamentId, groupId, page, perPage, debouncedSearch]);
 
+  useEffect(() => { loadPlayers(); }, [loadPlayers]);
+
+  useEffect(() => {
+    fetch(`/api/tournaments/${tournamentId}/registrations`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => { if (data) setRegistrationStatus(data); })
+      .catch(() => {});
+  }, [tournamentId]);
+
+  const handleFetchRegistrations = async () => {
+    setFetchingRegistrations(true);
+    try {
+      const res = await fetch(`/api/tournaments/${tournamentId}/registrations`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setRegistrationStatus((prev) => ({
+          tournamentStarted: prev?.tournamentStarted ?? false,
+          lastFetchedAt: new Date().toISOString(),
+          totalCount: data.totalCount ?? 0,
+        }));
+        loadPlayers();
+      }
+    } finally {
+      setFetchingRegistrations(false);
+    }
+  };
+
   const handleSaved = (playerId: number, decks: string[][], commentSaved: boolean) => {
     setPlayers((prev) => prev.map((p) => (p.playerId === playerId ? { ...p, decks } : p)));
     if (commentSaved) {
@@ -87,6 +122,8 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
     setPage(1);
   };
 
+  const showRefreshButton = registrationStatus !== null && !registrationStatus.tournamentStarted;
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -97,9 +134,29 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
 
   if (!loading && pagination.total === 0 && !debouncedSearch) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-16">
-        Aucun joueur trouvé pour ce tournoi.
-      </p>
+      <div className="flex flex-col items-center gap-4 py-16">
+        <Users className="h-10 w-10 text-muted-foreground/40" />
+        <p className="text-sm text-muted-foreground text-center">
+          {showRefreshButton
+            ? 'Aucun joueur chargé. Récupérez la liste des inscrits pour commencer le scouting.'
+            : 'Aucun joueur trouvé pour ce tournoi.'}
+        </p>
+        {showRefreshButton && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleFetchRegistrations}
+            disabled={fetchingRegistrations}
+          >
+            {fetchingRegistrations ? (
+              <Spinner size="sm" className="mr-2" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5 mr-2" />
+            )}
+            Charger les inscrits
+          </Button>
+        )}
+      </div>
     );
   }
 
@@ -123,6 +180,23 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
             onChange={(e) => handlePerPage(Number(e.target.value))}
             className="w-full sm:w-32 sm:shrink-0"
           />
+          {showRefreshButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleFetchRegistrations}
+              disabled={fetchingRegistrations}
+              title={registrationStatus?.lastFetchedAt ? `Dernière MAJ : ${new Date(registrationStatus.lastFetchedAt).toLocaleString('fr-FR')}` : 'Mettre à jour la liste des inscrits'}
+              className="shrink-0"
+            >
+              {fetchingRegistrations ? (
+                <Spinner size="sm" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+              <span className="hidden sm:inline">MAJ inscrits</span>
+            </Button>
+          )}
         </div>
 
         <div className="bg-card border border-border rounded-xl overflow-hidden">
