@@ -9,7 +9,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 		const { id } = await params;
 		const tournament = await TournamentRepository.findById(Number(id));
 		if (!tournament) return ApiResponse.notFound('Tournament not found');
-		return ApiResponse.ok(tournament);
+		return ApiResponse.ok(tournament, { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=3600' });
 	} catch (err) {
 		return ApiResponse.serverError(err);
 	}

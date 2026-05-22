@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     const roundId = await RoundRepository.findLastFetchedIdByTournament(tournamentId);
-    return ApiResponse.ok({ roundId });
+    return ApiResponse.ok({ roundId }, { 'Cache-Control': 'private, max-age=10, stale-while-revalidate=30' });
   } catch (err) {
     return ApiResponse.serverError(err);
   }

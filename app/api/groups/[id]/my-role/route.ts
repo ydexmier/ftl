@@ -11,8 +11,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const groupRole = await GroupRepository.getMemberRole(groupId, auth.userId);
 
-  return ApiResponse.ok({
-    groupRole,
-    appRole: auth.role,
-  });
+  return ApiResponse.ok(
+    { groupRole, appRole: auth.role },
+    { 'Cache-Control': 'private, max-age=60, stale-while-revalidate=120' },
+  );
 }
