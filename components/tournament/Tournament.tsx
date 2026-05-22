@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertTriangle, BarChart2, HelpCircle } from 'lucide-react';
+import { AlertTriangle, HelpCircle } from 'lucide-react';
 
 import { getRoundName } from '@/src/domain/rules/roundRules';
 import Round from '@components/round/Round';
@@ -16,6 +16,7 @@ import { ReportsTab } from '@components/tournament/ReportsTab';
 import { TournamentTour } from '@components/ui/TournamentTour';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
 import { UncertaintyModal } from '@components/groups/UncertaintyModal';
+import { StatsTab } from '@components/tournament/StatsTab';
 import type { Tournament as TournamentType } from '@/src/types/tournament';
 import type { RoundType } from '@/src/types/round';
 
@@ -178,7 +179,7 @@ export default function Tournament({ id }: TournamentProps) {
 
 	const isGroupAdmin = groupRole === 'ADMIN';
 	const showReports = groupId !== null && (isGroupAdmin || appRole === 'ADMIN' || appRole === 'SUPERUSER');
-	const visibleTabs: TournamentTab[] = ['scouting', 'players', ...(showReports ? ['reports' as TournamentTab] : [])];
+	const visibleTabs: TournamentTab[] = ['scouting', 'players', 'stats', ...(showReports ? ['reports' as TournamentTab] : [])];
 	const showSidebar = visibleTabs.length >= 2;
 
 	if (loading) {
@@ -347,10 +348,10 @@ export default function Tournament({ id }: TournamentProps) {
 				)}
 
 				{activeTab === 'stats' && (
-					<div className="flex flex-col items-center gap-3 py-16 text-muted-foreground">
-						<BarChart2 className="h-10 w-10 opacity-30" />
-						<p className="text-sm">Statistiques bientôt disponibles.</p>
-					</div>
+					<StatsTab
+						tournamentId={Number(id)}
+						groupId={groupId}
+					/>
 				)}
 
 				{activeTab === 'reports' && groupId && (

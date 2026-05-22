@@ -153,6 +153,12 @@ export const RoundRepository = {
 		return null;
 	},
 
+	async findAllMatchesByTournamentId(tournamentId: number): Promise<import('@/src/types/match').Match[]> {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find({ tournamentId }, { results: 1, _id: 0 }).lean()) as RoundDocument[];
+		return rounds.flatMap((r) => r.results ?? []);
+	},
+
 	async findLastFetchedIdByTournament(tournamentId: number): Promise<number | null> {
 		await connectToMongoDB();
 		const round = await RoundModel.findOne(

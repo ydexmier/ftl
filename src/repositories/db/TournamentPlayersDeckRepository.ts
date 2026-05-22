@@ -245,6 +245,41 @@ export const TournamentPlayersDeckRepository = {
     };
   },
 
+  async getDetailedScoutingStats(tournamentId: number, scope: DeckScope) {
+    await connectToMongoDB();
+    const doc = await TournamentPlayersDeckModel.findOne({ tournamentId, ...scopeQuery(scope) }).lean() as ITournamentPlayersDeck | null;
+    const players = doc?.players ?? [];
+
+    let fullyScouted = 0;
+    let partiallyScouted = 0;
+    let unscouted = 0;
+    const deckCountMap = new Map<string, { inks: string[]; count: number }>();
+
+    for (const player of players) {
+      const decks = player.decks as string[][];
+      if (decks.length === 0) {
+        unscouted++;
+      } else if (decks.length === 1 && decks[0].length === 2) {
+        fullyScouted++;
+        const sorted = [...decks[0]].sort();
+        const key = sorted.join('/');
+        const existing = deckCountMap.get(key);
+        if (existing) existing.count++;
+        else deckCountMap.set(key, { inks: sorted, count: 1 });
+      } else {
+        partiallyScouted++;
+      }
+    }
+
+    return {
+      total: players.length,
+      fullyScouted,
+      partiallyScouted,
+      unscouted,
+      inkDistribution: Array.from(deckCountMap.values()).sort((a, b) => b.count - a.count),
+    };
+  },
+
   async assignDecks(
     tournamentId: number,
     assignments: { playerId: number; bestIdentifier: string; eventBestIdentifier: string; decks: Deck[] }[],
