@@ -3,6 +3,7 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
+import { TournamentRegistrationRepository } from '@/src/repositories/db/TournamentRegistrationRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
@@ -35,7 +36,19 @@ export async function POST(
   }
 
   try {
-    const playerInfo = await RoundRepository.findPlayerInTournament(tournamentId, playerId);
+    let playerInfo = await RoundRepository.findPlayerInTournament(tournamentId, playerId);
+
+    if (!playerInfo) {
+      const tournamentStarted = await RoundRepository.existsByTournamentId(tournamentId);
+      if (!tournamentStarted) {
+        const registration = await TournamentRegistrationRepository.findByTournamentId(tournamentId);
+        const registered = registration?.players.find((p) => p.playerId === playerId);
+        if (registered) {
+          playerInfo = { id: registered.playerId, best_identifier: registered.realName, eventBestIdentifier: registered.name };
+        }
+      }
+    }
+
     if (!playerInfo) return ApiResponse.notFound('Joueur introuvable dans les rondes de ce tournoi');
 
     const modified = await TournamentPlayersDeckRepository.assignDecks(
