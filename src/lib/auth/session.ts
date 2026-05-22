@@ -25,6 +25,8 @@ export async function createSession(userId: string, role: string, ip: string, ua
   return sessionId;
 }
 
+const ACTIVITY_UPDATE_THROTTLE_MS = 60 * 1000; // 60s — évite N écritures simultanées sur chaque page load
+
 export async function getSession(sessionId: string) {
   await connectToMongoDB();
   const session = await SessionModel.findOne({ sessionId }).lean();
@@ -34,7 +36,9 @@ export async function getSession(sessionId: string) {
     await SessionModel.deleteOne({ sessionId });
     return null;
   }
-  await SessionModel.updateOne({ sessionId }, { lastActivityAt: new Date() });
+  if (now - session.lastActivityAt.getTime() > ACTIVITY_UPDATE_THROTTLE_MS) {
+    await SessionModel.updateOne({ sessionId }, { lastActivityAt: new Date() });
+  }
   return session;
 }
 
