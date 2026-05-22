@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import PlayerCommentModel from '@models/PlayerComment';
 import type { IPlayerComment } from '@models/PlayerComment';
+import '@models/User';
 import connectToMongoDB from '@/src/lib/db';
 
 export interface PlayerCommentInput {
