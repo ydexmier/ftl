@@ -1,4 +1,5 @@
 const BASE_URL = 'https://api.ravensburgerplay.com/api/v2';
+const CLOUDFLARE_BASE_URL = 'https://api.cloudflare.ravensburgerplay.com/hydraproxy/api/v2';
 
 async function get<T>(url: string): Promise<T> {
 	const res = await fetch(url);
@@ -32,6 +33,29 @@ export interface RawRankingPage {
 	results: unknown[];
 }
 
+export interface RawRegistrationUser {
+	id: number;
+	best_identifier: string;
+	pronouns: string | null;
+}
+
+export interface RawRegistration {
+	id: number;
+	user: RawRegistrationUser;
+	registration_status: string;
+	best_identifier: string;
+}
+
+export interface RawRegistrationPage {
+	page_size: number;
+	count: number;
+	total: number;
+	current_page_number: number;
+	next_page_number: number | null;
+	previous_page_number: number | null;
+	results: RawRegistration[];
+}
+
 export const RavensburgerClient = {
 	fetchTournament(id: number): Promise<RawTournament> {
 		return get<RawTournament>(`${BASE_URL}/events/${id}/`);
@@ -46,6 +70,12 @@ export const RavensburgerClient = {
 	fetchRank(id: number, page = 1, pageSize = 100): Promise<RawRankingPage> {
 		return get<RawRankingPage>(
 			`${BASE_URL}/tournament-rounds/${id}/standings/paginated/?page=${page}&page_size=${pageSize}&avoid_cache=true`,
+		);
+	},
+
+	fetchRegistrations(tournamentId: number, page = 1, pageSize = 100): Promise<RawRegistrationPage> {
+		return get<RawRegistrationPage>(
+			`${CLOUDFLARE_BASE_URL}/events/${tournamentId}/registrations/?page=${page}&page_size=${pageSize}`,
 		);
 	},
 };

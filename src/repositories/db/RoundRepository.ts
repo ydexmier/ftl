@@ -195,4 +195,9 @@ export const RoundRepository = {
 		}
 		return RoundModel.findOne({ id }).lean();
 	},
+
+	async existsByTournamentId(tournamentId: number): Promise<boolean> {
+		await connectToMongoDB();
+		return RoundModel.exists({ tournamentId }).then(Boolean);
+	},
 };
