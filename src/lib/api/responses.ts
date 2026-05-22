@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 export const ApiResponse = {
-  ok: (data: unknown) =>
-    NextResponse.json(data),
+  ok: (data: unknown, headers?: HeadersInit) =>
+    NextResponse.json(data, headers ? { headers } : undefined),
 
   created: (data: unknown) =>
     NextResponse.json(data, { status: 201 }),
