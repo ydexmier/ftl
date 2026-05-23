@@ -185,7 +185,7 @@ export const TournamentPlayersDeckRepository = {
           // event_best_identifier stores the pseudo (user_event_status.best_identifier).
           // Older documents may contain an actual image URL — discard those.
           event_best_identifier: /^https?:\/\//.test(raw) ? '' : raw,
-          decks: p.decks ?? [],
+          decks: (p.decks as string[][] ?? []).map((d) => normalizeInkCombo(d)),
         };
       }),
       total: (result.total as Array<{ count: number }>)[0]?.count ?? 0,
