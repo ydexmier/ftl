@@ -125,8 +125,10 @@ describe('deduplicateDecks', () => {
     expect(result[1]).toEqual(['Saphir']);
   });
 
-  it('ne déduplique pas des entrées d\'ordre différent', () => {
-    const decks = [['Ambre', 'Rubis'], ['Rubis', 'Ambre']] as unknown as Deck[];
-    expect(deduplicateDecks(decks)).toHaveLength(2);
+  it('déduplique des entrées d\'ordre différent en les normalisant', () => {
+    const decks = [['Amber', 'Ruby'], ['Ruby', 'Amber']] as unknown as Deck[];
+    const result = deduplicateDecks(decks);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toEqual(['Amber', 'Ruby']);
   });
 });

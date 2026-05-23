@@ -86,7 +86,7 @@ describe('DataMergeService.mergeUserDataIntoGroup', () => {
 
     expect(await TournamentConflictModel.countDocuments({})).toBe(0);
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
-    expect(groupDeck!.players[0].decks).toEqual([['Steel', 'Ruby']]);
+    expect(groupDeck!.players[0].decks).toEqual([['Ruby', 'Steel']]);
   });
 
   it('crée un conflit PENDING si les encres diffèrent', async () => {
@@ -109,7 +109,7 @@ describe('DataMergeService.mergeUserDataIntoGroup', () => {
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].status).toBe('PENDING');
     expect(conflicts[0].playerId).toBe(BASE_P1.playerId);
-    expect(conflicts[0].previousInks).toEqual([['Steel', 'Ruby']]);
+    expect(conflicts[0].previousInks).toEqual([['Ruby', 'Steel']]);
     expect(conflicts[0].proposedInks).toEqual([['Amber', 'Sapphire']]);
     // Group data must not be modified when a conflict is raised
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
@@ -166,7 +166,7 @@ describe('DataMergeService.mergeUserDataIntoGroup', () => {
 
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
     const p2 = groupDeck!.players.find((p) => p.playerId === BASE_P2.playerId);
-    expect(p2!.decks).toEqual([['Steel', 'Emerald']]);
+    expect(p2!.decks).toEqual([['Emerald', 'Steel']]);
   });
 });
 
@@ -256,7 +256,7 @@ describe('DataMergeService.mergeUserForTournament', () => {
     const conflicts = await TournamentConflictModel.find({ groupId: group._id });
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].status).toBe('PENDING');
-    expect(conflicts[0].proposedInks).toEqual([['Steel', 'Sapphire']]);
-    expect(conflicts[0].previousInks).toEqual([['Ruby', 'Amber']]);
+    expect(conflicts[0].proposedInks).toEqual([['Sapphire', 'Steel']]);
+    expect(conflicts[0].previousInks).toEqual([['Amber', 'Ruby']]);
   });
 });

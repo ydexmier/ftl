@@ -339,6 +339,15 @@ PENDING_ADMIN → (admin) → APPROVED (decks résolus) ou REJECTED
 ### Assignation de deck depuis la vue match
 `POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck` — portée déterminée par les paramètres (`userId`, `groupId` ou ni l'un ni l'autre pour la portée tournoi). Délégue à `ScoutingService.assignDecks`.
 
+### Ordre canonique des encres
+Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre canonique : **Amber → Amethyst → Emerald → Ruby → Sapphire → Steel** (jaune → violet → vert → rouge → bleu → gris).
+
+- La fonction `normalizeInkCombo(inks: string[])` dans `src/domain/value-objects/Ink.ts` est la source de vérité.
+- **À l'écriture** : `TournamentPlayersDeckRepository.assignDecks` normalise chaque deck avant sauvegarde.
+- **À la lecture** : `TournamentPlayersDeckRepository.findByScope` normalise défensivement les données retournées (couvre les données historiques non-canoniques).
+- **`deduplicateDecks`** (`src/domain/rules/scoutingRules.ts`) fusionne les combos d'ordre inversé (ex. `['Steel', 'Amber']` et `['Amber', 'Steel']` comptent comme un seul).
+- Ne jamais utiliser `.sort()` sur un tableau d'encres — toujours passer par `normalizeInkCombo`.
+
 ---
 
 ## Principes d'architecture

@@ -749,6 +749,6 @@ describe('POST /api/groups/[id]/members/[userId]/merge-tournament', () => {
     const conflicts = await TournamentConflictModel.find({ groupId: group._id });
     expect(conflicts).toHaveLength(1);
     expect(conflicts[0].proposedInks).toEqual([['Amber', 'Steel']]);
-    expect(conflicts[0].previousInks).toEqual([['Ruby', 'Emerald']]);
+    expect(conflicts[0].previousInks).toEqual([['Emerald', 'Ruby']]);
   });
 });
