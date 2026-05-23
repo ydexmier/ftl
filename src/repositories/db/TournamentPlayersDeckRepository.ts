@@ -5,6 +5,7 @@ import TournamentPlayersDeckModel, {
 } from '@models/TournamentPlayersDeck';
 import connectToMongoDB from '@/src/lib/db';
 import type { Deck } from '@/src/types/ink';
+import { normalizeInkCombo } from '@/src/domain/value-objects/Ink';
 
 // Exactly one of groupId or userId must be set
 export interface DeckScope {
@@ -52,7 +53,15 @@ function toPlayerDoc(p: PlayerInfo) {
 export const TournamentPlayersDeckRepository = {
   async findByScope(tournamentId: number, scope: DeckScope) {
     await connectToMongoDB();
-    return TournamentPlayersDeckModel.findOne({ tournamentId, ...scopeQuery(scope) }).lean();
+    const doc = await TournamentPlayersDeckModel.findOne({ tournamentId, ...scopeQuery(scope) }).lean();
+    if (!doc) return doc;
+    return {
+      ...doc,
+      players: doc.players.map((p) => ({
+        ...p,
+        decks: (p.decks as string[][]).map((d) => normalizeInkCombo(d)),
+      })),
+    };
   },
 
   async upsert(tournamentId: number, players: unknown[], scope: DeckScope) {
@@ -231,10 +240,16 @@ export const TournamentPlayersDeckRepository = {
 
     const [result] = await TournamentPlayersDeckModel.aggregate(pipeline);
     const totals = (result?.totals as Array<{ total: number; scouted: number }>)?.[0] ?? { total: 0, scouted: 0 };
-    const distribution = (result?.deckDistribution as Array<{ _id: string[]; count: number }> ?? []).map((d) => ({
-      inks: d._id,
-      count: d.count,
-    }));
+    const rawDistribution = (result?.deckDistribution as Array<{ _id: string[]; count: number }> ?? []);
+    const mergedMap = new Map<string, { inks: string[]; count: number }>();
+    for (const d of rawDistribution) {
+      const normalized = normalizeInkCombo(d._id);
+      const key = normalized.join('/');
+      const existing = mergedMap.get(key);
+      if (existing) existing.count += d.count;
+      else mergedMap.set(key, { inks: normalized, count: d.count });
+    }
+    const distribution = Array.from(mergedMap.values()).sort((a, b) => b.count - a.count);
 
     return {
       total: totals.total,
@@ -261,11 +276,11 @@ export const TournamentPlayersDeckRepository = {
         unscouted++;
       } else if (decks.length === 1 && decks[0].length === 2) {
         fullyScouted++;
-        const sorted = [...decks[0]].sort();
-        const key = sorted.join('/');
+        const normalized = normalizeInkCombo(decks[0]);
+        const key = normalized.join('/');
         const existing = deckCountMap.get(key);
         if (existing) existing.count++;
-        else deckCountMap.set(key, { inks: sorted, count: 1 });
+        else deckCountMap.set(key, { inks: normalized, count: 1 });
       } else {
         partiallyScouted++;
       }
@@ -313,11 +328,11 @@ export const TournamentPlayersDeckRepository = {
           doc.players.splice(idx, 1);
           modified.push({ playerId, decks });
         } else {
-          doc.players[idx].decks = decks;
+          doc.players[idx].decks = decks.map((d) => normalizeInkCombo(d) as Deck);
           modified.push({ ...doc.players[idx], decks });
         }
       } else if (decks.length > 0) {
-        doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, pronouns: null, decks });
+        doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, pronouns: null, decks: decks.map((d) => normalizeInkCombo(d) as Deck) });
         modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
       }
     }
