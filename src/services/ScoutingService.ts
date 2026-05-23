@@ -21,15 +21,17 @@ export const ScoutingService = {
 		const match = round.results?.find((m) => m.id === matchId);
 		if (!match) throw new Error('Match not found');
 
-		const fullAssignments = assignments.map(({ playerId, decks }) => {
-			const pmr = match.player_match_relationships?.find((p) => p.player?.id === playerId);
-			return {
-				playerId,
-				bestIdentifier: pmr?.player?.best_identifier ?? '',
-				eventBestIdentifier: pmr?.user_event_status?.best_identifier ?? '',
-				decks,
-			};
-		});
+		const fullAssignments = assignments
+			.filter((a) => a.playerId != null)
+			.map(({ playerId, decks }) => {
+				const pmr = match.player_match_relationships?.find((p) => p.player?.id === playerId);
+				return {
+					playerId: playerId!,
+					bestIdentifier: pmr?.player?.best_identifier ?? '',
+					eventBestIdentifier: pmr?.user_event_status?.best_identifier ?? '',
+					decks,
+				};
+			});
 
 		const playersModified = await TournamentPlayersDeckRepository.assignDecks(
 			round.tournamentId,

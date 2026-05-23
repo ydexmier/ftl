@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, Check } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check, X } from 'lucide-react';
 
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
@@ -230,6 +230,16 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 									</Button>
 								);
 							})}
+							{state.combination1.playerId && (
+								<button
+									type="button"
+									onClick={() => dispatch({ type: 'UNASSIGN_PLAYER', combo: 'combination1' })}
+									className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+									title="Annuler l'association"
+								>
+									<X className="h-4 w-4" />
+								</button>
+							)}
 						</div>
 					)}
 					{renderCommentInput('combination1')}
@@ -265,6 +275,16 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 										</Button>
 									);
 								})}
+								{state.combination2.playerId && (
+									<button
+										type="button"
+										onClick={() => dispatch({ type: 'UNASSIGN_PLAYER', combo: 'combination2' })}
+										className="shrink-0 p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+										title="Annuler l'association"
+									>
+										<X className="h-4 w-4" />
+									</button>
+								)}
 							</div>
 							{renderCommentInput('combination2')}
 						</div>

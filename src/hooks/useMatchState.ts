@@ -15,6 +15,7 @@ export type MatchModalAction =
 	| { type: 'SELECT_INK'; combo: 'combination1' | 'combination2'; ink: string }
 	| { type: 'SELECT_DECK'; combo: 'combination1' | 'combination2'; deck: string[] }
 	| { type: 'ASSIGN_PLAYER'; combo: 'combination1' | 'combination2'; playerId: number; otherPlayId: number }
+	| { type: 'UNASSIGN_PLAYER'; combo: 'combination1' | 'combination2' }
 	| { type: 'COPY_DECKS'; combo: 'combination1' | 'combination2' }
 	| { type: 'INITIALIZE_COMBINATION'; combo: 'combination1' | 'combination2'; decks: string[][]; playerId: number | null }
 	| { type: 'RESET' };
@@ -42,6 +43,8 @@ export function matchModalReducer(state: MatchModalState, action: MatchModalActi
 				[other]: { ...state[other], playerId: action.otherPlayId },
 			};
 		}
+		case 'UNASSIGN_PLAYER':
+			return { ...state, [action.combo]: { ...state[action.combo], playerId: null } };
 		case 'COPY_DECKS': {
 			const other = action.combo === 'combination1' ? 'combination2' : 'combination1';
 			return { ...state, [other]: { ...state[other], decks: state[action.combo].decks } };
