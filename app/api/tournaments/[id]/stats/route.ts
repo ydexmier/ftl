@@ -5,6 +5,7 @@ import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import type { ITournamentPlayersDeck } from '@models/TournamentPlayersDeck';
+import { normalizeInkCombo } from '@/src/domain/value-objects/Ink';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const auth = await getAuthSession(req);
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     for (const player of (allPlayers as ITournamentPlayersDeck | null)?.players ?? []) {
       const decks = player.decks as string[][];
       if (decks.length === 1 && decks[0].length === 2) {
-        fullyScoutedMap.set(player.playerId, [...decks[0]].sort().join('/'));
+        fullyScoutedMap.set(player.playerId, normalizeInkCombo(decks[0]).join('/'));
       }
     }
 

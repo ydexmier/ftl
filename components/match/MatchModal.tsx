@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowUp, Check } from 'lucide-react';
 
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
@@ -167,12 +167,13 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		}
 		const [c1, c2] = combinationsInitial;
 		if (c1) {
-			dispatch({ type: 'INITIALIZE_COMBINATION', combo: 'combination1', decks: c1.decks, playerId: c1.playerId ?? null });
-			const p2 = c1.playerId ? getOtherPlayer(c1.playerId) : null;
+			const c1HasDecks = c1.decks.length > 0;
+			dispatch({ type: 'INITIALIZE_COMBINATION', combo: 'combination1', decks: c1.decks, playerId: c1HasDecks ? c1.playerId : null });
+			const p2 = c1HasDecks && c1.playerId ? getOtherPlayer(c1.playerId) : null;
 			if (p2) onAssignPlayer('combination2', p2.id)();
 		}
 		if (c2) {
-			dispatch({ type: 'INITIALIZE_COMBINATION', combo: 'combination2', decks: c2.decks, playerId: c2.playerId ?? null });
+			dispatch({ type: 'INITIALIZE_COMBINATION', combo: 'combination2', decks: c2.decks, playerId: c2.decks.length > 0 ? c2.playerId : null });
 		}
 	}, [combinationsInitial, match]);
 
@@ -214,12 +215,21 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 					{renderInkSelection('combination1')}
 					{!match.match_is_bye && (
 						<div className="flex flex-col sm:flex-row gap-2">
-							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p1.player.id)} className="w-full sm:w-auto truncate">
-								Assigner à {p1.player.best_identifier}
-							</Button>
-							<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination1', p2.player.id)} className="w-full sm:w-auto truncate">
-								Assigner à {p2.player.best_identifier}
-							</Button>
+							{[p1, p2].map((p) => {
+								const active = state.combination1.playerId === p.player.id;
+								return (
+									<Button
+										key={p.player.id}
+										variant={active ? 'outline' : 'ghost'}
+										size="sm"
+										onClick={onAssignPlayer('combination1', p.player.id)}
+										className={`w-full sm:w-auto truncate${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
+									>
+										{active && <Check className="h-3.5 w-3.5 shrink-0" />}
+										{p.player.best_identifier}
+									</Button>
+								);
+							})}
 						</div>
 					)}
 					{renderCommentInput('combination1')}
@@ -240,12 +250,21 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 							</div>
 							{renderInkSelection('combination2')}
 							<div className="flex gap-2 flex-wrap">
-								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p1.player.id)} className="w-full sm:w-auto truncate">
-									Assigner à {p1.player.best_identifier}
-								</Button>
-								<Button variant="ghost" size="sm" onClick={onAssignPlayer('combination2', p2.player.id)} className="w-full sm:w-auto truncate">
-									Assigner à {p2.player.best_identifier}
-								</Button>
+								{[p1, p2].map((p) => {
+									const active = state.combination2.playerId === p.player.id;
+									return (
+										<Button
+											key={p.player.id}
+											variant={active ? 'outline' : 'ghost'}
+											size="sm"
+											onClick={onAssignPlayer('combination2', p.player.id)}
+											className={`w-full sm:w-auto truncate${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
+										>
+											{active && <Check className="h-3.5 w-3.5 shrink-0" />}
+											{p.player.best_identifier}
+										</Button>
+									);
+								})}
 							</div>
 							{renderCommentInput('combination2')}
 						</div>

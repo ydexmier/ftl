@@ -1,4 +1,5 @@
 import type { Deck } from '@/src/types/ink';
+import { normalizeInkCombo } from '@/src/domain/value-objects/Ink';
 
 export interface DeckAssignment {
 	playerId: number;
@@ -32,9 +33,16 @@ export function getMatchPlayerInks(
 }
 
 export function deduplicateDecks(decks: Deck[]): Deck[] {
-	return decks.filter((deck, i) =>
-		decks.findIndex((d) => JSON.stringify(d) === JSON.stringify(deck)) === i,
-	);
+	const seen = new Set<string>();
+	return decks.reduce<Deck[]>((acc, deck) => {
+		const normalized = normalizeInkCombo(deck) as Deck;
+		const key = normalized.join('/');
+		if (!seen.has(key)) {
+			seen.add(key);
+			acc.push(normalized);
+		}
+		return acc;
+	}, []);
 }
 
 export function mergePlayersDecks(current: PlayersDecksMap, updated: PlayersDecksMap): PlayersDecksMap {

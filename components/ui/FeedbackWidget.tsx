@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { MessageSquarePlus, X, Bug, Lightbulb } from 'lucide-react';
 import { Button } from './Button';
@@ -15,12 +15,30 @@ const TYPES: { value: FeedbackType; label: string; icon: React.ElementType }[] =
 export function FeedbackWidget() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [sheetVisible, setSheetVisible] = useState(false);
   const [type, setType] = useState<FeedbackType>('bug');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+  const [btnVisible, setBtnVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setBtnVisible(y < 50 || y < lastScrollY.current);
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const handleOpen = () => {
+    setOpen(true);
+    requestAnimationFrame(() => setSheetVisible(true));
+  };
 
   const reset = () => {
     setType('bug');
@@ -31,11 +49,14 @@ export function FeedbackWidget() {
   };
 
   const close = () => {
-    setOpen(false);
-    setTimeout(reset, 300);
+    setSheetVisible(false);
+    setTimeout(() => {
+      setOpen(false);
+      reset();
+    }, 300);
   };
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -56,8 +77,11 @@ export function FeedbackWidget() {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-5 right-5 z-40 h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-colors"
+        onClick={handleOpen}
+        className={cn(
+          'fixed bottom-5 right-5 z-40 h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all duration-300',
+          btnVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none',
+        )}
         aria-label="Signaler un bug ou suggérer une amélioration"
         title="Feedback"
       >
@@ -66,11 +90,22 @@ export function FeedbackWidget() {
 
       {open && (
         <>
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={close} />
           <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-            onClick={close}
-          />
-          <div className="fixed bottom-20 right-5 z-50 w-full max-w-sm bg-card border border-border rounded-xl shadow-2xl flex flex-col gap-0 overflow-hidden">
+            className={cn(
+              'fixed z-50 bg-card border border-border shadow-2xl flex flex-col overflow-hidden transition-transform duration-300',
+              // Mobile: bottom sheet full-width
+              'inset-x-0 bottom-0 rounded-t-2xl max-h-[90vh]',
+              // Desktop: floating panel near button
+              'sm:inset-x-auto sm:bottom-20 sm:right-5 sm:w-full sm:max-w-sm sm:rounded-xl sm:max-h-none',
+              sheetVisible ? 'translate-y-0' : 'translate-y-full',
+            )}
+          >
+            {/* Drag handle — mobile only */}
+            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+              <div className="w-10 h-1 rounded-full bg-border" />
+            </div>
+
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h2 className="text-sm font-semibold text-foreground">Retour utilisateur</h2>
               <button onClick={close} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -78,7 +113,7 @@ export function FeedbackWidget() {
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="p-5 overflow-y-auto">
               {done ? (
                 <div className="flex flex-col items-center gap-3 py-4 text-center">
                   <div className="w-10 h-10 rounded-full bg-green-900/40 flex items-center justify-center">
@@ -93,7 +128,7 @@ export function FeedbackWidget() {
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={submit} className="flex flex-col gap-4">
+                <form onSubmit={submit} className="flex flex-col gap-4 pb-6 sm:pb-0">
                   <div className="flex gap-2">
                     {TYPES.map(({ value, label, icon: Icon }) => (
                       <button
@@ -139,9 +174,7 @@ export function FeedbackWidget() {
                     />
                   </div>
 
-                  {error && (
-                    <p className="text-xs text-destructive">{error}</p>
-                  )}
+                  {error && <p className="text-xs text-destructive">{error}</p>}
 
                   <Button type="submit" loading={loading} className="w-full">
                     Envoyer

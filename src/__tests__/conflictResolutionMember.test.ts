@@ -212,7 +212,7 @@ describe('ConflictService.resolveAdminConflict', () => {
     await ConflictService.resolveAdminConflict(String(conflict._id), String(admin._id), 'APPROVED');
 
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
-    expect(groupDeck!.players[0].decks).toEqual([['Steel', 'Ruby']]);
+    expect(groupDeck!.players[0].decks).toEqual([['Ruby', 'Steel']]);
     const updated = await TournamentConflictModel.findById(conflict._id);
     expect(updated!.status).toBe('APPROVED');
   });

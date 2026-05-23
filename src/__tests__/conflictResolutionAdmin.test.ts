@@ -182,7 +182,7 @@ describe('PATCH /api/groups/[id]/conflicts/[conflictId]', () => {
     const updated = await TournamentConflictModel.findById(conflict._id);
     expect(updated!.status).toBe('APPROVED');
     const groupDeck = await TournamentPlayersDeckModel.findOne({ tournamentId: tid, groupId: group._id, userId: null });
-    expect(groupDeck!.players[0].decks).toEqual([['Steel', 'Ruby']]);
+    expect(groupDeck!.players[0].decks).toEqual([['Ruby', 'Steel']]);
   });
 
   it('REJECTED conserve les encres du groupe et passe le conflit en REJECTED', async () => {
