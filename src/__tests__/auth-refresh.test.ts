@@ -14,7 +14,7 @@ describe('POST /api/auth/refresh', () => {
     expect(res.status).toBe(200);
     const setCookie = res.headers.get('set-cookie');
     expect(setCookie).toMatch(/session=/);
-    expect(setCookie).toMatch(/max-age=14400/i);
+    expect(setCookie).toMatch(/max-age=28800/i);
   });
 
   it('met à jour lastActivityAt en BDD après un refresh réussi', async () => {
@@ -65,7 +65,7 @@ describe('POST /api/auth/refresh', () => {
       userId: user._id,
       role: 'USER',
       expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
-      lastActivityAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      lastActivityAt: new Date(Date.now() - 9 * 60 * 60 * 1000),
     });
     const cookie = await signCookie(sessionId, 'USER');
     const req = makeRequest('POST', '/api/auth/refresh', undefined, cookie);
