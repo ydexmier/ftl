@@ -5,7 +5,7 @@ import { POST as fetchTournament } from '../../app/api/admin/fetchTournament/rou
 import { DELETE as adminDeleteTournament } from '../../app/api/admin/tournaments/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
-import { makeRequest } from '../test/helpers';
+import { makeRequest, createAdminUser, createTestUser, createAuthCookie } from '../test/helpers';
 import { NextRequest } from 'next/server';
 
 function makeMatch(id: number) {
@@ -122,13 +122,31 @@ describe('DELETE /api/tournaments/[id]', () => {
 });
 
 describe('POST /api/admin/fetchTournament', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: 1 });
+    const res = await fetchTournament(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si rôle USER', async () => {
+    const user = await createTestUser();
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: 1 }, cookie);
+    const res = await fetchTournament(req);
+    expect(res.status).toBe(403);
+  });
+
   it('retourne 400 sans tournamentId', async () => {
-    const req = makeRequest('POST', '/api/admin/fetchTournament', {});
+    const admin = await createAdminUser();
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('POST', '/api/admin/fetchTournament', {}, cookie);
     const res = await fetchTournament(req);
     expect(res.status).toBe(400);
   });
 
   it('fetche et sauvegarde un tournoi via RavensburgerClient', async () => {
+    const admin = await createAdminUser({ username: 'admin2', email: 'admin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({
       id: tid,
@@ -138,7 +156,7 @@ describe('POST /api/admin/fetchTournament', () => {
       tournament_phases: [],
     } as never);
 
-    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid });
+    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid }, cookie);
     const res = await fetchTournament(req);
     expect(res.status).toBe(200);
     const saved = await TournamentModel.findOne({ id: tid });
@@ -147,33 +165,55 @@ describe('POST /api/admin/fetchTournament', () => {
   });
 
   it('retourne 500 si l\'id retourné par l\'API ne correspond pas', async () => {
+    const admin = await createAdminUser({ username: 'admin3', email: 'admin3@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({ id: 9999 } as never);
-    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid });
+    const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid }, cookie);
     const res = await fetchTournament(req);
     expect(res.status).toBe(500);
   });
 });
 
 describe('DELETE /api/admin/tournaments', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 1 });
+    const res = await adminDeleteTournament(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si rôle USER', async () => {
+    const user = await createTestUser({ username: 'user2', email: 'user2@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 1 }, cookie);
+    const res = await adminDeleteTournament(req);
+    expect(res.status).toBe(403);
+  });
+
   it('retourne 400 sans id', async () => {
-    const req = makeRequest('DELETE', '/api/admin/tournaments', {});
+    const admin = await createAdminUser({ username: 'admin4', email: 'admin4@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('DELETE', '/api/admin/tournaments', {}, cookie);
     const res = await adminDeleteTournament(req);
     expect(res.status).toBe(400);
   });
 
   it('retourne 404 si le tournoi n\'existe pas', async () => {
-    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 999999 });
+    const admin = await createAdminUser({ username: 'admin5', email: 'admin5@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 999999 }, cookie);
     const res = await adminDeleteTournament(req);
     expect(res.status).toBe(404);
   });
 
   it('supprime le tournoi et ses rounds en cascade', async () => {
+    const admin = await createAdminUser({ username: 'admin6', email: 'admin6@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const t = await seedTournament();
     await RoundModel.create({ id: nextId(), tournamentId: t.id, results: [makeMatch(nextId())] });
     await RoundModel.create({ id: nextId(), tournamentId: t.id, results: [makeMatch(nextId())] });
 
-    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: t.id });
+    const req = makeRequest('DELETE', '/api/admin/tournaments', { id: t.id }, cookie);
     const res = await adminDeleteTournament(req);
     const data = await res.json();
 
