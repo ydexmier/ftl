@@ -357,7 +357,8 @@ Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre can
 - **Les routes API** → Services → Repositories → Mongoose (jamais de saut de couche)
 - **Accès MongoDB exclusivement via les repositories** (`src/repositories/db/`) — jamais de requêtes Mongoose directes dans les routes ou services
 - **`ApiResponse`** (`src/lib/api/responses.ts`) pour toutes les réponses HTTP
-- **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB
+- **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB, retourne `AuthSession | null`
+- **`requireAdminSession(request)`** pour les routes admin — appelle `getAuthSession` + vérifie le rôle ADMIN, retourne `{ session: AuthSession } | { error: NextResponse }` — usage : `const result = await requireAdminSession(request); if ('error' in result) return result.error; const { session } = result;`
 - **`getServerUser()`** dans les Server Components — ne pas utiliser dans les API routes
 - **Types dans `src/types/`** — pas de types inline dans les composants ou routes
 - **Hooks React** dans `src/hooks/` — `useFetch<T>(url)` est le hook de fetching client standard (pas de React Query)

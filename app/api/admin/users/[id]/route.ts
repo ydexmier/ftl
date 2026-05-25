@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { SessionRepository } from '@/src/repositories/db/SessionRepository';
@@ -10,8 +10,8 @@ import { validateAdminUserUpdate } from '@/src/lib/validation';
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   const { id } = await params;
   const user = await UserRepository.findById(id);
@@ -30,8 +30,9 @@ export async function GET(request: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const { id } = await params;
   const user = await UserRepository.findById(id);
@@ -59,7 +60,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   if (role !== undefined) updates.role = role;
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(session.userId);
   const adminUsername = adminUser?.username ?? '';
 
   if (password) {
@@ -68,7 +69,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     updates.passwordHash = await hashPassword(password);
     await AuditLogRepository.create({
       action: 'PASSWORD_CHANGED',
-      userId: auth.session.userId,
+      userId: session.userId,
       username: adminUsername,
       metadata: { targetUserId: id, targetUsername: user.username },
     });
@@ -78,7 +79,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   await AuditLogRepository.create({
     action: 'USER_UPDATED',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUsername,
     metadata: {
       targetUserId: id,
@@ -98,19 +99,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const { id } = await params;
 
-  if (String(auth.session.userId) === id) {
+  if (session.userId === id) {
     return ApiResponse.badRequest('Vous ne pouvez pas supprimer votre propre compte');
   }
 
   const user = await UserRepository.findById(id);
   if (!user) return ApiResponse.notFound('Utilisateur introuvable');
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(session.userId);
 
   await Promise.all([
     UserRepository.delete(id),
@@ -119,7 +121,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
   await AuditLogRepository.create({
     action: 'USER_DELETED',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUser?.username ?? '',
     metadata: { deletedUserId: id, deletedUsername: user.username },
   });

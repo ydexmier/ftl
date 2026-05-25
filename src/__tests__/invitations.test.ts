@@ -12,12 +12,12 @@ describe('GET /api/admin/invitations', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 pour un utilisateur non-admin', async () => {
+  it('retourne 403 pour un utilisateur non-admin', async () => {
     const user = await createTestUser({ username: 'listinvuser1', email: 'listinvuser1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/invitations', undefined, cookie);
     const res = await listInvitations(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 avec un tableau vide si pas d\'invitation', async () => {
@@ -83,12 +83,12 @@ describe('POST /api/admin/invitations', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 si rôle USER', async () => {
+  it('retourne 403 si rôle USER', async () => {
     const user = await createTestUser();
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('POST', '/api/admin/invitations', { emails: ['new@example.com'] }, cookie);
     const res = await sendInvitations(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('skip si le mail a déjà un compte', async () => {

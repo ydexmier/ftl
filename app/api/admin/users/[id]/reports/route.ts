@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const auth = await getAdminSession(req);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(req);
+  if ('error' in result) return result.error;
 
   const { id: userId } = await params;
 

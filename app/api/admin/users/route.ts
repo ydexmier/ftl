@@ -1,14 +1,14 @@
 import { NextRequest } from 'next/server';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateAdminUserCreate } from '@/src/lib/validation';
 
 export async function GET(request: NextRequest) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -27,8 +27,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const v = validateAdminUserCreate(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);
@@ -47,10 +48,10 @@ export async function POST(request: NextRequest) {
   const passwordHash = await hashPassword(password);
   const user = await UserRepository.create({ username, email, passwordHash, role });
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(session.userId);
   await AuditLogRepository.create({
     action: 'USER_CREATED',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUser?.username ?? '',
     metadata: { createdUsername: username, createdRole: role },
   });

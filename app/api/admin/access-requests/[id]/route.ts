@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { AccessRequestRepository } from '@/src/repositories/db/AccessRequestRepository';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
@@ -11,8 +11,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await getAdminSession(req);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(req);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const { id } = await params;
   const { action } = await req.json();
@@ -28,7 +29,7 @@ export async function PATCH(
   }
 
   if (action === 'reject') {
-    await AccessRequestRepository.reject(id, String(auth.session.userId));
+    await AccessRequestRepository.reject(id, String(session.userId));
     return ApiResponse.ok({ status: 'REJECTED' });
   }
 
@@ -56,16 +57,16 @@ export async function PATCH(
     email,
     token,
     groupIds: [],
-    invitedBy: String(auth.session.userId),
+    invitedBy: String(session.userId),
     expiresAt,
   });
 
-  await AccessRequestRepository.approve(id, String(auth.session.userId));
+  await AccessRequestRepository.approve(id, String(session.userId));
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(String(session.userId));
   await AuditLogRepository.create({
     action: 'ADMIN_ACTION',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUser?.username ?? '',
     metadata: { action: 'ACCESS_REQUEST_APPROVED', email },
   });

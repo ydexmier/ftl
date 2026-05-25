@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { InvitationRepository } from '@/src/repositories/db/InvitationRepository';
 import { sendInvitationEmail } from '@/src/lib/email';
@@ -10,8 +10,9 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const { id } = await params;
   const invitation = await InvitationRepository.findById(id);
@@ -22,10 +23,10 @@ export async function DELETE(
 
   await InvitationRepository.cancel(id);
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(session.userId);
   await AuditLogRepository.create({
     action: 'ADMIN_ACTION',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUser?.username ?? '',
     metadata: { action: 'INVITATION_CANCELLED', invitationId: id, email: invitation.email },
   });
@@ -37,8 +38,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const { id } = await params;
   const invitation = await InvitationRepository.findById(id);
@@ -61,10 +63,10 @@ export async function POST(
     return ApiResponse.serverError(err);
   }
 
-  const adminUser = await UserRepository.findById(String(auth.session.userId));
+  const adminUser = await UserRepository.findById(session.userId);
   await AuditLogRepository.create({
     action: 'ADMIN_ACTION',
-    userId: auth.session.userId,
+    userId: session.userId,
     username: adminUser?.username ?? '',
     metadata: { action: 'INVITATION_RESENT', invitationId: id, email: invitation.email },
   });
