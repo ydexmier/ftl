@@ -5,7 +5,6 @@ import { POST as assignDeck } from '../../app/api/rounds/[roundId]/matchs/[match
 import { POST as fetchRound } from '../../app/api/admin/fetchRound/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
-import GroupModel from '@models/Group';
 import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
 import GroupTournamentModel from '@models/GroupTournament';
 import { createTestUser, createAdminUser, createTestGroup, createAuthCookie, makeRequest } from '../test/helpers';
@@ -359,7 +358,7 @@ describe('POST /api/admin/fetchRound', () => {
   });
 
   it('retourne 403 si rôle USER', async () => {
-    const user = await createTestUser({ username: 'user-fr', email: 'user-fr@example.com' });
+    const user = await createTestUser({ username: 'fr_user1', email: 'fr_user1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1, roundId: 1 }, cookie);
     const res = await fetchRound(req);
@@ -367,7 +366,7 @@ describe('POST /api/admin/fetchRound', () => {
   });
 
   it('retourne 400 sans tournamentId', async () => {
-    const admin = await createAdminUser({ username: 'admin-fr1', email: 'admin-fr1@example.com' });
+    const admin = await createAdminUser({ username: 'fr_admin1', email: 'fr_admin1@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('POST', '/api/admin/fetchRound', { roundId: 1 }, cookie);
     const res = await fetchRound(req);
@@ -375,7 +374,7 @@ describe('POST /api/admin/fetchRound', () => {
   });
 
   it('retourne 400 sans roundId', async () => {
-    const admin = await createAdminUser({ username: 'admin-fr2', email: 'admin-fr2@example.com' });
+    const admin = await createAdminUser({ username: 'fr_admin2', email: 'fr_admin2@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1 }, cookie);
     const res = await fetchRound(req);
@@ -383,7 +382,7 @@ describe('POST /api/admin/fetchRound', () => {
   });
 
   it('retourne 500 si le round n\'existe pas dans le tournoi', async () => {
-    const admin = await createAdminUser({ username: 'admin-fr3', email: 'admin-fr3@example.com' });
+    const admin = await createAdminUser({ username: 'fr_admin3', email: 'fr_admin3@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
@@ -393,7 +392,7 @@ describe('POST /api/admin/fetchRound', () => {
   });
 
   it('fetche et sauvegarde un round via RavensburgerClient', async () => {
-    const admin = await createAdminUser({ username: 'admin-fr4', email: 'admin-fr4@example.com' });
+    const admin = await createAdminUser({ username: 'fr_admin4', email: 'fr_admin4@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     const rid = nextId();

@@ -129,7 +129,7 @@ describe('POST /api/admin/fetchTournament', () => {
   });
 
   it('retourne 403 si rôle USER', async () => {
-    const user = await createTestUser();
+    const user = await createTestUser({ username: 'ft_user1', email: 'ft_user1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: 1 }, cookie);
     const res = await fetchTournament(req);
@@ -137,7 +137,7 @@ describe('POST /api/admin/fetchTournament', () => {
   });
 
   it('retourne 400 sans tournamentId', async () => {
-    const admin = await createAdminUser();
+    const admin = await createAdminUser({ username: 'ft_admin1', email: 'ft_admin1@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('POST', '/api/admin/fetchTournament', {}, cookie);
     const res = await fetchTournament(req);
@@ -145,7 +145,7 @@ describe('POST /api/admin/fetchTournament', () => {
   });
 
   it('fetche et sauvegarde un tournoi via RavensburgerClient', async () => {
-    const admin = await createAdminUser({ username: 'admin2', email: 'admin2@example.com' });
+    const admin = await createAdminUser({ username: 'ft_admin2', email: 'ft_admin2@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({
@@ -165,7 +165,7 @@ describe('POST /api/admin/fetchTournament', () => {
   });
 
   it('retourne 500 si l\'id retourné par l\'API ne correspond pas', async () => {
-    const admin = await createAdminUser({ username: 'admin3', email: 'admin3@example.com' });
+    const admin = await createAdminUser({ username: 'ft_admin3', email: 'ft_admin3@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({ id: 9999 } as never);
@@ -183,7 +183,7 @@ describe('DELETE /api/admin/tournaments', () => {
   });
 
   it('retourne 403 si rôle USER', async () => {
-    const user = await createTestUser({ username: 'user2', email: 'user2@example.com' });
+    const user = await createTestUser({ username: 'dt_user1', email: 'dt_user1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 1 }, cookie);
     const res = await adminDeleteTournament(req);
@@ -191,7 +191,7 @@ describe('DELETE /api/admin/tournaments', () => {
   });
 
   it('retourne 400 sans id', async () => {
-    const admin = await createAdminUser({ username: 'admin4', email: 'admin4@example.com' });
+    const admin = await createAdminUser({ username: 'dt_admin1', email: 'dt_admin1@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('DELETE', '/api/admin/tournaments', {}, cookie);
     const res = await adminDeleteTournament(req);
@@ -199,7 +199,7 @@ describe('DELETE /api/admin/tournaments', () => {
   });
 
   it('retourne 404 si le tournoi n\'existe pas', async () => {
-    const admin = await createAdminUser({ username: 'admin5', email: 'admin5@example.com' });
+    const admin = await createAdminUser({ username: 'dt_admin2', email: 'dt_admin2@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('DELETE', '/api/admin/tournaments', { id: 999999 }, cookie);
     const res = await adminDeleteTournament(req);
@@ -207,7 +207,7 @@ describe('DELETE /api/admin/tournaments', () => {
   });
 
   it('supprime le tournoi et ses rounds en cascade', async () => {
-    const admin = await createAdminUser({ username: 'admin6', email: 'admin6@example.com' });
+    const admin = await createAdminUser({ username: 'dt_admin3', email: 'dt_admin3@example.com' });
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const t = await seedTournament();
     await RoundModel.create({ id: nextId(), tournamentId: t.id, results: [makeMatch(nextId())] });

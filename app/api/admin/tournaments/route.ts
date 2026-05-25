@@ -1,23 +1,20 @@
 import { NextRequest } from 'next/server';
 import { TournamentService } from '@/src/services/TournamentService';
 import { ApiResponse } from '@/src/lib/api/responses';
-import { getAuthSession } from '@/src/lib/auth/getAuthSession';
-import { hasRole } from '@/src/lib/auth/rbac';
-import type { UserRole } from '@models/User';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 
 export async function DELETE(request: NextRequest) {
-	const auth = await getAuthSession(request);
-	if (!auth) return ApiResponse.unauthorized();
-	if (!hasRole(auth.role as UserRole, 'ADMIN')) return ApiResponse.forbidden();
+	const result = await requireAdminSession(request);
+	if ('error' in result) return result.error;
 
 	const { id } = await request.json();
 	if (!id) return ApiResponse.badRequest('Tournament id requis');
 
 	try {
-		const result = await TournamentService.delete(Number(id));
+		const result2 = await TournamentService.delete(Number(id));
 		return ApiResponse.ok({
 			message: `Tournament ${id} et ses données associées supprimés avec succès`,
-			...result,
+			...result2,
 		});
 	} catch (err) {
 		const msg = (err as Error).message;

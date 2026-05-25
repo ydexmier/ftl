@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getAuthSession } from '@/src/lib/auth/getAuthSession';
-import { hasRole } from '@/src/lib/auth/rbac';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
 import { DataMergeService } from '@/src/services/DataMergeService';
@@ -9,9 +8,8 @@ import { ApiResponse } from '@/src/lib/api/responses';
 type Params = { params: Promise<{ id: string; uid: string }> };
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const auth = await getAuthSession(request);
-  if (!auth) return ApiResponse.unauthorized();
-  if (!hasRole(auth.role as 'USER' | 'ADMIN' | 'SUPERUSER', 'ADMIN')) return ApiResponse.forbidden();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   const { id: groupId, uid: userId } = await params;
 

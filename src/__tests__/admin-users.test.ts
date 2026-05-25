@@ -16,12 +16,12 @@ describe('GET /api/admin/users', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 avec un utilisateur non-admin', async () => {
+  it('retourne 403 avec un utilisateur non-admin', async () => {
     const user = await createTestUser({ username: 'plain', email: 'plain@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/users', undefined, cookie);
     const res = await listUsers(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 et la liste des utilisateurs pour un admin', async () => {

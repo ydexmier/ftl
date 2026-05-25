@@ -1,22 +1,14 @@
 import { NextRequest } from 'next/server';
-import { getAuthSession } from '@/src/lib/auth/getAuthSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { GroupService } from '@/src/services/GroupService';
-import { hasRole } from '@/src/lib/auth/rbac';
 import { ApiResponse } from '@/src/lib/api/responses';
 import type { GroupMemberRole } from '@/src/types/group';
 
 type Params = { params: Promise<{ id: string; uid: string }> };
 
-async function getAdminAuth(request: NextRequest) {
-  const auth = await getAuthSession(request);
-  if (!auth) return { auth: null, error: ApiResponse.unauthorized() };
-  if (!hasRole(auth.role as 'USER' | 'ADMIN' | 'SUPERUSER', 'ADMIN')) return { auth: null, error: ApiResponse.forbidden() };
-  return { auth, error: null };
-}
-
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const { auth, error } = await getAdminAuth(request);
-  if (!auth) return error!;
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   try {
     const { id, uid } = await params;
@@ -34,8 +26,8 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
-  const { auth, error } = await getAdminAuth(request);
-  if (!auth) return error!;
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   try {
     const { id, uid } = await params;
