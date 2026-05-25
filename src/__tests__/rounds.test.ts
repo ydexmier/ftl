@@ -8,7 +8,7 @@ import RoundModel from '@models/Round';
 import GroupModel from '@models/Group';
 import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
 import GroupTournamentModel from '@models/GroupTournament';
-import { createTestUser, createTestGroup, createAuthCookie, makeRequest } from '../test/helpers';
+import { createTestUser, createAdminUser, createTestGroup, createAuthCookie, makeRequest } from '../test/helpers';
 import { NextRequest } from 'next/server';
 
 vi.mock('@/src/repositories/external/RavensburgerClient', () => ({
@@ -352,27 +352,49 @@ describe('Cycle complet bicolorite — assign puis GET', () => {
 });
 
 describe('POST /api/admin/fetchRound', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1, roundId: 1 });
+    const res = await fetchRound(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si rôle USER', async () => {
+    const user = await createTestUser({ username: 'user-fr', email: 'user-fr@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1, roundId: 1 }, cookie);
+    const res = await fetchRound(req);
+    expect(res.status).toBe(403);
+  });
+
   it('retourne 400 sans tournamentId', async () => {
-    const req = makeRequest('POST', '/api/admin/fetchRound', { roundId: 1 });
+    const admin = await createAdminUser({ username: 'admin-fr1', email: 'admin-fr1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('POST', '/api/admin/fetchRound', { roundId: 1 }, cookie);
     const res = await fetchRound(req);
     expect(res.status).toBe(400);
   });
 
   it('retourne 400 sans roundId', async () => {
-    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1 });
+    const admin = await createAdminUser({ username: 'admin-fr2', email: 'admin-fr2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: 1 }, cookie);
     const res = await fetchRound(req);
     expect(res.status).toBe(400);
   });
 
   it('retourne 500 si le round n\'existe pas dans le tournoi', async () => {
+    const admin = await createAdminUser({ username: 'admin-fr3', email: 'admin-fr3@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
-    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: 999 });
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: 999 }, cookie);
     const res = await fetchRound(req);
     expect(res.status).toBe(500);
   });
 
   it('fetche et sauvegarde un round via RavensburgerClient', async () => {
+    const admin = await createAdminUser({ username: 'admin-fr4', email: 'admin-fr4@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const tid = nextId();
     const rid = nextId();
     const mid = nextId();
@@ -390,7 +412,7 @@ describe('POST /api/admin/fetchRound', () => {
       results: [makeMatch(mid)],
     } as never);
 
-    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: rid });
+    const req = makeRequest('POST', '/api/admin/fetchRound', { tournamentId: tid, roundId: rid }, cookie);
     const res = await fetchRound(req);
     expect(res.status).toBe(200);
     const saved = await RoundModel.findOne({ id: rid });
