@@ -1,5 +1,33 @@
 import type { RoundRef, RoundType } from './round';
 
+export interface ScoutingProgress {
+  total: number;
+  fullyScouted: number;
+  partiallyScouted: number;
+  unscouted: number;
+}
+
+export interface DeckEntry {
+  inks: string[];
+  count: number;
+}
+
+export interface MatchupEntry {
+  deckA: string;
+  deckB: string;
+  winsA: number;
+  winsB: number;
+}
+
+export interface TournamentStats {
+  scoutingProgress: ScoutingProgress;
+  inkDistribution: DeckEntry[];
+  matchupMatrix: {
+    decks: string[];
+    entries: MatchupEntry[];
+  };
+}
+
 export interface Store {
 	id: number;
 	name: string;
