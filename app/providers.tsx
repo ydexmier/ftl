@@ -3,12 +3,13 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
 const PUBLIC_PATHS = ['/login', '/register', '/forgot-password', '/reset-password', '/access-request'];
-const POLL_INTERVAL_MS = 4 * 60 * 1000; // 4 min — bien sous les 30 min d'inactivité DB
+const POLL_INTERVAL_MS = 4 * 60 * 1000; // 4 min — bien sous les 8h d'inactivité DB
 
 function SessionGuard() {
   const pathname = usePathname();
   const lastCheckRef = useRef(Date.now());
   const checkingRef = useRef(false);
+  const redirectFailuresRef = useRef(0);
   const isPublic = PUBLIC_PATHS.some(p => pathname.startsWith(p));
 
   useEffect(() => {
@@ -20,9 +21,17 @@ function SessionGuard() {
       try {
         // redirect: 'manual' pour intercepter la redirection middleware (cookie expiré = 302)
         const res = await fetch('/api/auth/refresh', { method: 'POST', redirect: 'manual' });
-        if (res.status === 401 || res.type === 'opaqueredirect') {
+        if (res.status === 401) {
           window.location.href = '/login?reason=expired';
+        } else if (res.type === 'opaqueredirect') {
+          // Sur mobile 5G, un proxy carrier peut rediriger temporairement une requête.
+          // On ne déconnecte qu'après 2 échecs consécutifs pour éviter les faux positifs.
+          redirectFailuresRef.current += 1;
+          if (redirectFailuresRef.current >= 2) {
+            window.location.href = '/login?reason=expired';
+          }
         } else {
+          redirectFailuresRef.current = 0;
           lastCheckRef.current = Date.now();
         }
       } catch {

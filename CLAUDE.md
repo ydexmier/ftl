@@ -47,10 +47,10 @@ Fonctionnalités principales :
 - Switch prod/dev automatique via `NODE_ENV` dans `src/lib/email.ts`
 
 ### Authentification & Sécurité
-- Sessions stockées en MongoDB (`models/Session.ts`), TTL absolu **12h** / inactivité **4h** (dimensionné pour une journée de tournoi)
-- Cookie `session` : maxAge **4h**, synchronisé avec la fenêtre d'inactivité DB — les deux horloges sont identiques
+- Sessions stockées en MongoDB (`models/Session.ts`), TTL absolu **12h** / inactivité **8h** (dimensionné pour une journée de tournoi)
+- Cookie `session` : maxAge **8h**, synchronisé avec la fenêtre d'inactivité DB — les deux horloges sont identiques
 - **`SessionGuard`** (`app/providers.tsx`) : poll `/api/auth/refresh` toutes les **4 min** quand l'onglet est actif + `visibilitychange` au retour sur l'onglet → redirect `/login?reason=expired` si session morte
-- **`/api/auth/refresh`** : valide la session en DB et ré-émet le cookie avec 4h frais (renouvellement du sliding window côté cookie et côté DB simultanément)
+- **`/api/auth/refresh`** : valide la session en DB et ré-émet le cookie avec 8h frais (renouvellement du sliding window côté cookie et côté DB simultanément)
 - Le middleware Next.js (Edge Runtime) vérifie uniquement la signature HMAC du cookie — il ne peut pas interroger MongoDB. La vérification DB complète se fait dans `getAuthSession()` (routes API) et `getServerUser()` (Server Components)
 - Cookies signés HMAC-SHA256 (`SESSION_SECRET`) via Web Crypto API (`src/lib/auth/cookieSign.ts`)
 - Hachage des mots de passe **Argon2id** (`argon2`) — `src/lib/auth/password.ts`
