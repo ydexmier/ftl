@@ -41,7 +41,7 @@ GET /api/external/tournaments/{tournamentId}/players
 
 ```bash
 curl -H "Authorization: Bearer a3f8c2d1e4b5f6a7..." \
-  https://votre-instance.com/api/external/tournaments/42/players
+  https://companion.yd-lab.com/api/external/tournaments/42/players
 ```
 
 ---
@@ -173,7 +173,7 @@ L'API ne définit pas de rate limiting strict, mais il est conseillé de ne pas 
 
 ```javascript
 const TOKEN = process.env.LORCANA_API_TOKEN;
-const BASE_URL = 'https://votre-instance.com';
+const BASE_URL = 'https://companion.yd-lab.com';
 
 async function getPlayers(tournamentId) {
   const res = await fetch(`${BASE_URL}/api/external/tournaments/${tournamentId}/players`, {
