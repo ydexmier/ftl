@@ -14,12 +14,12 @@ describe('GET /api/admin/badge-counts', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 pour un USER', async () => {
+  it('retourne 403 pour un USER', async () => {
     const user = await createTestUser({ username: 'bc_user1', email: 'bc_user1@test.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/badge-counts', undefined, cookie);
     const res = await getBadgeCounts(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 avec tous les compteurs à 0 si la base est vide', async () => {

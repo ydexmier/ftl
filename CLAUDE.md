@@ -47,10 +47,10 @@ Fonctionnalités principales :
 - Switch prod/dev automatique via `NODE_ENV` dans `src/lib/email.ts`
 
 ### Authentification & Sécurité
-- Sessions stockées en MongoDB (`models/Session.ts`), TTL absolu **12h** / inactivité **4h** (dimensionné pour une journée de tournoi)
-- Cookie `session` : maxAge **4h**, synchronisé avec la fenêtre d'inactivité DB — les deux horloges sont identiques
+- Sessions stockées en MongoDB (`models/Session.ts`), TTL absolu **12h** / inactivité **8h** (dimensionné pour une journée de tournoi)
+- Cookie `session` : maxAge **8h**, synchronisé avec la fenêtre d'inactivité DB — les deux horloges sont identiques
 - **`SessionGuard`** (`app/providers.tsx`) : poll `/api/auth/refresh` toutes les **4 min** quand l'onglet est actif + `visibilitychange` au retour sur l'onglet → redirect `/login?reason=expired` si session morte
-- **`/api/auth/refresh`** : valide la session en DB et ré-émet le cookie avec 4h frais (renouvellement du sliding window côté cookie et côté DB simultanément)
+- **`/api/auth/refresh`** : valide la session en DB et ré-émet le cookie avec 8h frais (renouvellement du sliding window côté cookie et côté DB simultanément)
 - Le middleware Next.js (Edge Runtime) vérifie uniquement la signature HMAC du cookie — il ne peut pas interroger MongoDB. La vérification DB complète se fait dans `getAuthSession()` (routes API) et `getServerUser()` (Server Components)
 - Cookies signés HMAC-SHA256 (`SESSION_SECRET`) via Web Crypto API (`src/lib/auth/cookieSign.ts`)
 - Hachage des mots de passe **Argon2id** (`argon2`) — `src/lib/auth/password.ts`
@@ -357,7 +357,8 @@ Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre can
 - **Les routes API** → Services → Repositories → Mongoose (jamais de saut de couche)
 - **Accès MongoDB exclusivement via les repositories** (`src/repositories/db/`) — jamais de requêtes Mongoose directes dans les routes ou services
 - **`ApiResponse`** (`src/lib/api/responses.ts`) pour toutes les réponses HTTP
-- **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB
+- **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB, retourne `AuthSession | null`
+- **`requireAdminSession(request)`** pour les routes admin — appelle `getAuthSession` + vérifie le rôle ADMIN, retourne `{ session: AuthSession } | { error: NextResponse }` — usage : `const result = await requireAdminSession(request); if ('error' in result) return result.error; const { session } = result;`
 - **`getServerUser()`** dans les Server Components — ne pas utiliser dans les API routes
 - **Types dans `src/types/`** — pas de types inline dans les composants ou routes
 - **Hooks React** dans `src/hooks/` — `useFetch<T>(url)` est le hook de fetching client standard (pas de React Query)

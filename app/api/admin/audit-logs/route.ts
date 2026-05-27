@@ -1,11 +1,11 @@
 import { NextRequest } from 'next/server';
-import { getAdminSession } from '@/src/lib/auth/getAdminSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { AuditLogRepository } from '@/src/repositories/db/AuditLogRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function GET(request: NextRequest) {
-  const auth = await getAdminSession(request);
-  if (!auth) return ApiResponse.unauthorized();
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'));

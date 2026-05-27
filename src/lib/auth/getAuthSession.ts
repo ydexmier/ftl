@@ -1,6 +1,9 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { verifyCookie } from './cookieSign';
 import { getSession } from './session';
+import { hasRole } from './rbac';
+import type { UserRole } from '@models/User';
+import { ApiResponse } from '@/src/lib/api/responses';
 
 export interface AuthSession {
   userId: string;
@@ -20,4 +23,13 @@ export async function getAuthSession(request: NextRequest): Promise<AuthSession 
     role: parsed.role,
     sessionId: parsed.sessionId,
   };
+}
+
+export async function requireAdminSession(
+  request: NextRequest,
+): Promise<{ session: AuthSession } | { error: NextResponse }> {
+  const session = await getAuthSession(request);
+  if (!session) return { error: ApiResponse.unauthorized() };
+  if (!hasRole(session.role as UserRole, 'ADMIN')) return { error: ApiResponse.forbidden() };
+  return { session };
 }

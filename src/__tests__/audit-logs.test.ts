@@ -10,12 +10,12 @@ describe('GET /api/admin/audit-logs', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 avec un utilisateur non-admin', async () => {
+  it('retourne 403 avec un utilisateur non-admin', async () => {
     const user = await createTestUser({ username: 'audituser1', email: 'audituser1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/audit-logs', undefined, cookie);
     const res = await getAuditLogs(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 avec un tableau vide si pas de logs', async () => {

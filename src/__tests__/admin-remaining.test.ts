@@ -117,12 +117,12 @@ describe('GET /api/admin/stats', () => {
     expect(res.status).toBe(401);
   });
 
-  it('retourne 401 pour un non-admin', async () => {
+  it('retourne 403 pour un non-admin', async () => {
     const user = await createTestUser({ username: 'statsuser1', email: 'statsuser1@example.com' });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('GET', '/api/admin/stats', undefined, cookie);
     const res = await getStats(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('retourne 200 avec la structure des stats', async () => {

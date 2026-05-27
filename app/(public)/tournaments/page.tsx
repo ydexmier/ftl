@@ -83,10 +83,12 @@ export default async function TournamentsPage() {
     const tournaments = tournamentIds
       .map((id) => tournamentMap.get(id))
       .filter((t): t is ITournament => t !== undefined)
+      .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
       .map(serializeTournament);
     const archivedGroupTournaments = archivedIds
       .map((id) => tournamentMap.get(id))
       .filter((t): t is ITournament => t !== undefined)
+      .sort((a, b) => new Date(b.start_datetime ?? 0).getTime() - new Date(a.start_datetime ?? 0).getTime())
       .map(serializeTournament);
     return {
       groupId,

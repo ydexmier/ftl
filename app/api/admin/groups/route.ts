@@ -1,22 +1,14 @@
 import { NextRequest } from 'next/server';
-import { getAuthSession } from '@/src/lib/auth/getAuthSession';
+import { requireAdminSession } from '@/src/lib/auth/getAuthSession';
 import { GroupService } from '@/src/services/GroupService';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
-import { hasRole } from '@/src/lib/auth/rbac';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateAdminGroupBody } from '@/src/lib/validation';
 
-async function getAdminAuth(request: NextRequest) {
-  const auth = await getAuthSession(request);
-  if (!auth) return { auth: null, error: ApiResponse.unauthorized() };
-  if (!hasRole(auth.role as 'USER' | 'ADMIN' | 'SUPERUSER', 'ADMIN')) return { auth: null, error: ApiResponse.forbidden() };
-  return { auth, error: null };
-}
-
 export async function GET(request: NextRequest) {
-  const { auth, error } = await getAdminAuth(request);
-  if (!auth) return error!;
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
 
   const groups = await GroupRepository.findAll();
   const enriched = await Promise.all(
@@ -36,13 +28,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { auth, error } = await getAdminAuth(request);
-  if (!auth) return error!;
+  const result = await requireAdminSession(request);
+  if ('error' in result) return result.error;
+  const { session } = result;
 
   const v = validateAdminGroupBody(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);
   try {
-    const group = await GroupService.createGroup(auth.userId, v.data);
+    const group = await GroupService.createGroup(session.userId, v.data);
     return ApiResponse.created(group);
   } catch (err) {
     return ApiResponse.badRequest((err as Error).message);
