@@ -13,6 +13,7 @@ vi.mock('@/src/lib/email', () => ({
   sendInvitationEmail: vi.fn().mockResolvedValue(undefined),
   sendWelcomeEmail: vi.fn().mockResolvedValue(undefined),
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
+  sendGuestInvitationEmail: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Mock connectToMongoDB : mongoose est déjà connecté via MongoMemoryServer

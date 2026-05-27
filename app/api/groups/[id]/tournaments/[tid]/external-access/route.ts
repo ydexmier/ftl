@@ -26,13 +26,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   try {
     const { id, tid } = await params;
-    const { userId, expiresAt } = await request.json();
-    if (!userId) return ApiResponse.badRequest('userId requis');
+    const { email, expiresAt } = await request.json();
+    if (!email) return ApiResponse.badRequest('email requis');
 
     const access = await GroupService.inviteExternal(
       id,
       auth.userId,
-      userId,
+      email,
       Number(tid),
       expiresAt ? new Date(expiresAt) : undefined,
     );
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   } catch (err) {
     const msg = (err as Error).message;
     if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
-    if (msg.includes('déjà membre') || msg.includes('déjà un accès actif')) return ApiResponse.conflict(msg);
+    if (msg.includes('déjà')) return ApiResponse.conflict(msg);
     return ApiResponse.badRequest(msg);
   }
 }

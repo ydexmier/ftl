@@ -13,6 +13,7 @@ Fonctionnalités principales :
 - **Scouting** : assignation des combinaisons d'encres (decks) aux joueurs, avec 3 portées (utilisateur / groupe / tournoi)
 - **Groupes** : gestion collaborative des tournois, invitation de membres, conflits de decks, accès externes temporaires
 - **Conflits** : workflow de résolution PENDING → PENDING_ADMIN → APPROVED/REJECTED/UNCERTAINTY
+- **Accès invités temporaires** : invitation externe par email (magic link), cookie `guest_session`, accès restreint au tournoi concerné — l'invité saisit un pseudo et peut assigner des decks et commenter sans compte
 - **Système d'invitation** par email pour la création de comptes utilisateurs
 - **Demandes d'accès** : formulaire public pour demander un accès (sans invitation directe)
 - **Feedback utilisateur** : signalement de bugs et demandes d'améliorations
@@ -69,7 +70,7 @@ Fonctionnalités principales :
 ### Tests
 - **Vitest v4** — runner de tests
 - **MongoDB Memory Server v11** — base de données en mémoire pour les tests d'intégration
-- Tests dans `src/__tests__/` (26 fichiers), helpers dans `src/test/`
+- Tests dans `src/__tests__/` (28 fichiers), helpers dans `src/test/`
 - Email mocké, `connectToMongoDB` mocké en no-op (mongoose déjà connecté)
 
 ### Infrastructure locale
@@ -108,6 +109,7 @@ app/                              — Next.js App Router
     access-requests/              — Demandes d'accès
   api/                            — Route handlers (voir section Routes API)
   access-request/                 — Formulaire public de demande d'accès
+  guest/[token]/                  — Page d'accueil invité (saisie du pseudo, validation magic link)
   login/                          — Page de connexion
   forgot-password/                — Demande de réinitialisation
   reset-password/[token]/         — Formulaire nouveau mot de passe
@@ -145,9 +147,9 @@ src/
   lib/
     api/                          — ApiResponse (responses.ts), apiFetch.ts
     auth/                         — session, cookieSign, password, rbac, rateLimit
-                                    getAuthSession.ts, getServerUser.ts
-    email.ts                      — sendInvitationEmail, sendWelcomeEmail, sendPasswordResetEmail
-    emails/                       — Templates React Email (Invitation, Welcome, PasswordReset)
+                                    getAuthSession.ts, getServerUser.ts, guestSession.ts
+    email.ts                      — sendInvitationEmail, sendWelcomeEmail, sendPasswordResetEmail, sendGuestInvitationEmail
+    emails/                       — Templates React Email (Invitation, Welcome, PasswordReset, GuestInvitation)
     db.ts                         — Singleton connexion MongoDB
     hcaptcha.ts                   — verifyHcaptcha()
     constants.ts                  — FETCH_ALL_ASYNC
@@ -179,8 +181,9 @@ src/
 | **Ranking** | `id_tournament`, `count`, `total`, `results[]` (classements joueurs) | Classements Ravensburger |
 | **TournamentPlayersDeck** | `tournamentId`, `groupId` (nullable), `userId` (nullable), `players[]` | Decks par portée (user/group/tournament) |
 | **TournamentConflict** | `userId`, `groupId`, `tournamentId`, `playerId`, `status` (PENDING/PENDING_ADMIN/APPROVED/REJECTED/UNCERTAINTY), `previousInks`, `proposedInks`, `resolvedInks` | Conflits d'assignation de deck |
-| **TournamentExternalAccess** | `groupId`, `tournamentId`, `userId`, `invitedBy`, `status` (PENDING/ACCEPTED/REJECTED/EXPIRED), `expiresAt` | Accès externes temporaires (TTL) |
-| **ScoutingReport** | `userId`, `groupId`, `tournamentId`, `playerId`, `createdAt` | Audit trail scouting |
+| **TournamentExternalAccess** | `groupId`, `tournamentId`, `email`, `accessToken` (UUID unique), `invitedBy`, `displayName` (nullable, renseigné à l'acceptation), `status` (PENDING/ACCEPTED/REVOKED/EXPIRED), `expiresAt` (TTL) | Accès invités temporaires par magic link |
+| **PlayerComment** | `tournamentId`, `playerId`, `authorId` (nullable), `guestAccessId` (nullable, ref TournamentExternalAccess), `guestDisplayName` (nullable), `groupId`, `inks[]`, `content` | Commentaires sur les joueurs (auteur OU invité) |
+| **ScoutingReport** | `userId` (nullable), `guestAccessId` (nullable), `groupId`, `tournamentId`, `playerId`, `createdAt` | Audit trail scouting (utilisateur OU invité) |
 | **UserTournament** | `userId`, `tournamentId`, `status` (ACTIVE/ARCHIVED) | Tournois d'un utilisateur |
 | **AccessRequest** | `email`, `reason`, `status` (PENDING/APPROVED/REJECTED), `reviewedBy` | Demandes d'accès publiques |
 | **Feedback** | `type` (bug/improvement), `title`, `description`, `page`, `userId`, `status` (open/in-progress/done/closed) | Feedbacks utilisateurs |
@@ -198,7 +201,10 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 - **TournamentPlayersDeckRepository** — `findByScope`, `assignDecks`, `createOne`, `deleteMany`, `upsertMissingPlayers`, `upsertMissingPlayersAllExisting`, `syncPlayerIdentifiers`
 - **GroupTournamentRepository** — `findByGroupId`, `findByTournamentId`, `create`, `updateStatus`, `delete`
 - **TournamentConflictRepository** — `findById`, `findPendingForUser`, `findAllPendingAdminByGroup`, `findAllUncertaintyByGroup`, `create`, `createMany`, `updateStatus`
-- **InvitationRepository**, **GroupInvitationRepository**, **SessionRepository**, **AuditLogRepository**, **PasswordResetRepository**, **FeedbackRepository**, **TournamentExternalAccessRepository**, **ScoutingReportRepository**, **AccessRequestRepository**, **UserTournamentRepository**
+- **TournamentExternalAccessRepository** — `findById`, `findByGroupAndTournament`, `findByAccessToken`, `create`, `setDisplayName` (+ passe status ACCEPTED), `revokeAccess` (status REVOKED), `hasActiveAccessByEmail`
+- **PlayerCommentRepository** — `findByPlayer`, `create`, `update`, `delete`, `deleteByGuestAccessId`, `countByPlayers`
+- **ScoutingReportRepository** — `findByScope`, `create`, `deleteManyByGuestAccessId`
+- **InvitationRepository**, **GroupInvitationRepository**, **SessionRepository**, **AuditLogRepository**, **PasswordResetRepository**, **FeedbackRepository**, **AccessRequestRepository**, **UserTournamentRepository**
 - **RavensburgerClient** (`src/repositories/external/`) — `fetchTournament(id)`, `fetchRound(id, page, pageSize)`, `fetchRank(id, page, pageSize)`
 
 ---
@@ -208,9 +214,9 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 | Service | Responsabilités |
 |---------|----------------|
 | **TournamentService** | `fetchAndSave(id)` depuis Ravensburger, `getAll`, `getById`, `delete` (cascade rounds + decks) |
-| **GroupService** | CRUD groupes, membres, invitations, tournois de groupe, accès externes, `acceptGroupInvitation` |
+| **GroupService** | CRUD groupes, membres, invitations, tournois de groupe, `acceptGroupInvitation`, `inviteExternal(groupId, tournamentId, email, expiresAt, adminId)` (génère token UUID, envoie magic link), `revokeExternalAccess(accessId, adminId)` |
 | **RoundService** | `fetchAndSave(tournamentId, roundId, options, scope)`, `getMatchesPaginated(roundId, options, scope)` |
-| **ScoutingService** | `assignDecks(roundId, matchId, assignments, scope, reporterUserId)` — assigne et crée `ScoutingReport` |
+| **ScoutingService** | `assignDecks(roundId, matchId, assignments, scope, reporter: Reporter)` — assigne et crée `ScoutingReport` ; `Reporter = { userId } | { guestAccessId, guestDisplayName }` — valide via `assertReporter()` |
 | **ConflictService** | `getUserPendingConflicts`, `getGroupPendingAdminConflicts`, `getGroupUncertainties`, `resolveMemberConflict`, `resolveAdminConflict` |
 | **InvitationService** | `register(token, username, password)` — crée l'user, l'ajoute aux groupes, envoie welcome email |
 | **DataMergeService** | `mergeOnGroupJoin(userId, groupId)` — fusionne les decks personnels dans le groupe, crée des conflits si divergence |
@@ -247,13 +253,13 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 | GET/POST | `/api/groups/[id]/tournaments` | Tournois du groupe |
 | GET/PUT/DELETE | `/api/groups/[id]/tournaments/[tid]` | Tournoi de groupe |
 | GET/POST | `/api/groups/[id]/tournaments/[tid]/reports` | Rapports scouting du groupe |
-| GET/POST | `/api/groups/[id]/tournaments/[tid]/external-access` | Accès externes |
+| GET/POST | `/api/groups/[id]/tournaments/[tid]/external-access` | Accès externes (POST : envoie magic link par email) |
 | GET/POST | `/api/groups/[id]/conflicts` | Conflits du groupe |
 | GET/PUT | `/api/groups/[id]/conflicts/[conflictId]` | Résolution conflit |
 | GET | `/api/groups/[id]/uncertainties` | Conflits UNCERTAINTY |
 | GET/POST | `/api/groups/invitations` | Invitations groupe |
 | GET/PUT | `/api/groups/invitations/[invId]` | Accepter/refuser invitation |
-| GET/PUT | `/api/groups/external-access/[accessId]` | Répondre à un accès externe |
+| DELETE | `/api/groups/external-access/[accessId]` | Révoquer un accès invité (admin) |
 
 ### Tournois
 | Méthode | Route | Description |
@@ -294,6 +300,11 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 | GET | `/api/admin/groups` | Liste des groupes |
 | GET | `/api/admin/stats` | Statistiques dashboard |
 
+### Invités (sans compte)
+| Méthode | Route | Description |
+|---------|-------|-------------|
+| POST | `/api/guest/validate` | Valider le token magic link, saisir le pseudo, poser le cookie `guest_session` |
+
 ### Public
 | Méthode | Route | Description |
 |---------|-------|-------------|
@@ -305,11 +316,12 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 
 ## Middleware (`middleware.ts`)
 
-- **Routes publiques** : `/login`, `/forgot-password`, `/access-request`, `/api/auth/**`, `/api/invitations/[token]`, `/api/access-requests`, `/register/[token]/**`, `/reset-password/[token]/**`
+- **Routes publiques** : `/login`, `/forgot-password`, `/access-request`, `/api/auth/**`, `/api/invitations/[token]`, `/api/access-requests`, `/register/[token]/**`, `/reset-password/[token]/**`, `/guest/**`, `/api/guest/**`
 - **Fichiers statiques** : `/_next`, `/favicon.ico`, `/svg`, `/images` — passent sans contrôle
 - Sur les routes protégées : vérifie le cookie `session` via HMAC, redirige vers `/login` si absent ou invalide
 - Sur `/admin/**` : vérifie que le rôle est ADMIN ou SUPERUSER, sinon redirige vers `/`
 - Headers injectés dans les API routes : `x-user-id` (sessionId), `x-user-role` — **NE PAS utiliser directement**, utiliser `getAuthSession(request)` qui relit le cookie et la session MongoDB
+- **Cookie `guest_session`** : si le cookie `session` est absent/invalide, le middleware tente `verifyGuestCookie` (HMAC uniquement, compatible Edge Runtime). Si valide, il vérifie que la route est autorisée (`/tournaments/[id]/**`, `/api/rounds/**`, `/api/tournaments/**`) et injecte les headers `x-guest-access-id`, `x-guest-tournament-id`, `x-guest-group-id`. Route non autorisée ou cookie invalide → redirect `/login`.
 
 ---
 
@@ -339,6 +351,21 @@ PENDING_ADMIN → (admin) → APPROVED (decks résolus) ou REJECTED
 ### Assignation de deck depuis la vue match
 `POST /api/rounds/[roundId]/matchs/[matchId]/assign_deck` — portée déterminée par les paramètres (`userId`, `groupId` ou ni l'un ni l'autre pour la portée tournoi). Délégue à `ScoutingService.assignDecks`.
 
+### Accès invité (Guest Access)
+
+Flux complet d'un accès invité temporaire :
+
+1. **Admin** invite un externe via `POST /api/groups/[id]/tournaments/[tid]/external-access` avec `{ email, expiresAt }`.
+2. **GroupService.inviteExternal** génère un `accessToken` UUID, crée un `TournamentExternalAccess` (status PENDING), envoie un email magic link via `sendGuestInvitationEmail`.
+3. **Invité** clique le lien → `app/guest/[token]/page.tsx` — saisit son pseudo (displayName).
+4. **`POST /api/guest/validate`** — valide le token (existence, non révoqué, non expiré), valide le displayName (requis, max 50 chars, pas de `|`), appelle `TournamentExternalAccessRepository.setDisplayName` (status → ACCEPTED), pose le cookie `guest_session` httpOnly signé HMAC.
+5. **Cookie `guest_session`** format : `accessId|tournamentId|groupId|displayName|sig` (le `|` est interdit dans displayName pour préserver le parsing). MaxAge : 8h (`GUEST_COOKIE_MAX_AGE`).
+6. **Middleware** vérifie la signature HMAC (Edge Runtime, sans DB). Headers `x-guest-*` injectés sur les routes autorisées.
+7. **Routes API** : `getGuestSession(request)` (`src/lib/auth/guestSession.ts`) relit le cookie ET vérifie en DB que le status est ACCEPTED et non expiré. Retourne `{ accessId, tournamentId, groupId, displayName } | null`.
+8. **Portée** : les invités opèrent toujours en portée groupe (`groupId` issu du cookie).
+9. **Identité dans les données** : `Reporter = { userId } | { guestAccessId, guestDisplayName }` — validé dans `ScoutingService.assertReporter()`. Le `guestDisplayName` est dénormalisé dans `PlayerComment` pour éviter un populate supplémentaire.
+10. **Révocation** : `DELETE /api/groups/external-access/[accessId]` → status REVOKED → `getGuestSession` retourne null → plus d'accès même avec cookie valide.
+
 ### Ordre canonique des encres
 Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre canonique : **Amber → Amethyst → Emerald → Ruby → Sapphire → Steel** (jaune → violet → vert → rouge → bleu → gris).
 
@@ -358,6 +385,7 @@ Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre can
 - **Accès MongoDB exclusivement via les repositories** (`src/repositories/db/`) — jamais de requêtes Mongoose directes dans les routes ou services
 - **`ApiResponse`** (`src/lib/api/responses.ts`) pour toutes les réponses HTTP
 - **`getAuthSession(request)`** pour l'auth dans les routes API — relit le cookie + la session MongoDB, retourne `AuthSession | null`
+- **`getGuestSession(request)`** pour l'auth invité dans les routes API — relit le cookie `guest_session` + vérifie en DB (status ACCEPTED, non expiré), retourne `{ accessId, tournamentId, groupId, displayName } | null`
 - **`requireAdminSession(request)`** pour les routes admin — appelle `getAuthSession` + vérifie le rôle ADMIN, retourne `{ session: AuthSession } | { error: NextResponse }` — usage : `const result = await requireAdminSession(request); if ('error' in result) return result.error; const { session } = result;`
 - **`getServerUser()`** dans les Server Components — ne pas utiliser dans les API routes
 - **Types dans `src/types/`** — pas de types inline dans les composants ou routes

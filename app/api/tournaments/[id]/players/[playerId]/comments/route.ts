@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
-import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 
 type Params = { params: Promise<{ id: string; playerId: string }> };
@@ -23,12 +22,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, session.userId);
     if (!isMember && session.role !== 'ADMIN' && session.role !== 'SUPERUSER') {
-      const hasAccess = await TournamentExternalAccessRepository.hasActiveAccess(
-        session.userId,
-        groupId,
-        tournamentId,
-      );
-      if (!hasAccess) return ApiResponse.forbidden();
+      return ApiResponse.forbidden();
     }
 
     // Admin view: fetch a member's personal comments alongside group context
@@ -84,12 +78,7 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, session.userId);
     if (!isMember && session.role !== 'ADMIN' && session.role !== 'SUPERUSER') {
-      const hasAccess = await TournamentExternalAccessRepository.hasActiveAccess(
-        session.userId,
-        groupId,
-        tournamentId,
-      );
-      if (!hasAccess) return ApiResponse.forbidden();
+      return ApiResponse.forbidden();
     }
   }
 
