@@ -20,11 +20,11 @@ const STATUS_LABELS: Record<TournamentExternalAccessStatus, string> = {
   EXPIRED: 'Expiré',
 };
 
-const STATUS_VARIANTS: Record<TournamentExternalAccessStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+const STATUS_COLORS: Record<TournamentExternalAccessStatus, 'secondary' | 'success' | 'error' | 'default'> = {
   PENDING: 'secondary',
-  ACCEPTED: 'default',
-  REVOKED: 'destructive',
-  EXPIRED: 'outline',
+  ACCEPTED: 'success',
+  REVOKED: 'error',
+  EXPIRED: 'default',
 };
 
 function formatDate(iso: string) {
@@ -118,7 +118,7 @@ export function ExternalAccessList({ groupId, tournamentId, tournamentName }: Pr
                   </td>
                   <td className="px-4 py-3 text-zinc-300">{a.email}</td>
                   <td className="px-4 py-3">
-                    <Badge variant={STATUS_VARIANTS[a.status]}>{STATUS_LABELS[a.status]}</Badge>
+                    <Badge color={STATUS_COLORS[a.status]} label={STATUS_LABELS[a.status]} />
                   </td>
                   <td className="px-4 py-3 text-zinc-400">{formatDate(a.expiresAt)}</td>
                   <td className="px-4 py-3 text-zinc-400">{formatDate(a.createdAt)}</td>

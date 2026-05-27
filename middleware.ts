@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyCookie } from '@/src/lib/auth/cookieSign';
-import { verifyGuestCookie, GUEST_COOKIE } from '@/src/lib/auth/guestSession';
+import { verifyGuestCookie, GUEST_COOKIE } from '@/src/lib/auth/guestCookie';
 
 const PUBLIC = ['/login', '/api/auth/login', '/api/auth/logout', '/forgot-password', '/api/auth/forgot-password', '/access-request', '/api/access-requests'];
 const PUBLIC_PREFIXES = ['/register/', '/api/invitations/', '/reset-password/', '/api/auth/reset-password/', '/api/external/', '/guest/', '/api/guest/'];

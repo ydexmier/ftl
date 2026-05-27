@@ -11,7 +11,7 @@ export default function GuestAccessPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -55,7 +55,7 @@ export default function GuestAccessPage() {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          <Button type="submit" fullWidth loading={loading} disabled={!displayName.trim()}>
+          <Button type="submit" className="w-full" loading={loading} disabled={!displayName.trim()}>
             Accéder au tournoi
           </Button>
         </form>

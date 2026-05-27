@@ -3,7 +3,6 @@ import { TournamentRepository } from '@/src/repositories/db/TournamentRepository
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
 import { UserTournamentRepository } from '@/src/repositories/db/UserTournamentRepository';
-import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import connectToMongoDB from '@/src/lib/db';
 import { TournamentsPageClient } from '@components/tournament/TournamentsPageClient';
 import type { ITournament } from '@models/Tournament';
@@ -99,25 +98,8 @@ export default async function TournamentsPage() {
     };
   });
 
-  const accesses = await TournamentExternalAccessRepository.findAcceptedByUser(user.userId);
-  const invitedTournaments = (
-    await Promise.all(
-      accesses.map(async (acc) => {
-        const tournament = tournamentMap.get(acc.tournamentId)
-          ?? await TournamentRepository.findById(acc.tournamentId);
-        const group = groups.find((g) => String(g._id) === String(acc.groupId))
-          ?? await GroupRepository.findById(String(acc.groupId));
-        if (!tournament) return null;
-        return {
-          accessId: String(acc._id),
-          groupId: String(acc.groupId),
-          groupName: group?.name ?? 'Groupe inconnu',
-          expiresAt: acc.expiresAt.toISOString(),
-          tournament: serializeTournament(tournament as ITournament),
-        };
-      }),
-    )
-  ).filter((i): i is NonNullable<typeof i> => i !== null);
+  // Les invités externes accèdent via guest_session (magic link) — plus de section invitedTournaments pour les users authentifiés
+  const invitedTournaments: never[] = [];
 
   const adminGroups = groupSections
     .filter((s) => s.myRole === 'ADMIN')
