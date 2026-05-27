@@ -124,4 +124,23 @@ export const PlayerCommentRepository = {
     await connectToMongoDB();
     await PlayerCommentModel.deleteMany({ groupId: new mongoose.Types.ObjectId(groupId) });
   },
+
+  async findByTournament(
+    tournamentId: number,
+    scope: { groupId?: string | null; userId?: string | null },
+  ): Promise<IPlayerComment[]> {
+    await connectToMongoDB();
+    const filter: Record<string, unknown> = { tournamentId };
+    if (scope.groupId !== undefined) {
+      filter.groupId = scope.groupId ? new mongoose.Types.ObjectId(scope.groupId) : null;
+    }
+    if (scope.userId !== undefined && scope.userId !== null) {
+      filter.authorId = new mongoose.Types.ObjectId(scope.userId);
+      filter.groupId = null;
+    }
+    return PlayerCommentModel.find(filter)
+      .select('playerId inks content createdAt')
+      .sort({ playerId: 1, createdAt: -1 })
+      .lean() as Promise<IPlayerComment[]>;
+  },
 };

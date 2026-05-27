@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Trophy, Search, ChevronLeft, ChevronRight, Users, Target } from 'lucide-react';
+import { ArrowLeft, Trophy, Search, ChevronLeft, ChevronRight, Users, Target, Key } from 'lucide-react';
+import { ApiTokensTab } from './ApiTokensTab';
 import { Button } from '@components/ui/Button';
 import { Select } from '@components/ui/Select';
 import { Spinner } from '@components/ui/Spinner';
@@ -36,7 +37,10 @@ interface Props {
   groupName: string;
   tournamentId: number;
   tournamentName: string;
+  isAdmin: boolean;
 }
+
+type Tab = 'scouting' | 'api-tokens';
 
 const PER_PAGE_OPTIONS = [
   { value: 10, label: '10 / page' },
@@ -47,7 +51,8 @@ const PER_PAGE_OPTIONS = [
 
 const DEFAULT_PAGINATION: Pagination = { page: 1, perPage: 25, total: 0, totalPages: 1 };
 
-export function GroupTournamentScoutingPage({ groupId, groupName, tournamentId, tournamentName }: Props) {
+export function GroupTournamentScoutingPage({ groupId, groupName, tournamentId, tournamentName, isAdmin }: Props) {
+  const [activeTab, setActiveTab] = useState<Tab>('scouting');
   const [stats, setStats] = useState<ScoutingStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
@@ -128,8 +133,32 @@ export function GroupTournamentScoutingPage({ groupId, groupName, tournamentId, 
         </div>
       </div>
 
+      {/* Tabs */}
+      {isAdmin && (
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setActiveTab('scouting')}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'scouting' ? 'border-blue-500 text-blue-400' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <Users className="h-3.5 w-3.5" />
+            Scouting
+          </button>
+          <button
+            onClick={() => setActiveTab('api-tokens')}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'api-tokens' ? 'border-blue-500 text-blue-400' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
+          >
+            <Key className="h-3.5 w-3.5" />
+            Accès API
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'api-tokens' && isAdmin && (
+        <ApiTokensTab groupId={groupId} tournamentId={tournamentId} />
+      )}
+
       {/* Stats */}
-      {statsLoading ? (
+      {activeTab === 'scouting' && (statsLoading ? (
         <div className="flex justify-center py-6">
           <Spinner size="sm" />
         </div>
@@ -179,9 +208,10 @@ export function GroupTournamentScoutingPage({ groupId, groupName, tournamentId, 
             </div>
           )}
         </div>
-      ) : null}
+      ) : null)}
 
       {/* Player list */}
+      {activeTab === 'scouting' && (
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
@@ -289,6 +319,7 @@ export function GroupTournamentScoutingPage({ groupId, groupName, tournamentId, 
           </>
         )}
       </div>
+      )}
 
       <PlayerDeckModal
         player={selected}
