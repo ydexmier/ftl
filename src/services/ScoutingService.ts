@@ -7,14 +7,26 @@ import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
 export type { PlayerDecksEntry, PlayersDecksMap, DeckAssignment } from '@/src/domain/rules/scoutingRules';
 export { getPlayerDecksInk, getMatchPlayerInks, mergePlayersDecks } from '@/src/domain/rules/scoutingRules';
 
+export type Reporter =
+  | { userId: string; guestAccessId?: never; guestDisplayName?: never }
+  | { guestAccessId: string; guestDisplayName: string; userId?: never };
+
+function assertReporter(reporter: Reporter): void {
+  if (!reporter.userId && !reporter.guestAccessId) {
+    throw new Error('INVALID_REPORTER: userId ou guestAccessId requis');
+  }
+}
+
 export const ScoutingService = {
 	async assignDecks(
 		roundId: number,
 		matchId: number,
 		assignments: DeckAssignment[],
 		scope: DeckScope,
-		reporterUserId: string,
+		reporter: Reporter,
 	) {
+		assertReporter(reporter);
+
 		const round = await RoundRepository.findById(roundId);
 		if (!round) throw new Error('Round not found');
 
@@ -39,11 +51,11 @@ export const ScoutingService = {
 			scope,
 		);
 
-		// Log one report per player with non-empty deck assignment
 		const reportsToLog = assignments
 			.filter((a) => a.decks && a.decks.length > 0)
 			.map((a) => ({
-				userId: reporterUserId,
+				userId: reporter.userId ?? null,
+				guestAccessId: reporter.guestAccessId ?? null,
 				groupId: scope.groupId ?? null,
 				tournamentId: round.tournamentId,
 				playerId: a.playerId,
@@ -60,7 +72,9 @@ export const ScoutingService = {
 					PlayerCommentRepository.create({
 						tournamentId: round.tournamentId,
 						playerId: a.playerId,
-						authorId: reporterUserId,
+						authorId: reporter.userId ?? null,
+						guestAccessId: reporter.guestAccessId ?? null,
+						guestDisplayName: reporter.guestDisplayName ?? null,
 						groupId: scope.groupId ?? null,
 						inks: a.decks[0] ?? [],
 						content: a.comment!.trim(),

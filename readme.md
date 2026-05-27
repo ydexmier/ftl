@@ -9,6 +9,7 @@ Application compagnon pour les tournois **Disney Lorcana TCG**. Elle permet aux 
 - **Scouting** — assignation des combinaisons d'encres (decks) aux joueurs, avec 3 niveaux de portée : personnel / groupe / tournoi
 - **Groupes** — collaboration entre joueurs d'un même groupe, invitation de membres, résolution de conflits d'assignation
 - **Conflits** — workflow de résolution quand deux portées ont des decks différents pour le même joueur (PENDING → PENDING_ADMIN → APPROVED / REJECTED / UNCERTAINTY)
+- **Accès invités temporaires** — un admin de groupe invite un externe par email (magic link) ; l'invité saisit un pseudo et peut participer au scouting sans créer de compte
 - **Rondes & matchs** — récupération des données depuis l'API Ravensburger, visualisation paginée des matchs avec les decks associés
 - **Système d'invitation** — création de comptes par email avec token sécurisé
 - **Demandes d'accès** — formulaire public pour demander un compte sans invitation directe
@@ -141,6 +142,7 @@ L'application est accessible sur [http://localhost:3000](http://localhost:3000).
 | `http://localhost:3000/admin/access-requests` | Demandes d'accès en attente |
 | `http://localhost:3000/tournaments` | Liste des tournois |
 | `http://localhost:3000/groups` | Groupes de l'utilisateur |
+| `http://localhost:3000/guest/[token]` | Page d'accueil invité (validation magic link + saisie du pseudo) |
 | `http://localhost:3000/access-request` | Formulaire public de demande d'accès |
 | `http://localhost:8025` | Interface web Mailpit (emails de dev) |
 | `mongodb://localhost:27017` | MongoDB (outil externe : MongoDB Compass, etc.) |
@@ -207,9 +209,10 @@ node scripts/seed-admin.mjs   # Créer un compte utilisateur (interactif)
 | `passwordresets` | Tokens de réinitialisation de mot de passe |
 | `feedbacks` | Feedbacks et rapports de bugs |
 | `accessrequests` | Demandes d'accès publiques |
-| `scoutingreports` | Audit trail des assignations de decks |
+| `scoutingreports` | Audit trail des assignations de decks (userId ou guestAccessId) |
 | `usertournaments` | Tournois suivis par un utilisateur |
-| `tournamentexternalaccesses` | Accès externes temporaires à un groupe |
+| `tournamentexternalaccesses` | Accès invités temporaires : email, token UUID magic link, status PENDING/ACCEPTED/REVOKED/EXPIRED (TTL sur expiresAt) |
+| `playercomments` | Commentaires sur les joueurs d'un tournoi (authorId ou guestAccessId + guestDisplayName) |
 
 ### Connexion avec MongoDB Compass
 
@@ -288,6 +291,7 @@ src/
 - Mots de passe hashés **Argon2id** (memoryCost 64MB, timeCost 3, parallelism 4)
 - Rate limiting : 5 tentatives de connexion par IP / 15 minutes
 - hCaptcha sur les endpoints publics (inscription, demande d'accès)
+- Cookie `guest_session` signé HMAC-SHA256 (même secret) pour les invités temporaires — format `accessId|tournamentId|groupId|displayName|sig`, maxAge 8h. La validité DB est vérifiée à chaque requête API par `getGuestSession()` (le middleware Edge Runtime vérifie uniquement la signature HMAC).
 
 ---
 
@@ -312,6 +316,7 @@ Emails envoyés par l'application :
 - **Invitation** — lien de création de compte
 - **Welcome** — confirmation après inscription
 - **Réinitialisation de mot de passe**
+- **Invitation invité externe** — magic link vers `/guest/[token]` pour accéder à un tournoi sans compte
 
 ---
 

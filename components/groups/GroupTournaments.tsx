@@ -275,6 +275,7 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
           tournamentId={externalModal.tournamentId}
           tournamentName={externalModal.name}
           onClose={() => setExternalModal(null)}
+          onSuccess={() => {}}
         />
       )}
 

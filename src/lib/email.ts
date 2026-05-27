@@ -2,6 +2,7 @@ import { render } from '@react-email/render';
 import { InvitationEmail } from './emails/InvitationEmail';
 import { WelcomeEmail } from './emails/WelcomeEmail';
 import { PasswordResetEmail } from './emails/PasswordResetEmail';
+import { GuestInvitationEmail } from './emails/GuestInvitationEmail';
 
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companion.yd-lab.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -48,4 +49,16 @@ export async function sendPasswordResetEmail(to: string, token: string) {
   const link = `${APP_URL}/reset-password/${token}`;
   const html = await render(PasswordResetEmail({ link }));
   await sendEmail(to, 'Réinitialisation de ton mot de passe', html);
+}
+
+export async function sendGuestInvitationEmail(
+  to: string,
+  token: string,
+  tournamentName: string,
+  groupName: string,
+  expiresAt: Date,
+) {
+  const link = `${APP_URL}/guest/${token}`;
+  const html = await render(GuestInvitationEmail({ link, tournamentName, groupName, expiresAt }));
+  await sendEmail(to, `Invitation au scouting — ${tournamentName}`, html);
 }

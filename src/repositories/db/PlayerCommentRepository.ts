@@ -7,10 +7,13 @@ import connectToMongoDB from '@/src/lib/db';
 export interface PlayerCommentInput {
   tournamentId: number;
   playerId: number;
-  authorId: string;
   groupId: string | null;
   inks: string[];
   content: string;
+  // Exactement l'un des deux doit être fourni — validé dans ScoutingService
+  authorId?: string | null;
+  guestAccessId?: string | null;
+  guestDisplayName?: string | null;
 }
 
 export const PlayerCommentRepository = {
@@ -123,5 +126,31 @@ export const PlayerCommentRepository = {
   async deleteManyByGroupId(groupId: string): Promise<void> {
     await connectToMongoDB();
     await PlayerCommentModel.deleteMany({ groupId: new mongoose.Types.ObjectId(groupId) });
+  },
+
+  async findByTournament(
+    tournamentId: number,
+    scope: { groupId?: string | null; userId?: string | null },
+  ): Promise<IPlayerComment[]> {
+    await connectToMongoDB();
+    const filter: Record<string, unknown> = { tournamentId };
+    if (scope.groupId !== undefined) {
+      filter.groupId = scope.groupId ? new mongoose.Types.ObjectId(scope.groupId) : null;
+    }
+    if (scope.userId !== undefined && scope.userId !== null) {
+      filter.authorId = new mongoose.Types.ObjectId(scope.userId);
+      filter.groupId = null;
+    }
+    return PlayerCommentModel.find(filter)
+      .select('playerId inks content createdAt guestDisplayName')
+      .sort({ playerId: 1, createdAt: -1 })
+      .lean() as Promise<IPlayerComment[]>;
+  },
+
+  async deleteByGuestAccessId(guestAccessId: string): Promise<void> {
+    await connectToMongoDB();
+    await PlayerCommentModel.deleteMany({
+      guestAccessId: new mongoose.Types.ObjectId(guestAccessId),
+    });
   },
 };

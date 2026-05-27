@@ -28,7 +28,10 @@ export default async function GroupTournamentPage({ params }: Params) {
   const belongs = groupTournament.some((gt) => gt.tournamentId === tournamentId);
   if (!belongs) notFound();
 
-  const tournament = await TournamentRepository.findById(tournamentId);
+  const [tournament, isAdmin] = await Promise.all([
+    TournamentRepository.findById(tournamentId),
+    GroupRepository.isAdmin(groupId, user.userId),
+  ]);
   const tournamentName = tournament?.name ?? `Tournoi #${tournamentId}`;
 
   return (
@@ -37,6 +40,7 @@ export default async function GroupTournamentPage({ params }: Params) {
       groupName={group.name}
       tournamentId={tournamentId}
       tournamentName={tournamentName}
+      isAdmin={isAdmin}
     />
   );
 }

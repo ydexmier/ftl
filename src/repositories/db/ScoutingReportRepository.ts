@@ -3,10 +3,12 @@ import ScoutingReportModel from '@models/ScoutingReport';
 import connectToMongoDB from '@/src/lib/db';
 
 export interface ScoutingReportInput {
-  userId: string;
+  // Exactement l'un des deux doit être fourni — validé dans ScoutingService
+  userId?: string | null;
+  guestAccessId?: string | null;
   groupId: string | null;
   tournamentId: number;
-  playerId: number;
+  playerId: number | undefined;
 }
 
 export const ScoutingReportRepository = {
@@ -19,7 +21,7 @@ export const ScoutingReportRepository = {
   async countByGroupAndTournament(groupId: string, tournamentId: number) {
     await connectToMongoDB();
     return ScoutingReportModel.aggregate<{ userId: string; count: number }>([
-      { $match: { groupId: new mongoose.Types.ObjectId(groupId), tournamentId } },
+      { $match: { groupId: new mongoose.Types.ObjectId(groupId), tournamentId, userId: { $ne: null } } },
       { $group: { _id: '$userId', count: { $sum: 1 } } },
       { $project: { _id: 0, userId: '$_id', count: 1 } },
     ]);
@@ -41,5 +43,12 @@ export const ScoutingReportRepository = {
 
     const total = results.reduce((sum, r) => sum + r.count, 0);
     return { total, byTournament: results };
+  },
+
+  async deleteManyByGuestAccessId(guestAccessId: string) {
+    await connectToMongoDB();
+    return ScoutingReportModel.deleteMany({
+      guestAccessId: new mongoose.Types.ObjectId(guestAccessId),
+    });
   },
 };
