@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
 import { GroupInvitationRepository } from '@/src/repositories/db/GroupInvitationRepository';
@@ -7,6 +8,7 @@ import { TournamentPlayersDeckRepository } from '@/src/repositories/db/Tournamen
 import { TournamentConflictRepository } from '@/src/repositories/db/TournamentConflictRepository';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { sendGuestInvitationEmail } from '@/src/lib/email';
 import type { GroupMemberRole } from '@/src/types/group';
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -202,35 +204,43 @@ export const GroupService = {
   async inviteExternal(
     groupId: string,
     adminId: string,
-    invitedUserId: string,
+    email: string,
     tournamentId: number,
     expiresAt?: Date,
   ) {
     await assertGroupAdmin(groupId, adminId);
 
-    const alreadyMember = await GroupRepository.isMember(groupId, invitedUserId);
-    if (alreadyMember) throw new Error('Cet utilisateur est déjà membre du groupe');
+    if (!email || !email.includes('@')) throw new Error('Email invalide');
 
     const hasAccess = await GroupTournamentRepository.hasAccess(groupId, tournamentId);
     if (!hasAccess) throw new Error('Ce tournoi n\'appartient pas au groupe');
 
-    const alreadyActive = await TournamentExternalAccessRepository.hasActiveAccess(
-      invitedUserId,
+    const alreadyActive = await TournamentExternalAccessRepository.hasActiveAccessByEmail(
+      email,
       groupId,
       tournamentId,
     );
-    if (alreadyActive) throw new Error('Cet utilisateur a déjà un accès actif pour ce tournoi');
+    if (alreadyActive) throw new Error('Un accès actif existe déjà pour cet email sur ce tournoi');
 
-    const invitedUser = await UserRepository.findById(invitedUserId);
-    if (!invitedUser) throw new Error('Utilisateur introuvable');
+    const [group, tournament] = await Promise.all([
+      GroupRepository.findById(groupId),
+      TournamentRepository.findById(tournamentId),
+    ]);
+    if (!group) throw new Error('Groupe introuvable');
+    if (!tournament) throw new Error('Tournoi introuvable');
 
-    return TournamentExternalAccessRepository.create({
+    const accessToken = uuidv4();
+    const access = await TournamentExternalAccessRepository.create({
       groupId,
       tournamentId,
-      userId: invitedUserId,
       invitedBy: adminId,
+      email,
+      accessToken,
       expiresAt,
     });
+
+    await sendGuestInvitationEmail(email, accessToken, tournament.name, group.name, access.expiresAt);
+    return access;
   },
 
   async getExternalAccessList(groupId: string, adminId: string, tournamentId: number) {
@@ -238,21 +248,14 @@ export const GroupService = {
     return TournamentExternalAccessRepository.findByGroupAndTournament(groupId, tournamentId);
   },
 
-  async getMyExternalAccesses(userId: string) {
-    return TournamentExternalAccessRepository.findPendingByUser(userId);
-  },
-
-  async respondToExternalAccess(
-    accessId: string,
-    userId: string,
-    status: 'ACCEPTED' | 'REJECTED',
-  ) {
+  async revokeExternalAccess(accessId: string, adminId: string) {
     const access = await TournamentExternalAccessRepository.findById(accessId);
     if (!access) throw new Error('NOT_FOUND');
-    if (String(access.userId) !== userId) throw new Error('FORBIDDEN');
-    if (access.status !== 'PENDING') throw new Error('Cet accès a déjà été traité');
-    if (access.expiresAt < new Date()) throw new Error('Cet accès a expiré');
-    return TournamentExternalAccessRepository.updateStatus(accessId, status);
+    await assertGroupAdmin(String(access.groupId), adminId);
+    if (access.status === 'REVOKED' || access.status === 'EXPIRED') {
+      throw new Error('Cet accès est déjà révoqué ou expiré');
+    }
+    return TournamentExternalAccessRepository.revokeAccess(accessId);
   },
 
   // ─── Admin-only operations (bypass group membership check) ─────────────────

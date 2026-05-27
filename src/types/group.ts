@@ -43,14 +43,17 @@ export interface GroupInvitation {
   invitedByUsername?: string;
 }
 
-export type TournamentExternalAccessStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
+export type TournamentExternalAccessStatus = 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED';
 
 export interface TournamentExternalAccess {
   _id: string;
   groupId: string;
   tournamentId: number;
-  userId: string;
   invitedBy: string;
+  email: string;
+  displayName: string | null;
+  userId: string | null;
+  accessToken: string;
   status: TournamentExternalAccessStatus;
   expiresAt: string;
   createdAt: string;

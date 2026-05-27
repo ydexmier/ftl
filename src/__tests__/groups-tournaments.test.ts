@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { GET as getGroupTournaments, POST as addTournament } from '../../app/api/groups/[id]/tournaments/route';
 import { DELETE as removeTournament } from '../../app/api/groups/[id]/tournaments/[tid]/route';
 import { GET as getExternalAccesses, POST as inviteExternal } from '../../app/api/groups/[id]/tournaments/[tid]/external-access/route';
-import { PUT as respondToExternalAccess } from '../../app/api/groups/external-access/[accessId]/route';
+import { DELETE as revokeExternalAccess } from '../../app/api/groups/external-access/[accessId]/route';
 import { GET as getMyInvitations } from '../../app/api/groups/invitations/route';
 import { PUT as respondToInvitation } from '../../app/api/groups/invitations/[invId]/route';
 import TournamentModel from '@models/Tournament';
@@ -289,82 +289,78 @@ describe('GET /api/groups/[id]/tournaments/[tid]/external-access', () => {
 });
 
 describe('POST /api/groups/[id]/tournaments/[tid]/external-access', () => {
-  it('retourne 400 si l\'utilisateur invité n\'existe pas', async () => {
+  it('retourne 400 si l\'email est absent', async () => {
     const owner = await createTestUser({ username: 'ext5', email: 'ext5@example.com' });
     const group = await createTestGroup(owner._id, { name: 'ext-group-3' });
     const tournament = await createTestTournament();
     const cookie = await createAuthCookie(owner._id, 'USER');
     const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
     await addTournament(addReq, groupParams(String(group._id)));
-    const fakeId = new (await import('mongoose')).default.Types.ObjectId();
-    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, { userId: String(fakeId) }, cookie);
+    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {}, cookie);
     const res = await inviteExternal(req, tournamentParams(String(group._id), String(tournament.id)));
     expect(res.status).toBe(400);
   });
 
-  it('crée un accès externe et retourne 201', async () => {
+  it('crée un accès externe par email et retourne 201', async () => {
     const owner = await createTestUser({ username: 'ext6', email: 'ext6@example.com' });
-    const external = await createTestUser({ username: 'ext7', email: 'ext7@example.com' });
     const group = await createTestGroup(owner._id, { name: 'ext-group-4' });
     const tournament = await createTestTournament();
     const cookie = await createAuthCookie(owner._id, 'USER');
     const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
     await addTournament(addReq, groupParams(String(group._id)));
     const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
-      userId: String(external._id),
+      email: 'guest@externe.com',
       expiresAt: new Date(Date.now() + 86400000).toISOString(),
     }, cookie);
     const res = await inviteExternal(req, tournamentParams(String(group._id), String(tournament.id)));
     expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.email).toBe('guest@externe.com');
+    expect(data.accessToken).toBeDefined();
+    expect(data.status).toBe('PENDING');
   });
 
-  it('retourne 409 si l\'utilisateur est déjà membre du groupe', async () => {
+  it('retourne 409 si un accès actif existe déjà pour cet email', async () => {
     const owner = await createTestUser({ username: 'ext10', email: 'ext10@example.com' });
-    const member = await createTestUser({ username: 'ext11', email: 'ext11@example.com' });
     const group = await createTestGroup(owner._id, { name: 'ext-group-6' });
     const tournament = await createTestTournament();
-    const GroupModelLocal = (await import('@models/Group')).default;
-    await GroupModelLocal.findByIdAndUpdate(group._id, {
-      $push: { members: { userId: member._id, role: 'MEMBER', joinedAt: new Date(), invitedBy: owner._id } },
-    });
     const cookie = await createAuthCookie(owner._id, 'USER');
     const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
     await addTournament(addReq, groupParams(String(group._id)));
-    const req = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
-      userId: String(member._id),
-    }, cookie);
-    const res = await inviteExternal(req, tournamentParams(String(group._id), String(tournament.id)));
+    const body = { email: 'double@externe.com' };
+    const req1 = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, body, cookie);
+    await inviteExternal(req1, tournamentParams(String(group._id), String(tournament.id)));
+    const req2 = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, body, cookie);
+    const res = await inviteExternal(req2, tournamentParams(String(group._id), String(tournament.id)));
     expect(res.status).toBe(409);
   });
 });
 
-describe('PUT /api/groups/external-access/[accessId]', () => {
+describe('DELETE /api/groups/external-access/[accessId]', () => {
   it('retourne 401 sans cookie', async () => {
-    const req = makeRequest('PUT', '/api/groups/external-access/fakeid', { status: 'ACCEPTED' });
-    const res = await respondToExternalAccess(req, accessParams('fakeid'));
+    const req = makeRequest('DELETE', '/api/groups/external-access/fakeid');
+    const res = await revokeExternalAccess(req, accessParams('fakeid'));
     expect(res.status).toBe(401);
   });
 
-  it('accepte un accès externe', async () => {
+  it('révoque un accès et retourne REVOKED', async () => {
     const owner = await createTestUser({ username: 'ext8', email: 'ext8@example.com' });
-    const external = await createTestUser({ username: 'ext9', email: 'ext9@example.com' });
     const group = await createTestGroup(owner._id, { name: 'ext-group-5' });
     const tournament = await createTestTournament();
-    const ownerCookie = await createAuthCookie(owner._id, 'USER');
-    const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, ownerCookie);
+    const cookie = await createAuthCookie(owner._id, 'USER');
+    const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
     await addTournament(addReq, groupParams(String(group._id)));
     const invReq = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
-      userId: String(external._id),
+      email: 'torevoke@externe.com',
       expiresAt: new Date(Date.now() + 86400000).toISOString(),
-    }, ownerCookie);
+    }, cookie);
     const invRes = await inviteExternal(invReq, tournamentParams(String(group._id), String(tournament.id)));
     const invData = await invRes.json();
 
-    const extCookie = await createAuthCookie(external._id, 'USER');
-    const req = makeRequest('PUT', `/api/groups/external-access/${invData._id}`, { status: 'ACCEPTED' }, extCookie);
-    const res = await respondToExternalAccess(req, accessParams(String(invData._id)));
+    const req = makeRequest('DELETE', `/api/groups/external-access/${invData._id}`, undefined, cookie);
+    const res = await revokeExternalAccess(req, accessParams(String(invData._id)));
     const data = await res.json();
     expect(res.status).toBe(200);
-    expect(data.status).toBe('ACCEPTED');
+    expect(data.status).toBe('REVOKED');
   });
 });

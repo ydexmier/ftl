@@ -1,7 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IScoutingReport extends Document {
-  userId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId | null;
+  guestAccessId: mongoose.Types.ObjectId | null;
   groupId: mongoose.Types.ObjectId | null;
   tournamentId: number;
   playerId: number;
@@ -10,7 +11,8 @@ export interface IScoutingReport extends Document {
 
 const ScoutingReportSchema = new Schema<IScoutingReport>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    guestAccessId: { type: Schema.Types.ObjectId, ref: 'TournamentExternalAccess', default: null },
     groupId: { type: Schema.Types.ObjectId, ref: 'Group', default: null },
     tournamentId: { type: Number, required: true },
     playerId: { type: Number, required: true },
@@ -19,6 +21,7 @@ const ScoutingReportSchema = new Schema<IScoutingReport>(
 );
 
 ScoutingReportSchema.index({ userId: 1, tournamentId: 1, groupId: 1 });
+ScoutingReportSchema.index({ guestAccessId: 1, tournamentId: 1 });
 ScoutingReportSchema.index({ groupId: 1, tournamentId: 1 });
 
 export default mongoose.models.ScoutingReport as mongoose.Model<IScoutingReport> ||

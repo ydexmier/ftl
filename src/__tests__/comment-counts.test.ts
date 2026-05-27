@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { GET as getCommentCounts } from '../../app/api/tournaments/[id]/comment-counts/route';
-import TournamentExternalAccessModel from '@models/TournamentExternalAccess';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import { createTestUser, createAdminUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
 
@@ -47,25 +46,16 @@ describe('GET /api/tournaments/[id]/comment-counts', () => {
     expect(res.status).toBe(403);
   });
 
-  it('retourne 200 pour un utilisateur avec un accès externe actif', async () => {
+  it('retourne 403 pour un non-membre même avec un TournamentExternalAccess en DB (les invités passent par guest_session)', async () => {
     const owner = await createTestUser({ username: 'cc4', email: 'cc4@test.com' });
-    const external = await createTestUser({ username: 'cc5', email: 'cc5@test.com' });
+    const nonMember = await createTestUser({ username: 'cc5', email: 'cc5@test.com' });
     const group = await createTestGroup(owner._id);
     const tid = nextId();
 
-    await TournamentExternalAccessModel.create({
-      groupId: String(group._id),
-      tournamentId: tid,
-      userId: String(external._id),
-      invitedBy: String(owner._id),
-      status: 'ACCEPTED',
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    });
-
-    const cookie = await createAuthCookie(external._id, 'USER');
+    const cookie = await createAuthCookie(nonMember._id, 'USER');
     const req = countsRequest(tid, [10], String(group._id), cookie);
     const res = await getCommentCounts(req, params(String(tid)));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(403);
   });
 
   it('retourne les counts corrects en portée personnelle', async () => {

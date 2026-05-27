@@ -10,35 +10,24 @@ export const TournamentExternalAccessRepository = {
     return TournamentExternalAccessModel.findById(id).lean();
   },
 
+  async findByAccessToken(token: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findOne({ accessToken: token }).lean();
+  },
+
   async findByGroupAndTournament(groupId: string, tournamentId: number) {
     await connectToMongoDB();
-    return TournamentExternalAccessModel.find({ groupId, tournamentId }).lean();
+    return TournamentExternalAccessModel.find({ groupId, tournamentId })
+      .sort({ createdAt: -1 })
+      .lean();
   },
 
-  async findActiveByUserAndTournament(userId: string, tournamentId: number) {
+  async findActiveByEmail(email: string, tournamentId: number) {
     await connectToMongoDB();
     return TournamentExternalAccessModel.findOne({
-      userId,
+      email: email.toLowerCase(),
       tournamentId,
       status: 'ACCEPTED',
-      expiresAt: { $gt: new Date() },
-    }).lean();
-  },
-
-  async findAcceptedByUser(userId: string) {
-    await connectToMongoDB();
-    return TournamentExternalAccessModel.find({
-      userId,
-      status: 'ACCEPTED',
-      expiresAt: { $gt: new Date() },
-    }).lean();
-  },
-
-  async findPendingByUser(userId: string) {
-    await connectToMongoDB();
-    return TournamentExternalAccessModel.find({
-      userId,
-      status: 'PENDING',
       expiresAt: { $gt: new Date() },
     }).lean();
   },
@@ -46,16 +35,27 @@ export const TournamentExternalAccessRepository = {
   async create(data: {
     groupId: string;
     tournamentId: number;
-    userId: string;
     invitedBy: string;
+    email: string;
+    accessToken: string;
     expiresAt?: Date;
   }) {
     await connectToMongoDB();
     return TournamentExternalAccessModel.create({
       ...data,
+      email: data.email.toLowerCase(),
       status: 'PENDING' as TournamentExternalAccessStatus,
       expiresAt: data.expiresAt ?? new Date(Date.now() + DEFAULT_TTL_MS),
     });
+  },
+
+  async setDisplayName(id: string, displayName: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findByIdAndUpdate(
+      id,
+      { displayName, status: 'ACCEPTED' },
+      { new: true },
+    ).lean();
   },
 
   async updateStatus(id: string, status: TournamentExternalAccessStatus) {
@@ -63,13 +63,22 @@ export const TournamentExternalAccessRepository = {
     return TournamentExternalAccessModel.findByIdAndUpdate(id, { status }, { new: true }).lean();
   },
 
-  async hasActiveAccess(userId: string, groupId: string, tournamentId: number): Promise<boolean> {
+  async revokeAccess(id: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findByIdAndUpdate(
+      id,
+      { status: 'REVOKED' },
+      { new: true },
+    ).lean();
+  },
+
+  async hasActiveAccessByEmail(email: string, groupId: string, tournamentId: number): Promise<boolean> {
     await connectToMongoDB();
     return (await TournamentExternalAccessModel.exists({
-      userId,
+      email: email.toLowerCase(),
       groupId,
       tournamentId,
-      status: 'ACCEPTED',
+      status: { $in: ['PENDING', 'ACCEPTED'] },
       expiresAt: { $gt: new Date() },
     })) !== null;
   },
