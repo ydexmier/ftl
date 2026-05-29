@@ -7,6 +7,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    exclude: ['**/node_modules/**', '**/e2e/**'],
     testTimeout: 15000,
     coverage: {
       provider: 'v8',
