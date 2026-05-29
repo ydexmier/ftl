@@ -478,6 +478,7 @@ npm run test:coverage       # rapport de couverture
 
 ## Ce qu'il ne faut jamais faire
 
+- Jamais choisir en silence face à une ambiguïté — toujours demander
 - Jamais de `any` TypeScript sans justification explicite
 - Jamais de requêtes Mongoose directes hors des repositories
 - Jamais de logique métier dans les composants React
