@@ -4,7 +4,7 @@ import { verifyCookie } from '@/src/lib/auth/cookieSign';
 import { verifyGuestCookie, GUEST_COOKIE } from '@/src/lib/auth/guestCookie';
 
 const PUBLIC = ['/login', '/api/auth/login', '/api/auth/logout', '/forgot-password', '/api/auth/forgot-password', '/access-request', '/api/access-requests'];
-const PUBLIC_PREFIXES = ['/register/', '/api/invitations/', '/reset-password/', '/api/auth/reset-password/', '/api/external/', '/guest/', '/api/guest/'];
+const PUBLIC_PREFIXES = ['/register/', '/api/invitations/', '/reset-password/', '/api/auth/reset-password/', '/api/external/', '/guest/', '/api/guest/', '/api/test/'];
 const STATIC = ['/_next', '/favicon.ico', '/svg', '/images'];
 
 // Routes accessibles depuis un cookie guest_session

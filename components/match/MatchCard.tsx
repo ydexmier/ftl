@@ -43,6 +43,7 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onComm
 
 	return (
 		<div
+			data-testid="match-card"
 			onClick={onClick}
 			className={[
 				'flex flex-col rounded-xl border border-border bg-card overflow-hidden',

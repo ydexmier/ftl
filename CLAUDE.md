@@ -68,10 +68,15 @@ Fonctionnalités principales :
 - **js-cookie** + **cookie** — gestion cookies côté client
 
 ### Tests
-- **Vitest v4** — runner de tests
+- **Vitest v4** — runner de tests unitaires et d'intégration
 - **MongoDB Memory Server v11** — base de données en mémoire pour les tests d'intégration
 - Tests dans `src/__tests__/` (28 fichiers), helpers dans `src/test/`
 - Email mocké, `connectToMongoDB` mocké en no-op (mongoose déjà connecté)
+- **Playwright v1** — tests E2E navigateur (Chromium uniquement)
+  - Config : `playwright.config.ts` — port 3001, DB `ftl_e2e`, workers=1 (DB partagée)
+  - Tests dans `e2e/tests/`, fixtures dans `e2e/fixtures/index.ts`
+  - Seed endpoints : `POST /api/test/seed` (données de base) + `POST /api/test/seed/scenarios` (GroupTournament + decks + conflits)
+  - Bloqués en production (`NODE_ENV === 'production'` → 403) ; `/api/test/` est dans les routes publiques du middleware
 
 ### Infrastructure locale
 - **Docker Compose** — orchestre MongoDB + Mailpit en local
@@ -414,13 +419,15 @@ git checkout -b claude/bug/description-du-bug origin/staging   # correction de b
 **3. Tests** — après chaque développement, déterminer ce qu'il faut tester :
    - **Tests d'intégration** (priorité) : pour toute route API, flux auth, ou logique de service. Utiliser Vitest + MongoDB Memory Server, mocker uniquement l'email et `connectToMongoDB`.
    - **Tests unitaires** : uniquement pour des fonctions pures isolées à logique complexe (ex. règles de validation, calculs métier). Pas de tests unitaires sur des fonctions triviales.
-   - En cas de doute : préférer les tests d'intégration.
+   - **Tests E2E** (Playwright) : pour les parcours multi-étapes impliquant plusieurs pages ou flux UI complets (ex. ajout tournoi au groupe, résolution de conflits, magic link invité). Ne pas dupliquer ce qu'un test d'intégration couvre déjà.
+   - En cas de doute entre intégration et E2E : préférer l'intégration (plus rapide, plus stable).
 
 **4. Exécuter tous les tests** :
 ```bash
-npm test
+npm test            # tests unitaires + intégration (obligatoire avant commit)
+npm run test:e2e    # tests E2E — nécessite Docker (MongoDB) + serveur démarrable sur port 3001
 ```
-Tous les tests doivent passer avant de rédiger le commit.
+`npm test` doit passer à 100% avant de rédiger le commit. Les tests E2E sont recommandés pour tout changement touchant des composants UI critiques.
 
 **5. Commit** :
 ```
@@ -469,10 +476,58 @@ NEXT_PUBLIC_USE_ASYNC_FETCH=true
 ```bash
 docker compose up -d        # démarrer MongoDB + Mailpit
 npm run dev                 # lancer Next.js (port 3000)
-npm test                    # tests (run once)
+npm test                    # tests unitaires + intégration (run once)
 npm run test:watch          # tests en mode watch
 npm run test:coverage       # rapport de couverture
+npm run test:e2e            # tests E2E Playwright (port 3001, DB ftl_e2e)
+npm run test:e2e:ui         # tests E2E en mode UI interactif (debug)
+npm run test:e2e:debug      # tests E2E avec debugger pas-à-pas
 ```
+
+---
+
+## Tests E2E — Architecture et conventions
+
+### Structure
+```
+e2e/
+  fixtures/
+    index.ts          — fixture `seed` + helper `loginAs(page, username, password)`
+  tests/
+    auth/             — login, session expiry
+    scouting/         — assignation de deck depuis la vue match
+    guest/            — flux magic link invité
+    groups/           — ajout de tournoi, scouting de groupe, conflits
+playwright.config.ts  — Chromium, port 3001, DB ftl_e2e, workers=1
+```
+
+### Seed endpoints (dev/test uniquement)
+| Endpoint | Rôle |
+|----------|------|
+| `POST /api/test/seed` | Seed de base : 2 users (`e2e_player`/`e2e_admin`, mdp `E2ePassword1!`), 1 groupe `e2e_group`, 1 tournoi (id 9999901), 1 ronde (id 9999901) avec match Alice vs Bob |
+| `POST /api/test/seed/scenarios` | Sur-couche : lie le tournoi au groupe, crée les decks de portée groupe (Alice=Ruby+Sapphire, Bob=Emerald+Amber) et utilisateur (Alice=Amber+Steel), crée un conflit PENDING pour Alice et un PENDING_ADMIN pour Bob |
+
+- Toujours appeler `POST /api/test/seed` en premier (via la fixture `seed`).
+- Appeler `POST /api/test/seed/scenarios` en `beforeEach` dans les tests qui ont besoin du GroupTournament ou des conflits.
+- Les deux endpoints nettoient leurs données avant de les recréer — idempotents.
+
+### Convention `data-testid`
+Les composants interactifs exposent des attributs `data-testid` pour les sélecteurs Playwright :
+
+| Attribut | Composant |
+|----------|-----------|
+| `data-testid="match-card"` | `MatchCard` — carte de match cliquable |
+| `data-testid="match-modal"` | `MatchModal` — modal d'assignation depuis la vue ronde |
+| `data-testid="ink-selection-combination1/2"` | Section d'encres dans `MatchModal` |
+| `data-testid="ink-btn-{amber\|amethyst\|emerald\|ruby\|sapphire\|steel}"` | `InkButton` — utilisé dans `MatchModal` et `PlayerDeckModal` |
+| `data-testid="player-deck-modal"` | `PlayerDeckModal` — modal d'assignation depuis la vue scouting groupe |
+| `data-testid="conflict-resolution-modal"` | `ConflictResolutionModal` — modal de résolution de conflits utilisateur |
+
+### Règles E2E
+- Ne pas ajouter de `data-testid` sur des éléments non-interactifs ou purement décoratifs.
+- Toujours scoper les clics sur les ink buttons à leur section parente (`modal.locator('[data-testid="ink-btn-amber"]')`) pour éviter les faux positifs.
+- Les tests E2E sont séquentiels (`workers=1`) — ne pas paralléliser.
+- La DB `ftl_e2e` est dédiée aux E2E : ne jamais pointer `MONGO_DB_NAME=ftl_e2e` en dehors des tests.
 
 ---
 

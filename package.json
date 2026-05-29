@@ -7,7 +7,10 @@
 		"start": "next start",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:debug": "playwright test --debug"
 	},
 	"dependencies": {
 		"@hcaptcha/react-hcaptcha": "^2.0.2",
@@ -38,6 +41,7 @@
 		"zustand": "^5.0.5"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.60.0",
 		"@testing-library/react": "^16.3.2",
 		"@types/js-cookie": "^3.0.6",
 		"@types/nodemailer": "^8.0.0",
