@@ -115,6 +115,7 @@ export function PlayerDeckModal({
       {/* Sheet — bottom sur mobile, centré sur desktop */}
       <div className="fixed inset-x-0 bottom-0 z-50 md:inset-0 md:flex md:items-center md:justify-center md:p-4" onClick={onClose}>
         <div
+          data-testid="player-deck-modal"
           className={[
             'bg-card border-border w-full flex flex-col',
             'rounded-t-2xl border-t border-x md:rounded-xl md:border md:max-w-md md:shadow-xl',

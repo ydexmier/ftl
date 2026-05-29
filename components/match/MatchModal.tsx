@@ -112,7 +112,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 			);
 		}
 		return (
-			<div className="flex flex-wrap gap-1">
+			<div data-testid={`ink-selection-${combo}`} className="flex flex-wrap gap-1">
 				{types.map((type) => (
 					<InkButton
 						key={type}
@@ -189,7 +189,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 	const [p1, p2] = match.player_match_relationships;
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleCancel}>
+		<div data-testid="match-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={handleCancel}>
 			<div className="bg-card border border-border rounded-xl p-6 w-full max-w-md mx-4 flex flex-col gap-4 shadow-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
 
 				{/* Header */}

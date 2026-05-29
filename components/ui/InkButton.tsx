@@ -12,6 +12,7 @@ interface InkButtonProps {
 const InkButton = ({ type, isSelected, isInactive, onClick }: InkButtonProps) => (
 	<button
 		type="button"
+		data-testid={`ink-btn-${type.toLowerCase()}`}
 		onClick={onClick}
 		className={[
 			'p-1 rounded-full border-2 transition-all duration-300',
