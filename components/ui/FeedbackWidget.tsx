@@ -23,12 +23,16 @@ export function FeedbackWidget() {
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
   const [btnVisible, setBtnVisible] = useState(true);
+  const [nearBottom, setNearBottom] = useState(false);
   const lastScrollY = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
       setBtnVisible(y < 50 || y < lastScrollY.current);
+      const isMobile = window.innerWidth < 640;
+      const atBottom = y + window.innerHeight >= document.body.scrollHeight - 80;
+      setNearBottom(isMobile && atBottom);
       lastScrollY.current = y;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -78,6 +82,7 @@ export function FeedbackWidget() {
     <>
       <button
         onClick={handleOpen}
+        style={{ bottom: nearBottom ? '30vh' : undefined }}
         className={cn(
           'fixed bottom-5 right-5 z-40 h-11 w-11 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all duration-300',
           btnVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none',
