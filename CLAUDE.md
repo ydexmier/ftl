@@ -272,6 +272,7 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 | GET/POST | `/api/tournaments` | Liste / ajout |
 | GET/DELETE | `/api/tournaments/[id]` | Détail / suppression |
 | GET | `/api/tournaments/search` | Recherche par nom ou ID |
+| POST | `/api/tournaments/fetch` | Import depuis Ravensburger (tout utilisateur authentifié) |
 | GET/POST | `/api/tournaments/[id]/players` | Joueurs + decks |
 | POST | `/api/tournaments/[id]/players/[playerId]/assign_deck` | Assignation deck (portée tournoi/user) |
 | GET/POST | `/api/tournaments/[id]/conflicts` | Conflits du tournoi |
@@ -281,6 +282,7 @@ Chaque repository expose des méthodes nommées, pas de classes. Accès Mongoose
 ### Rondes & Matchs
 | Méthode | Route | Description |
 |---------|-------|-------------|
+| POST | `/api/rounds/fetch` | Import ronde depuis Ravensburger (tout utilisateur authentifié) |
 | GET/POST | `/api/rounds/[roundId]/matchs` | Matches paginés avec decks |
 | GET/PUT | `/api/rounds/[roundId]/matchs/[matchId]` | Détail match |
 | POST | `/api/rounds/[roundId]/matchs/[matchId]/assign_deck` | Assignation deck depuis un match |

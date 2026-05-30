@@ -76,7 +76,7 @@ describe('useTournament', () => {
 
     const calls = vi.mocked(global.fetch).mock.calls;
     const refreshCall = calls[1];
-    expect(refreshCall[0]).toBe('/api/admin/fetchTournament');
+    expect(refreshCall[0]).toBe('/api/tournaments/fetch');
     expect((refreshCall[1] as RequestInit).method).toBe('POST');
     const body = JSON.parse((refreshCall[1] as RequestInit).body as string);
     expect(body.tournamentId).toBe(123);

@@ -3,7 +3,7 @@ import { useFetch } from '@/src/hooks/useFetch';
 import type { Tournament } from '@/src/types/tournament';
 
 async function fetchTournament(tournamentId: number): Promise<{ datas: Tournament }> {
-	const res = await fetch('/api/admin/fetchTournament', {
+	const res = await fetch('/api/tournaments/fetch', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ tournamentId }),

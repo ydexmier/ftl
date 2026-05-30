@@ -120,7 +120,7 @@ export function TournamentSearchBar({ onLinked }: Props) {
 	const fetchAndLink = async (id: number) => {
 		setFetching(true);
 		try {
-			const fetchRes = await fetch('/api/admin/fetchTournament', {
+			const fetchRes = await fetch('/api/tournaments/fetch', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ tournamentId: id }),
