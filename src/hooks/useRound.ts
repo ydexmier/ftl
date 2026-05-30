@@ -28,7 +28,7 @@ async function fetchRoundFromAPI(
 	roundId: number,
 	options: RoundOptions & { mode?: string },
 ): Promise<{ datas: PaginatedMatches }> {
-	const res = await fetch('/api/admin/fetchRound', {
+	const res = await fetch('/api/rounds/fetch', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ tournamentId, roundId, options }),

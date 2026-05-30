@@ -3,7 +3,7 @@ export async function fetchRound(
   roundId: number,
   options?: Record<string, unknown>,
 ): Promise<unknown> {
-  const res = await fetch('/api/admin/fetchRound', {
+  const res = await fetch('/api/rounds/fetch', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tournamentId, roundId, options }),
