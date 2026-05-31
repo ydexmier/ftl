@@ -146,9 +146,9 @@ export const TournamentPlayersDeckRepository = {
   async findPlayersPaginated(
     tournamentId: number,
     scope: DeckScope,
-    options: { search?: string; page?: number; perPage?: number } = {},
+    options: { search?: string; page?: number; perPage?: number; sortOrder?: 'asc' | 'desc' } = {},
   ): Promise<PlayersPage> {
-    const { search = '', page = 1, perPage = 25 } = options;
+    const { search = '', page = 1, perPage = 25, sortOrder = 'asc' } = options;
     await connectToMongoDB();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,10 +157,12 @@ export const TournamentPlayersDeckRepository = {
       { $unwind: '$players' },
     ];
     if (search.trim()) {
-      pipeline.push({ $match: { 'players.best_identifier': { $regex: search.trim(), $options: 'i' } } });
+      const regex = { $regex: search.trim(), $options: 'i' };
+      pipeline.push({ $match: { $or: [{ 'players.best_identifier': regex }, { 'players.event_best_identifier': regex }] } });
     }
+    const sortDir = sortOrder === 'desc' ? -1 : 1;
     pipeline.push(
-      { $sort: { 'players.best_identifier': 1 } },
+      { $sort: { 'players.event_best_identifier': sortDir, 'players.best_identifier': sortDir } },
       {
         $facet: {
           data: [
