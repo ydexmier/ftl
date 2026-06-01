@@ -9,8 +9,9 @@ export type SeedData = {
   round: { id: number };
   matchId: number;
   group: { id: string };
-  guestToken: string;
+  guestMagicLinkToken: string;
   guestAccessId: string;
+  guestSessionCookie: string;
 };
 
 type Fixtures = {
@@ -33,6 +34,19 @@ export async function dismissTours(page: Page) {
     localStorage.setItem('ftl_tournament_tour_done', '1');
     localStorage.setItem('ftl_tournaments_tour_done', '1');
   });
+}
+
+/** Pose le cookie de session d'un guest pré-approuvé (évite le formulaire + validation admin). */
+export async function loginAsGuest(page: Page, seed: SeedData) {
+  await page.context().addCookies([{
+    name: 'session',
+    value: seed.guestSessionCookie,
+    domain: 'localhost',
+    path: '/',
+    httpOnly: true,
+    secure: false,
+    sameSite: 'Strict',
+  }]);
 }
 
 /** Login via le formulaire et attend la redirection. */

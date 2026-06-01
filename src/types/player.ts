@@ -38,3 +38,16 @@ export interface TournamentPlayersDeck {
 	userId?: string | null;
 	players: PlayerDeck[];
 }
+
+export type PlayerHistoryResult = 'WIN' | 'LOSS' | 'DRAW' | 'BYE' | 'PENDING';
+
+export interface PlayerHistoryEntry {
+	roundId: number;
+	roundNumber: number;
+	opponentId: number | null;
+	opponentName: string | null;
+	opponentDecks: string[][];
+	result: PlayerHistoryResult;
+	gamesWon: number | null;
+	gamesLost: number | null;
+}

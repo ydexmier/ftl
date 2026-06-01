@@ -196,6 +196,17 @@ export const RoundRepository = {
 		return RoundModel.findOne({ id }).lean();
 	},
 
+	async findRoundsByTournamentId(tournamentId: number): Promise<{ id: number; results: Match[] }[]> {
+		await connectToMongoDB();
+		const rounds = (await RoundModel.find(
+			{ tournamentId },
+			{ id: 1, results: 1, _id: 0 },
+		)
+			.sort({ id: 1 })
+			.lean()) as { id: number; results: Match[] }[];
+		return rounds;
+	},
+
 	async existsByTournamentId(tournamentId: number): Promise<boolean> {
 		await connectToMongoDB();
 		return RoundModel.exists({ tournamentId }).then(Boolean);

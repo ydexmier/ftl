@@ -93,4 +93,19 @@ export const UserRepository = {
     await connectToMongoDB();
     return UserModel.findByIdAndUpdate(id, { $set: { onboardingCompletedAt: new Date() } });
   },
+
+  async search(q: string, limit = 10) {
+    await connectToMongoDB();
+    return UserModel.find({
+      isGuest: { $ne: true },
+      $or: [
+        { username: { $regex: q, $options: 'i' } },
+        { email: { $regex: q, $options: 'i' } },
+      ],
+    })
+      .sort({ username: 1 })
+      .limit(limit)
+      .select('_id username email')
+      .lean();
+  },
 };
