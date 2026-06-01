@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import InkButton, { types } from '@components/ui/InkButton';
 import Ink from '@components/ui/Ink';
+import { PlayerHistory } from '@components/match/PlayerHistory';
+import { usePlayerHistory } from '@/src/hooks/usePlayerHistory';
 
 interface PlayerRow {
   playerId: number;
@@ -25,6 +27,8 @@ function sameCombo(a: string[], b: string[]) {
   return a.length === b.length && a.every((ink) => b.includes(ink));
 }
 
+type Tab = 'assignation' | 'historique';
+
 export function PlayerDeckModal({
   player,
   open,
@@ -33,6 +37,7 @@ export function PlayerDeckModal({
   tournamentId,
   groupId,
 }: PlayerDeckModalProps) {
+  const [tab, setTab] = useState<Tab>('assignation');
   const [selectedInks, setSelectedInks] = useState<string[]>([]);
   const [blinking, setBlinking] = useState(false);
   const [comment, setComment] = useState('');
@@ -40,8 +45,15 @@ export function PlayerDeckModal({
   const [error, setError] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const { entries, loading: historyLoading, error: historyError } = usePlayerHistory(
+    tournamentId,
+    open && tab === 'historique' ? (player?.playerId ?? null) : null,
+    groupId,
+  );
+
   useEffect(() => {
     if (open && player) {
+      setTab('assignation');
       setSelectedInks(player.decks[0] ?? []);
       setComment('');
       setError(null);
@@ -126,7 +138,7 @@ export function PlayerDeckModal({
           className={[
             'bg-card border-border w-full flex flex-col',
             'rounded-t-2xl border-t border-x md:rounded-xl md:border md:max-w-md md:shadow-xl',
-            'max-h-[92dvh] overflow-y-auto overscroll-contain',
+            'max-h-[92dvh] overflow-hidden',
           ].join(' ')}
           onClick={(e) => e.stopPropagation()}
         >
@@ -136,7 +148,7 @@ export function PlayerDeckModal({
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-3">
+          <div className="flex items-center justify-between px-5 py-3 shrink-0">
             <div className="truncate">
               <h2 className="font-semibold text-foreground truncate">
                 {player.event_best_identifier || player.best_identifier}
@@ -154,113 +166,142 @@ export function PlayerDeckModal({
             </button>
           </div>
 
-          <hr className="border-border mx-5" />
-
-          <div className="flex flex-col gap-5 px-5 py-4">
-            {/* Combinaisons connues */}
-            {knownCombos.length > 0 && (
-              <div className="space-y-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  Combinaison{knownCombos.length > 1 ? 's' : ''} connue{knownCombos.length > 1 ? 's' : ''}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {knownCombos.map((deck, i) => {
-                    const active = sameCombo(selectedInks, deck);
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => toggleChip(deck)}
-                        className={[
-                          'flex items-center rounded-full border-2 px-3 py-2 transition-colors min-h-[52px]',
-                          active
-                            ? 'border-white/60 bg-white/5'
-                            : 'border-transparent hover:border-white/20',
-                        ].join(' ')}
-                      >
-                        <Ink type={deck} width={32} />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Sélection manuelle */}
-            <div className="space-y-3">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {knownCombos.length > 0 ? 'Ajuster manuellement' : 'Combinaison'}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {types.map((type) => (
-                  <InkButton
-                    key={type}
-                    type={type}
-                    isSelected={selectedInks.includes(type)}
-                    isInactive={selectedInks.length >= 2 && !selectedInks.includes(type)}
-                    isBlinking={blinking && selectedInks.includes(type)}
-                    onClick={() => toggleInk(type)}
-                  />
-                ))}
-              </div>
-              {selectedInks.length > 0 && (
-                <div className="flex items-center gap-2 pt-1">
-                  <Ink type={selectedInks} width={32} />
-                  <span className="text-xs text-muted-foreground">{selectedInks.join(' + ')}</span>
-                </div>
-              )}
-            </div>
-
-            <hr className="border-border" />
-
-            {/* Commentaire */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Note (optionnel)
-              </label>
-              <textarea
-                ref={textareaRef}
-                value={comment}
-                onChange={(e) => setComment(e.target.value.slice(0, 500))}
-                placeholder="Deck agressif, joue double tour 3…"
-                rows={2}
-                className={[
-                  'w-full resize-none rounded-lg border bg-background px-3 py-2',
-                  'text-sm text-foreground placeholder:text-muted-foreground',
-                  'border-border focus:border-white/40 focus:outline-none transition-colors',
-                  'min-h-[64px]',
-                ].join(' ')}
-              />
-              <p className={['text-xs text-right', charCount > 450 ? 'text-amber-400' : 'text-muted-foreground'].join(' ')}>
-                {charCount}/500
-              </p>
-            </div>
-
-            {error && <p className="text-xs text-destructive">{error}</p>}
-          </div>
-
-          {/* Footer sticky */}
-          <div className="flex items-center justify-between px-5 py-4 border-t border-border bg-card pb-[max(1rem,env(safe-area-inset-bottom))]">
-            {selectedInks.length > 0 ? (
+          {/* Tabs */}
+          <div className="flex border-b border-border px-5 shrink-0">
+            {(['assignation', 'historique'] as Tab[]).map((t) => (
               <button
+                key={t}
                 type="button"
-                onClick={() => setSelectedInks([])}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setTab(t)}
+                className={[
+                  'px-3 py-2 text-sm font-medium capitalize transition-colors border-b-2 -mb-px',
+                  tab === t
+                    ? 'border-foreground text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground',
+                ].join(' ')}
               >
-                Effacer la sélection
+                {t === 'assignation' ? 'Assignation' : 'Historique'}
               </button>
-            ) : (
-              <span />
-            )}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={onClose} disabled={saving}>
-                Annuler
-              </Button>
-              <Button variant="success" onClick={handleSave} loading={saving}>
-                Valider
-              </Button>
-            </div>
+            ))}
           </div>
+
+          {/* Tab: Assignation */}
+          {tab === 'assignation' && (
+            <>
+              <div className="flex flex-col gap-5 px-5 py-4 overflow-y-auto overscroll-contain">
+                {/* Combinaisons connues */}
+                {knownCombos.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      Combinaison{knownCombos.length > 1 ? 's' : ''} connue{knownCombos.length > 1 ? 's' : ''}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {knownCombos.map((deck, i) => {
+                        const active = sameCombo(selectedInks, deck);
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => toggleChip(deck)}
+                            className={[
+                              'flex items-center rounded-full border-2 px-3 py-2 transition-colors min-h-[52px]',
+                              active
+                                ? 'border-white/60 bg-white/5'
+                                : 'border-transparent hover:border-white/20',
+                            ].join(' ')}
+                          >
+                            <Ink type={deck} width={32} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Sélection manuelle */}
+                <div className="space-y-3">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    {knownCombos.length > 0 ? 'Ajuster manuellement' : 'Combinaison'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {types.map((type) => (
+                      <InkButton
+                        key={type}
+                        type={type}
+                        isSelected={selectedInks.includes(type)}
+                        isInactive={selectedInks.length >= 2 && !selectedInks.includes(type)}
+                        isBlinking={blinking && selectedInks.includes(type)}
+                        onClick={() => toggleInk(type)}
+                      />
+                    ))}
+                  </div>
+                  {selectedInks.length > 0 && (
+                    <div className="flex items-center gap-2 pt-1">
+                      <Ink type={selectedInks} width={32} />
+                      <span className="text-xs text-muted-foreground">{selectedInks.join(' + ')}</span>
+                    </div>
+                  )}
+                </div>
+
+                <hr className="border-border" />
+
+                {/* Commentaire */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    Note (optionnel)
+                  </label>
+                  <textarea
+                    ref={textareaRef}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value.slice(0, 500))}
+                    placeholder="Deck agressif, joue double tour 3…"
+                    rows={2}
+                    className={[
+                      'w-full resize-none rounded-lg border bg-background px-3 py-2',
+                      'text-sm text-foreground placeholder:text-muted-foreground',
+                      'border-border focus:border-white/40 focus:outline-none transition-colors',
+                      'min-h-[64px]',
+                    ].join(' ')}
+                  />
+                  <p className={['text-xs text-right', charCount > 450 ? 'text-amber-400' : 'text-muted-foreground'].join(' ')}>
+                    {charCount}/500
+                  </p>
+                </div>
+
+                {error && <p className="text-xs text-destructive">{error}</p>}
+              </div>
+
+              {/* Footer sticky */}
+              <div className="flex items-center justify-between px-5 py-4 border-t border-border bg-card pb-[max(1rem,env(safe-area-inset-bottom))] shrink-0">
+                {selectedInks.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedInks([])}
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Effacer la sélection
+                  </button>
+                ) : (
+                  <span />
+                )}
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={onClose} disabled={saving}>
+                    Annuler
+                  </Button>
+                  <Button variant="success" onClick={handleSave} loading={saving}>
+                    Valider
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Tab: Historique */}
+          {tab === 'historique' && (
+            <div className="overflow-y-auto px-5 py-2 overscroll-contain pb-[max(1rem,env(safe-area-inset-bottom))]">
+              <PlayerHistory entries={entries} loading={historyLoading} error={historyError} />
+            </div>
+          )}
         </div>
       </div>
     </>
