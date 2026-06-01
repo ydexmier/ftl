@@ -1,33 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { POST as validateGuest } from '../../app/api/guest/validate/route';
-import { POST as inviteExternal } from '../../app/api/groups/[id]/tournaments/[tid]/external-access/route';
-import { POST as addTournament } from '../../app/api/groups/[id]/tournaments/route';
-import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { ScoutingService } from '@/src/services/ScoutingService';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
-import TournamentModel from '@models/Tournament';
-import { createTestUser, createAuthCookie, createTestGroup, makeRequest } from '../test/helpers';
+import { GroupMagicLinkRepository } from '@/src/repositories/db/GroupMagicLinkRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
+import { createTestUser, createTestGroup } from '../test/helpers';
 
 let _counter = 0;
-async function createTestTournament() {
+function nextToken() {
   _counter++;
-  return TournamentModel.create({
-    id: 800000 + _counter,
-    name: `Guest Tournament ${_counter}`,
-    event_status: 'ENDED',
-    start_datetime: new Date(),
-    store: { id: 1, name: 'Store', address: '' },
-    tournament_phases: [],
-    gameplay_format: 'standard',
-  });
-}
-
-function groupParams(id: string) {
-  return { params: Promise.resolve({ id }) };
-}
-
-function tournamentParams(id: string, tid: string) {
-  return { params: Promise.resolve({ id, tid }) };
+  return `test-magic-token-${_counter}-${Date.now()}`;
 }
 
 function makeGuestRequest(body: unknown) {
@@ -42,78 +24,88 @@ function makeGuestRequest(body: unknown) {
 
 describe('POST /api/guest/validate', () => {
   it('retourne 400 si le token est absent', async () => {
-    const res = await validateGuest(makeGuestRequest({ displayName: 'Alice' }));
+    const res = await validateGuest(makeGuestRequest({ username: 'alice', email: 'alice@test.com', password: 'Password1!abcd' }));
     expect(res.status).toBe(400);
   });
 
-  it('retourne 400 si le displayName est absent', async () => {
-    const res = await validateGuest(makeGuestRequest({ token: 'sometoken' }));
+  it('retourne 400 si le username est absent', async () => {
+    const res = await validateGuest(makeGuestRequest({ token: 'sometoken', email: 'a@test.com', password: 'Password1!abcd' }));
     expect(res.status).toBe(400);
   });
 
-  it('retourne 400 si le displayName contient un pipe', async () => {
-    const res = await validateGuest(makeGuestRequest({ token: 'sometoken', displayName: 'Ali|ce' }));
+  it('retourne 400 si le username contient des caractères invalides', async () => {
+    const res = await validateGuest(makeGuestRequest({ token: 'sometoken', username: 'ali ce', email: 'a@test.com', password: 'Password1!abcd' }));
     expect(res.status).toBe(400);
   });
 
   it('retourne 404 si le token est invalide', async () => {
-    const res = await validateGuest(makeGuestRequest({ token: 'invalid-token', displayName: 'Alice' }));
+    const res = await validateGuest(makeGuestRequest({ token: 'invalid-token', username: 'alice', email: 'alice@test.com', password: 'Password1!abcd' }));
     expect(res.status).toBe(404);
   });
 
-  it('accepte un token valide, sauvegarde le displayName et retourne le cookie', async () => {
+  it('crée un compte invité, une entrée PENDING et pose le cookie session', async () => {
     const owner = await createTestUser({ username: 'g-owner1', email: 'g-owner1@test.com' });
     const group = await createTestGroup(owner._id);
-    const tournament = await createTestTournament();
-    const cookie = await createAuthCookie(owner._id, 'USER');
+    const token = nextToken();
+    const tournamentId = 900001;
 
-    const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
-    await addTournament(addReq, groupParams(String(group._id)));
+    await GroupMagicLinkRepository.upsert(String(group._id), tournamentId, String(owner._id), token);
 
-    const invReq = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
-      email: 'alice@externe.com',
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
-    }, cookie);
-    const invRes = await inviteExternal(invReq, tournamentParams(String(group._id), String(tournament.id)));
-    const invData = await invRes.json();
-
-    const res = await validateGuest(makeGuestRequest({ token: invData.accessToken, displayName: 'Alice' }));
+    const res = await validateGuest(makeGuestRequest({
+      token,
+      username: 'guestalice',
+      email: 'guestalice@test.com',
+      password: 'Password1!abcd',
+    }));
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data.tournamentId).toBe(tournament.id);
-    expect(data.displayName).toBe('Alice');
+    expect(data.tournamentId).toBe(tournamentId);
 
-    // Cookie posé
+    // Session cookie posé (compte réel, pas guest_session)
     const setCookie = res.headers.get('set-cookie');
-    expect(setCookie).toContain('guest_session=');
+    expect(setCookie).toContain('session=');
+    expect(setCookie).not.toContain('guest_session=');
 
-    // Statut en DB
-    const access = await TournamentExternalAccessRepository.findById(invData._id);
-    expect(access?.status).toBe('ACCEPTED');
-    expect(access?.displayName).toBe('Alice');
+    // Entrée PENDING en DB pour approbation admin
+    const pending = await TournamentExternalAccessRepository.findPendingByGroupAndTournament(
+      String(group._id),
+      tournamentId,
+    );
+    expect(pending.length).toBe(1);
+    expect(pending[0].status).toBe('PENDING');
   });
 
-  it('retourne 403 si l\'accès est révoqué', async () => {
+  it('retourne 409 si le username est déjà pris', async () => {
+    await createTestUser({ username: 'g-taken', email: 'g-taken@test.com' });
     const owner = await createTestUser({ username: 'g-owner2', email: 'g-owner2@test.com' });
     const group = await createTestGroup(owner._id);
-    const tournament = await createTestTournament();
-    const cookie = await createAuthCookie(owner._id, 'USER');
+    const token = nextToken();
+    await GroupMagicLinkRepository.upsert(String(group._id), 900002, String(owner._id), token);
 
-    const addReq = makeRequest('POST', `/api/groups/${group._id}/tournaments`, { tournamentId: tournament.id }, cookie);
-    await addTournament(addReq, groupParams(String(group._id)));
+    const res = await validateGuest(makeGuestRequest({
+      token,
+      username: 'g-taken',
+      email: 'newemail@test.com',
+      password: 'Password1!abcd',
+    }));
+    expect(res.status).toBe(409);
+  });
 
-    const invReq = makeRequest('POST', `/api/groups/${group._id}/tournaments/${tournament.id}/external-access`, {
-      email: 'bob@externe.com',
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
-    }, cookie);
-    const invRes = await inviteExternal(invReq, tournamentParams(String(group._id), String(tournament.id)));
-    const invData = await invRes.json();
+  it('retourne 409 si l\'email est déjà utilisé', async () => {
+    await createTestUser({ username: 'g-email-taken', email: 'taken@test.com' });
+    const owner = await createTestUser({ username: 'g-owner3', email: 'g-owner3@test.com' });
+    const group = await createTestGroup(owner._id);
+    const token = nextToken();
+    await GroupMagicLinkRepository.upsert(String(group._id), 900003, String(owner._id), token);
 
-    await TournamentExternalAccessRepository.revokeAccess(invData._id);
-
-    const res = await validateGuest(makeGuestRequest({ token: invData.accessToken, displayName: 'Bob' }));
-    expect(res.status).toBe(403);
+    const res = await validateGuest(makeGuestRequest({
+      token,
+      username: 'newusername',
+      email: 'taken@test.com',
+      password: 'Password1!abcd',
+    }));
+    expect(res.status).toBe(409);
   });
 });
 

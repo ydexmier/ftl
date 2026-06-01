@@ -29,6 +29,7 @@ interface Props {
   invitedTournaments: InvitedEntry[];
   adminGroups?: AdminGroup[];
   initialAssignments?: Record<number, string[]>;
+  isGuest?: boolean;
 }
 
 function CollapsibleSection({
@@ -183,6 +184,7 @@ export function TournamentsPageClient({
   invitedTournaments,
   adminGroups = [],
   initialAssignments = {},
+  isGuest = false,
 }: Props) {
   const {
     localPersonal,
@@ -214,11 +216,13 @@ export function TournamentsPageClient({
   return (
     <div className="flex flex-col gap-6 mt-6">
       <TournamentsTour />
-      <div data-tour="tournaments-search">
-        <TournamentSearchBar
-          onLinked={(t) => setLocalPersonal((prev) => [t, ...prev.filter((p) => p.id !== t.id)])}
-        />
-      </div>
+      {!isGuest && (
+        <div data-tour="tournaments-search">
+          <TournamentSearchBar
+            onLinked={(t) => setLocalPersonal((prev) => [t, ...prev.filter((p) => p.id !== t.id)])}
+          />
+        </div>
+      )}
 
       {/* Section 1 : Mes tournois */}
       {localPersonal.length > 0 && (

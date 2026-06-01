@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentRegistrationRepository } from '@/src/repositories/db/TournamentRegistrationRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
@@ -25,10 +26,16 @@ export async function POST(
   const { decks, groupId, comment } = body as { decks: Deck[]; groupId?: string; comment?: string };
 
   let scope: { groupId?: string | null; userId?: string | null };
+  let guestAccessId: string | null = null;
+  let guestDisplayName: string | null = null;
+
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, auth.userId);
     if (!isMember && auth.role !== 'ADMIN' && auth.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(auth.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
+      guestAccessId = String(guestAccess._id);
+      guestDisplayName = guestAccess.displayName ?? null;
     }
     scope = { groupId };
   } else {
@@ -67,7 +74,8 @@ export async function POST(
     if (decks && decks.length > 0) {
       await ScoutingReportRepository.createMany([
         {
-          userId: auth.userId,
+          userId: guestAccessId ? null : auth.userId,
+          guestAccessId,
           groupId: scope.groupId ?? null,
           tournamentId,
           playerId,
@@ -79,7 +87,9 @@ export async function POST(
         await PlayerCommentRepository.create({
           tournamentId,
           playerId,
-          authorId: auth.userId,
+          authorId: guestAccessId ? null : auth.userId,
+          guestAccessId,
+          guestDisplayName: guestDisplayName ?? undefined,
           groupId: scope.groupId ?? null,
           inks: decks[0] ?? [],
           content: trimmedComment,

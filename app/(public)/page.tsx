@@ -1,14 +1,17 @@
 import Link from 'next/link';
 import { Trophy, Users, UserCircle, ChevronRight } from 'lucide-react';
 import { OnboardingTour } from '@components/ui/OnboardingTour';
+import { getServerUser } from '@/src/lib/auth/getServerUser';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 
-const sections = [
+const ALL_SECTIONS = [
 	{
 		href: '/tournaments',
 		icon: Trophy,
 		label: 'Tournois',
 		description: 'Consulter les tournois et scouteur les decks en cours de ronde.',
 		tourId: 'home-tournaments',
+		guestHidden: false,
 	},
 	{
 		href: '/groups',
@@ -16,6 +19,7 @@ const sections = [
 		label: 'Groupes',
 		description: 'Gérer vos groupes et les accès aux tournois partagés.',
 		tourId: 'home-groups',
+		guestHidden: true,
 	},
 	{
 		href: '/profile',
@@ -23,10 +27,17 @@ const sections = [
 		label: 'Profil',
 		description: 'Modifier vos informations personnelles et votre mot de passe.',
 		tourId: undefined,
+		guestHidden: false,
 	},
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+	const user = await getServerUser();
+	const fullUser = user ? await UserRepository.findById(user.userId) : null;
+	const isGuest = fullUser?.isGuest ?? false;
+
+	const sections = ALL_SECTIONS.filter((s) => !(isGuest && s.guestHidden));
+
 	return (
 		<div className="max-w-2xl">
 			<OnboardingTour />

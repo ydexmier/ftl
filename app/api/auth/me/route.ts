@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   if (!user) return ApiResponse.unauthorized('Utilisateur introuvable');
 
   return ApiResponse.ok(
-    { id: String(user._id), username: user.username, role: user.role },
+    { id: String(user._id), username: user.username, role: user.role, isGuest: user.isGuest ?? false },
     { 'Cache-Control': 'private, max-age=300, stale-while-revalidate=600' },
   );
 }

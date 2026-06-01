@@ -3,6 +3,8 @@ import { TournamentRepository } from '@/src/repositories/db/TournamentRepository
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournamentRepository';
 import { UserTournamentRepository } from '@/src/repositories/db/UserTournamentRepository';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import connectToMongoDB from '@/src/lib/db';
 import { TournamentsPageClient } from '@components/tournament/TournamentsPageClient';
 import type { ITournament } from '@models/Tournament';
@@ -31,10 +33,59 @@ export default async function TournamentsPage() {
         personalTournaments={[]}
         groupSections={[]}
         invitedTournaments={[]}
+        isGuest={false}
       />
     );
   }
 
+  const fullUser = await UserRepository.findById(user.userId);
+  const isGuest = fullUser?.isGuest ?? false;
+
+  // Guest flow : show their invited tournaments only
+  if (isGuest) {
+    const accesses = await TournamentExternalAccessRepository.findByUserId(user.userId);
+    const activeAccesses = accesses.filter(
+      (a) => a.status === 'ACCEPTED' && a.expiresAt > new Date(),
+    );
+
+    const tournamentIds = [...new Set(activeAccesses.map((a) => a.tournamentId))];
+    const groupIds = [...new Set(activeAccesses.map((a) => String(a.groupId)))];
+
+    const [tournaments, groups] = await Promise.all([
+      TournamentRepository.findByIds(tournamentIds),
+      Promise.all(groupIds.map((gid) => GroupRepository.findById(gid))),
+    ]);
+
+    const tournamentMap = new Map(tournaments.map((t) => [t.id, t]));
+    const groupMap = new Map(
+      groups.filter(Boolean).map((g) => [String(g!._id), g!.name]),
+    );
+
+    const invitedTournaments = activeAccesses
+      .map((a) => {
+        const t = tournamentMap.get(a.tournamentId);
+        if (!t) return null;
+        return {
+          accessId: String(a._id),
+          groupId: String(a.groupId),
+          groupName: groupMap.get(String(a.groupId)) ?? 'Groupe',
+          expiresAt: a.expiresAt.toISOString(),
+          tournament: serializeTournament(t),
+        };
+      })
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    return (
+      <TournamentsPageClient
+        personalTournaments={[]}
+        groupSections={[]}
+        invitedTournaments={invitedTournaments}
+        isGuest={true}
+      />
+    );
+  }
+
+  // Normal user flow
   const groups = await GroupRepository.findByMemberId(user.userId);
 
   const groupSectionsData = await Promise.all(
@@ -98,9 +149,6 @@ export default async function TournamentsPage() {
     };
   });
 
-  // Les invités externes accèdent via guest_session (magic link) — plus de section invitedTournaments pour les users authentifiés
-  const invitedTournaments: never[] = [];
-
   const adminGroups = groupSections
     .filter((s) => s.myRole === 'ADMIN')
     .map((s) => ({ groupId: s.groupId, groupName: s.groupName }));
@@ -118,9 +166,10 @@ export default async function TournamentsPage() {
       personalTournaments={personalTournaments}
       archivedTournaments={archivedTournaments}
       groupSections={groupSections.filter((s) => s.tournaments.length > 0 || groups.length > 0)}
-      invitedTournaments={invitedTournaments}
+      invitedTournaments={[]}
       adminGroups={adminGroups}
       initialAssignments={initialAssignments}
+      isGuest={false}
     />
   );
 }

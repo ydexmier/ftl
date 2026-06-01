@@ -6,6 +6,7 @@ import { TournamentPlayersDeckRepository } from '@/src/repositories/db/Tournamen
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentRegistrationRepository } from '@/src/repositories/db/TournamentRegistrationRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { RegistrationService } from '@/src/services/RegistrationService';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +29,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, auth.userId);
     if (!isMember && auth.role !== 'ADMIN' && auth.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(auth.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
     }
     scope = { groupId };
   } else {

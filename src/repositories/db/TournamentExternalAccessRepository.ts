@@ -15,9 +15,26 @@ export const TournamentExternalAccessRepository = {
     return TournamentExternalAccessModel.findOne({ accessToken: token }).lean();
   },
 
+  async findByPendingToken(pendingToken: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findOne({ pendingToken }).lean();
+  },
+
   async findByGroupAndTournament(groupId: string, tournamentId: number) {
     await connectToMongoDB();
     return TournamentExternalAccessModel.find({ groupId, tournamentId })
+      .sort({ createdAt: -1 })
+      .lean();
+  },
+
+  async findPendingByGroupAndTournament(groupId: string, tournamentId: number) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.find({
+      groupId,
+      tournamentId,
+      status: { $in: ['PENDING', 'ACCEPTED'] },
+      magicLinkToken: { $ne: null },
+    })
       .sort({ createdAt: -1 })
       .lean();
   },
@@ -49,11 +66,69 @@ export const TournamentExternalAccessRepository = {
     });
   },
 
+  async createFromMagicLink(data: {
+    groupId: string;
+    tournamentId: number;
+    invitedBy: string;
+    displayName: string;
+    magicLinkToken: string;
+    userId: string;
+    expiresAt: Date;
+  }) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.create({
+      groupId: data.groupId,
+      tournamentId: data.tournamentId,
+      invitedBy: data.invitedBy,
+      displayName: data.displayName,
+      magicLinkToken: data.magicLinkToken,
+      userId: data.userId,
+      status: 'PENDING' as TournamentExternalAccessStatus,
+      expiresAt: data.expiresAt,
+    });
+  },
+
+  async findAcceptedForUser(userId: string, tournamentId: number, groupId: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findOne({
+      userId,
+      tournamentId,
+      groupId,
+      status: 'ACCEPTED',
+      expiresAt: { $gt: new Date() },
+    }).lean();
+  },
+
+  async findByUserId(userId: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .lean();
+  },
+
   async setDisplayName(id: string, displayName: string) {
     await connectToMongoDB();
     return TournamentExternalAccessModel.findByIdAndUpdate(
       id,
       { displayName, status: 'ACCEPTED' },
+      { new: true },
+    ).lean();
+  },
+
+  async approve(id: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findByIdAndUpdate(
+      id,
+      { status: 'ACCEPTED' },
+      { new: true },
+    ).lean();
+  },
+
+  async reject(id: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.findByIdAndUpdate(
+      id,
+      { status: 'REJECTED' },
       { new: true },
     ).lean();
   },
@@ -81,6 +156,11 @@ export const TournamentExternalAccessRepository = {
       status: { $in: ['PENDING', 'ACCEPTED'] },
       expiresAt: { $gt: new Date() },
     })) !== null;
+  },
+
+  async deleteByUserId(userId: string) {
+    await connectToMongoDB();
+    return TournamentExternalAccessModel.deleteMany({ userId });
   },
 
   async expireOldAccess() {

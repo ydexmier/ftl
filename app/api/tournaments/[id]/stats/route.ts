@@ -3,6 +3,7 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import type { ITournamentPlayersDeck } from '@models/TournamentPlayersDeck';
 import { normalizeInkCombo } from '@/src/domain/value-objects/Ink';
@@ -22,7 +23,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, auth.userId);
     if (!isMember && auth.role !== 'ADMIN' && auth.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(auth.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
     }
     scope = { groupId };
   } else {

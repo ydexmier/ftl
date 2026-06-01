@@ -1,52 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
+import { GroupMagicLinkRepository } from '@/src/repositories/db/GroupMagicLinkRepository';
 import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
-import { signGuestCookie, GUEST_COOKIE, GUEST_COOKIE_MAX_AGE } from '@/src/lib/auth/guestSession';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
+import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password';
+import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
+import { signCookie } from '@/src/lib/auth/cookieSign';
 import { ApiResponse } from '@/src/lib/api/responses';
 
 export async function POST(request: NextRequest) {
-  const { token, displayName } = await request.json();
+  const { token, username, email, password } = await request.json();
 
   if (!token) return ApiResponse.badRequest('token requis');
 
-  const trimmedName = (displayName ?? '').trim();
-  if (!trimmedName) return ApiResponse.badRequest('Le prénom ou pseudo est requis');
-  if (trimmedName.length > 50) return ApiResponse.badRequest('Le pseudo ne peut pas dépasser 50 caractères');
-  // Le pipe est le séparateur du cookie signé — on l'interdit dans le pseudo
-  if (trimmedName.includes('|')) return ApiResponse.badRequest('Le pseudo ne peut pas contenir le caractère |');
+  const trimmedUsername = (username ?? '').trim().toLowerCase();
+  const trimmedEmail = (email ?? '').trim().toLowerCase();
 
-  await connectToMongoDB();
+  if (!trimmedUsername) return ApiResponse.badRequest('Le nom d\'utilisateur est requis');
+  if (trimmedUsername.length < 3) return ApiResponse.badRequest('Le nom d\'utilisateur doit faire au moins 3 caractères');
+  if (!/^[a-z0-9_-]+$/.test(trimmedUsername)) return ApiResponse.badRequest('Caractères autorisés : lettres, chiffres, _ et -');
+  if (!trimmedEmail || !trimmedEmail.includes('@')) return ApiResponse.badRequest('Email invalide');
+  if (!password) return ApiResponse.badRequest('Le mot de passe est requis');
 
-  const access = await TournamentExternalAccessRepository.findByAccessToken(token);
-  if (!access) return ApiResponse.notFound('Lien invalide ou expiré');
-  if (access.status === 'REVOKED') return ApiResponse.forbidden('Cet accès a été révoqué');
-  if (access.status === 'EXPIRED' || access.expiresAt < new Date()) {
-    return ApiResponse.forbidden('Ce lien a expiré');
+  const pwCheck = validatePasswordStrength(password);
+  if (!pwCheck.valid) return ApiResponse.badRequest(pwCheck.message ?? 'Mot de passe trop faible');
+
+  const magicLink = await GroupMagicLinkRepository.findByToken(token);
+  if (!magicLink) return ApiResponse.notFound('Lien invalide ou expiré');
+
+  const [usernameTaken, emailTaken] = await Promise.all([
+    UserRepository.existsByUsername(trimmedUsername),
+    UserRepository.existsByEmail(trimmedEmail),
+  ]);
+  if (usernameTaken) return ApiResponse.conflict('Ce nom d\'utilisateur est déjà pris');
+  if (emailTaken) return ApiResponse.conflict('Cet email est déjà utilisé');
+
+  // À partir d'ici on écrit en DB — rollback compensatoire si la suite échoue
+  const passwordHash = await hashPassword(password);
+  const user = await UserRepository.create({
+    username: trimmedUsername,
+    email: trimmedEmail,
+    passwordHash,
+    role: 'USER',
+    isGuest: true,
+  });
+
+  const userId = String(user._id);
+
+  try {
+    await TournamentExternalAccessRepository.createFromMagicLink({
+      groupId: String(magicLink.groupId),
+      tournamentId: magicLink.tournamentId,
+      invitedBy: String(magicLink.createdBy),
+      displayName: trimmedUsername,
+      magicLinkToken: token,
+      userId,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const ua = request.headers.get('user-agent') ?? '';
+    const sessionId = await createSession(userId, 'USER', ip, ua);
+    const cookieValue = await signCookie(sessionId, 'USER');
+
+    const response = NextResponse.json({
+      tournamentId: magicLink.tournamentId,
+      groupId: String(magicLink.groupId),
+    });
+    response.cookies.set('session', cookieValue, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      path: '/',
+      maxAge: SESSION_COOKIE_MAX_AGE,
+    });
+    return response;
+  } catch (err) {
+    // Rollback : supprimer l'utilisateur et l'accès créés avant l'erreur
+    await Promise.allSettled([
+      UserRepository.delete(userId),
+      TournamentExternalAccessRepository.deleteByUserId(userId),
+    ]);
+    return ApiResponse.serverError(err);
   }
-
-  const updated = await TournamentExternalAccessRepository.setDisplayName(String(access._id), trimmedName);
-  if (!updated) return ApiResponse.serverError('Erreur lors de la mise à jour');
-
-  const cookieValue = await signGuestCookie({
-    accessId: String(access._id),
-    tournamentId: access.tournamentId,
-    groupId: String(access.groupId),
-    displayName: trimmedName,
-  });
-
-  const response = NextResponse.json({
-    tournamentId: access.tournamentId,
-    groupId: String(access.groupId),
-    displayName: trimmedName,
-  });
-
-  response.cookies.set(GUEST_COOKIE, cookieValue, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: GUEST_COOKIE_MAX_AGE,
-    path: '/',
-  });
-
-  return response;
 }
