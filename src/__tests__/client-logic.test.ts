@@ -28,6 +28,19 @@ describe('matchModalReducer', () => {
     expect(state.combination1.decks).toEqual([['Ambre']]);
   });
 
+  it('SELECT_INK ignore un 3ème ink si 2 déjà sélectionnés', () => {
+    const state: MatchModalState = {
+      combination1: { decks: [['Ambre', 'Rubis']], playerId: null },
+      combination2: { decks: [], playerId: null },
+    };
+    const result = matchModalReducer(state, {
+      type: 'SELECT_INK',
+      combo: 'combination1',
+      ink: 'Acier',
+    });
+    expect(result.combination1.decks).toEqual([['Ambre', 'Rubis']]);
+  });
+
   it('SELECT_INK retire une encre deja selectionnee', () => {
     const state: MatchModalState = {
       combination1: { decks: [['Ambre', 'Rubis']], playerId: null },

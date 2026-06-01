@@ -30,7 +30,9 @@ export function matchModalReducer(state: MatchModalState, action: MatchModalActi
 		case 'SELECT_INK': {
 			const { combo, ink } = action;
 			const current = state[combo].decks.at(0) ?? [];
-			const next = current.includes(ink) ? current.filter((i) => i !== ink) : [...current, ink];
+			const next = current.includes(ink)
+				? current.filter((i) => i !== ink)
+				: current.length >= 2 ? current : [...current, ink];
 			return { ...state, [combo]: { ...state[combo], decks: [next] } };
 		}
 		case 'SELECT_DECK':

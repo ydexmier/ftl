@@ -4,6 +4,15 @@
 /* Class-based dark mode */
 @custom-variant dark (&:is(.dark *));
 
+@keyframes ink-blink {
+  0%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+.animate-ink-blink {
+  animation: ink-blink 1s ease-in-out;
+}
+
 /*
   Map CSS variables to Tailwind utilities.
   The actual values are defined per-theme below (:root / .dark).
