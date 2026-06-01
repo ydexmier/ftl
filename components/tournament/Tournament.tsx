@@ -12,7 +12,6 @@ import { Spinner } from '@components/ui/Spinner';
 import { ConflictResolutionModal, type ConflictGroup } from '@components/tournament/ConflictResolutionModal';
 import { TournamentSidebar, type TournamentTab } from '@components/tournament/TournamentSidebar';
 import { PlayersTab } from '@components/tournament/PlayersTab';
-import { ReportsTab } from '@components/tournament/ReportsTab';
 import { TournamentTour } from '@components/ui/TournamentTour';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
 import { UncertaintyModal } from '@components/groups/UncertaintyModal';
@@ -62,9 +61,7 @@ export default function Tournament({ id }: TournamentProps) {
 	const [showConflictModal, setShowConflictModal] = useState(false);
 	const [activeTab, setActiveTab] = useState<TournamentTab>('scouting');
 	const [currentUserId, setCurrentUserId] = useState<string>('');
-	const [isGuest, setIsGuest] = useState(false);
 	const [groupRole, setGroupRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
-	const [appRole, setAppRole] = useState<string>('USER');
 	const [adminGroups, setAdminGroups] = useState<AdminGroup[]>([]);
 	const [hasPendingMerge, setHasPendingMerge] = useState(false);
 	const [merging, setMerging] = useState(false);
@@ -98,10 +95,7 @@ export default function Tournament({ id }: TournamentProps) {
 	useEffect(() => {
 		fetch('/api/auth/me')
 			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => {
-				if (data?.id) setCurrentUserId(data.id);
-				setIsGuest(data?.isGuest ?? false);
-			})
+			.then((data) => { if (data?.id) setCurrentUserId(data.id); })
 			.catch(() => {});
 	}, []);
 
@@ -109,11 +103,7 @@ export default function Tournament({ id }: TournamentProps) {
 		if (!groupId) return;
 		fetch(`/api/groups/${groupId}/my-role`)
 			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => {
-				if (!data) return;
-				setGroupRole(data.groupRole ?? null);
-				setAppRole(data.appRole ?? 'USER');
-			})
+			.then((data) => { if (data) setGroupRole(data.groupRole ?? null); })
 			.catch(() => {});
 	}, [groupId]);
 
@@ -196,8 +186,7 @@ export default function Tournament({ id }: TournamentProps) {
 	};
 
 	const isGroupAdmin = groupRole === 'ADMIN';
-	const showReports = !isGuest && groupId !== null && (isGroupAdmin || appRole === 'ADMIN' || appRole === 'SUPERUSER');
-	const visibleTabs: TournamentTab[] = ['scouting', 'players', 'stats', ...(showReports ? ['reports' as TournamentTab] : [])];
+	const visibleTabs: TournamentTab[] = ['scouting', 'players', 'stats'];
 	const showSidebar = visibleTabs.length >= 2;
 
 	if (loading) {
@@ -381,9 +370,6 @@ export default function Tournament({ id }: TournamentProps) {
 					/>
 				)}
 
-				{activeTab === 'reports' && groupId && (
-					<ReportsTab groupId={groupId} tournamentId={Number(id)} />
-				)}
 			</div>
 		</>
 	);

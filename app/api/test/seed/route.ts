@@ -4,10 +4,13 @@ import UserModel from '@models/User';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
 import GroupModel from '@models/Group';
+import GroupMagicLinkModel from '@models/GroupMagicLink';
 import TournamentExternalAccessModel from '@models/TournamentExternalAccess';
 import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
 import SessionModel from '@models/Session';
 import { hashPassword } from '@/src/lib/auth/password';
+import { createSession } from '@/src/lib/auth/session';
+import { signCookie } from '@/src/lib/auth/cookieSign';
 import { v4 as uuidv4 } from 'uuid';
 
 // IDs fixes pour les données E2E — hors plage des tournois réels Ravensburger
@@ -27,12 +30,13 @@ export async function POST() {
 
   // Nettoyage des données E2E précédentes
   await Promise.all([
-    UserModel.deleteMany({ username: { $in: ['e2e_player', 'e2e_admin'] } }),
+    UserModel.deleteMany({ username: { $in: ['e2e_player', 'e2e_admin', 'e2e_guest'] } }),
     GroupModel.deleteMany({ name: 'e2e_group' }),
     TournamentModel.deleteMany({ id: T_ID }),
     RoundModel.deleteMany({ id: R_ID }),
     TournamentExternalAccessModel.deleteMany({ tournamentId: T_ID }),
     TournamentPlayersDeckModel.deleteMany({ tournamentId: T_ID }),
+    GroupMagicLinkModel.deleteMany({ tournamentId: T_ID }),
     SessionModel.deleteMany({}),
   ]);
 
@@ -167,17 +171,37 @@ export async function POST() {
     lastFetchedAt: new Date(),
   });
 
-  const guestToken = uuidv4();
-  const externalAccess = await TournamentExternalAccessModel.create({
+  // Magic link pour le test d'inscription (formulaire username/email/password)
+  const guestMagicLinkToken = uuidv4();
+  await GroupMagicLinkModel.create({
+    groupId: group._id,
+    tournamentId: T_ID,
+    createdBy: admin._id,
+    token: guestMagicLinkToken,
+    isActive: true,
+  });
+
+  // Guest pré-approuvé pour les tests qui nécessitent un invité déjà connecté
+  const guestPasswordHash = await hashPassword(E2E_PASSWORD);
+  const guestUser = await UserModel.create({
+    username: 'e2e_guest',
+    email: 'e2e_guest@test.local',
+    passwordHash: guestPasswordHash,
+    role: 'USER',
+    isGuest: true,
+    onboardingCompletedAt: new Date(),
+  });
+  const guestAccess = await TournamentExternalAccessModel.create({
     groupId: group._id,
     tournamentId: T_ID,
     invitedBy: admin._id,
-    email: 'guest@test.local',
-    displayName: null,
-    accessToken: guestToken,
-    status: 'PENDING',
+    displayName: 'e2e_guest',
+    status: 'ACCEPTED',
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    userId: guestUser._id,
   });
+  const guestSessionId = await createSession(String(guestUser._id), 'USER', '127.0.0.1', 'playwright');
+  const guestSessionCookie = await signCookie(guestSessionId, 'USER');
 
   return NextResponse.json({
     password: E2E_PASSWORD,
@@ -187,7 +211,8 @@ export async function POST() {
     round: { id: R_ID },
     matchId: M_ID,
     group: { id: String(group._id) },
-    guestToken,
-    guestAccessId: String(externalAccess._id),
+    guestMagicLinkToken,
+    guestAccessId: String(guestAccess._id),
+    guestSessionCookie,
   });
 }

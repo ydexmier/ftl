@@ -34,6 +34,7 @@ export function PlayerDeckModal({
   groupId,
 }: PlayerDeckModalProps) {
   const [selectedInks, setSelectedInks] = useState<string[]>([]);
+  const [blinking, setBlinking] = useState(false);
   const [comment, setComment] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,9 +61,15 @@ export function PlayerDeckModal({
   };
 
   const toggleInk = (ink: string) => {
-    setSelectedInks((prev) =>
-      prev.includes(ink) ? prev.filter((i) => i !== ink) : [...prev, ink],
-    );
+    setSelectedInks((prev) => {
+      if (prev.includes(ink)) return prev.filter((i) => i !== ink);
+      if (prev.length >= 2) {
+        setBlinking(true);
+        setTimeout(() => setBlinking(false), 1000);
+        return prev;
+      }
+      return [...prev, ink];
+    });
   };
 
   const handleSave = async () => {
@@ -190,6 +197,8 @@ export function PlayerDeckModal({
                     key={type}
                     type={type}
                     isSelected={selectedInks.includes(type)}
+                    isInactive={selectedInks.length >= 2 && !selectedInks.includes(type)}
+                    isBlinking={blinking && selectedInks.includes(type)}
                     onClick={() => toggleInk(type)}
                   />
                 ))}

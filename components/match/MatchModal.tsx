@@ -26,6 +26,12 @@ interface MatchModalProps {
 const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: MatchModalProps) => {
 	const [state, dispatch] = useMatchState();
 	const [comments, setComments] = useState({ combination1: '', combination2: '' });
+	const [blinking, setBlinking] = useState({ combination1: false, combination2: false });
+
+	const triggerBlink = (combo: 'combination1' | 'combination2') => {
+		setBlinking((prev) => ({ ...prev, [combo]: true }));
+		setTimeout(() => setBlinking((prev) => ({ ...prev, [combo]: false })), 1000);
+	};
 
 	const getOtherPlayer = (playerId: number) => {
 		if (!match || match.player_match_relationships.length < 2) return null;
@@ -113,14 +119,23 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		}
 		return (
 			<div data-testid={`ink-selection-${combo}`} className="flex flex-wrap gap-1">
-				{types.map((type) => (
-					<InkButton
-						key={type}
-						type={type}
-						isSelected={decks.flat().includes(type)}
-						onClick={() => dispatch({ type: 'SELECT_INK', combo, ink: type })}
-					/>
-				))}
+				{types.map((type) => {
+					const flat = decks.flat();
+					const inactive = flat.length >= 2 && !flat.includes(type);
+					return (
+						<InkButton
+							key={type}
+							type={type}
+							isSelected={flat.includes(type)}
+							isInactive={inactive}
+							isBlinking={blinking[combo] && flat.includes(type)}
+							onClick={() => {
+								if (inactive) { triggerBlink(combo); return; }
+								dispatch({ type: 'SELECT_INK', combo, ink: type });
+							}}
+						/>
+					);
+				})}
 			</div>
 		);
 	};
