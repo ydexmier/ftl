@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import { useDebounce } from '@/src/hooks/useDebounce';
-import { Search, ChevronLeft, ChevronRight, MessageSquare, RefreshCw, Users } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, MessageSquare, RefreshCw, Users, ArrowUpAZ, ArrowDownAZ, Loader2 } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import { Button } from '@components/ui/Button';
 import { Select } from '@components/ui/Select';
@@ -52,12 +52,15 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+  const activeSearch = debouncedSearch.length >= 3 ? debouncedSearch : '';
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [selected, setSelected] = useState<PlayerRow | null>(null);
   const [historyPlayer, setHistoryPlayer] = useState<PlayerRow | null>(null);
   const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus | null>(null);
   const [fetchingRegistrations, setFetchingRegistrations] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const loadPlayers = useCallback(() => {
     setLoading(true);
@@ -65,7 +68,8 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
     if (groupId) params.set('groupId', groupId);
     params.set('page', String(page));
     params.set('perPage', String(perPage));
-    if (debouncedSearch) params.set('search', debouncedSearch);
+    if (activeSearch) params.set('search', activeSearch);
+    params.set('sort', sortOrder);
 
     fetch(`/api/tournaments/${tournamentId}/players?${params}`)
       .then((res) => (res.ok ? res.json() : { players: [], pagination: DEFAULT_PAGINATION, commentCounts: {} }))
@@ -75,8 +79,8 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
         setCommentCounts(data.commentCounts ?? {});
       })
       .catch(() => setPlayers([]))
-      .finally(() => setLoading(false));
-  }, [tournamentId, groupId, page, perPage, debouncedSearch]);
+      .finally(() => { setLoading(false); setInitialized(true); });
+  }, [tournamentId, groupId, page, perPage, activeSearch, sortOrder]);
 
   useEffect(() => { loadPlayers(); }, [loadPlayers]);
 
@@ -124,7 +128,7 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
 
   const showRefreshButton = registrationStatus !== null && !registrationStatus.tournamentStarted;
 
-  if (loading) {
+  if (!initialized) {
     return (
       <div className="flex justify-center py-16">
         <Spinner size="lg" />
@@ -132,7 +136,7 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
     );
   }
 
-  if (!loading && pagination.total === 0 && !debouncedSearch) {
+  if (!loading && pagination.total === 0 && !activeSearch) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <Users className="h-10 w-10 text-muted-foreground/40" />
@@ -170,10 +174,27 @@ export function PlayersTab({ tournamentId, groupId, currentUserId, isGroupAdmin 
               type="text"
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
-              placeholder="Rechercher un joueur…"
+              placeholder="Rechercher un joueur… (min. 3 caractères)"
               className="w-full h-10 sm:h-9 rounded-md border border-white/25 bg-card pl-9 pr-3 py-1 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             />
+            {loading ? (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+            ) : search.length > 0 && search.length < 3 ? (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                {3 - search.length} car. manquant{3 - search.length > 1 ? 's' : ''}
+              </span>
+            ) : null}
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => { setSortOrder((o) => (o === 'asc' ? 'desc' : 'asc')); setPage(1); }}
+            title={sortOrder === 'asc' ? 'Tri A→Z (cliquer pour Z→A)' : 'Tri Z→A (cliquer pour A→Z)'}
+            className="shrink-0"
+          >
+            {sortOrder === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownAZ className="h-4 w-4" />}
+            <span className="hidden sm:inline">{sortOrder === 'asc' ? 'A→Z' : 'Z→A'}</span>
+          </Button>
           <Select
             options={PER_PAGE_OPTIONS}
             value={perPage}

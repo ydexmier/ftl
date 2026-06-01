@@ -21,6 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'));
   const perPage = Math.min(100, Math.max(1, Number(url.searchParams.get('perPage') ?? '25')));
   const search = url.searchParams.get('search') ?? '';
+  const sortParam = url.searchParams.get('sort');
+  const sortOrder: 'asc' | 'desc' = sortParam === 'desc' ? 'desc' : 'asc';
 
   let scope: { groupId?: string | null; userId?: string | null };
   if (groupId) {
@@ -56,6 +58,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       search,
       page,
       perPage,
+      sortOrder,
     });
 
     const totalPages = Math.max(1, Math.ceil(result.total / perPage));
