@@ -6,6 +6,7 @@ import AuditLogModel from '@models/AuditLog';
 import { UserDetailClient } from '@components/admin/users/UserDetailClient';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
+import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,13 +16,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const user = await UserModel.findById(id).select('-passwordHash').lean().catch(() => null);
   if (!user) notFound();
 
-  const [activeSessions, recentLogs, scoutingStats] = await Promise.all([
+  const [activeSessions, recentLogs, scoutingStats, userGroups] = await Promise.all([
     SessionModel.countDocuments({ userId: user._id, expiresAt: { $gt: new Date() } }),
     AuditLogModel.find({ userId: user._id })
       .sort({ timestamp: -1 })
       .limit(10)
       .lean(),
     ScoutingReportRepository.countGlobalByUser(String(user._id)),
+    GroupRepository.findByMemberId(String(user._id)),
   ]);
 
   const tournamentIds = scoutingStats.byTournament.map((t) => t.tournamentId);
@@ -55,6 +57,11 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           count: t.count,
         })),
       }}
+      userGroups={userGroups.map((g) => ({
+        _id: String(g._id),
+        name: g.name,
+        role: g.members.find((m) => String(m.userId) === String(user._id))?.role ?? 'MEMBER',
+      }))}
     />
   );
 }

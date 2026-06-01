@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2, ShieldOff, Target } from 'lucide-react';
+import { Pencil, Trash2, ShieldOff, Target, Users, UserPlus } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { Alert } from '@components/ui/Alert';
 import { UserEditModal, type UserForEdit } from './UserEditModal';
 import { UserDeleteConfirm } from './UserDeleteConfirm';
+import { AddToGroupModal } from './AddToGroupModal';
 import type { UserRole } from '@models/User';
 import type { AuditAction } from '@models/AuditLog';
 import { cn } from '@components/ui/cn';
@@ -40,17 +41,26 @@ interface ScoutingTournamentStat {
   count: number;
 }
 
+interface UserGroup {
+  _id: string;
+  name: string;
+  role: 'MEMBER' | 'ADMIN';
+}
+
 interface Props {
   user: UserForEdit & { createdAt: string; updatedAt: string };
   activeSessions: number;
   recentLogs: AuditLogRow[];
   scoutingStats: { total: number; byTournament: ScoutingTournamentStat[] };
+  userGroups: UserGroup[];
 }
 
-export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats }: Props) {
+export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats, userGroups: initialUserGroups }: Props) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [addGroupOpen, setAddGroupOpen] = useState(false);
+  const [userGroups, setUserGroups] = useState(initialUserGroups);
   const [revoking, setRevoking] = useState(false);
   const [revokeError, setRevokeError] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState(false);
@@ -150,6 +160,40 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
           </Button>
         </div>
 
+        {/* Groupes */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Groupes ({userGroups.length})</h2>
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setAddGroupOpen(true)}>
+              <UserPlus className="h-3.5 w-3.5" />
+              Ajouter
+            </Button>
+          </div>
+          {userGroups.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Aucun groupe.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {userGroups.map((g) => (
+                  <tr key={g._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-3">
+                      <a href={`/admin/groups/${g._id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                        {g.name}
+                      </a>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Badge label={g.role} color={g.role === 'ADMIN' ? 'info' : 'secondary'} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
         {/* Scouting */}
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
@@ -207,6 +251,17 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
 
       {editOpen && <UserEditModal user={user} onClose={() => setEditOpen(false)} onSuccess={onMutationSuccess} />}
       {deleteOpen && <UserDeleteConfirm userId={user._id} username={user.username} onClose={() => setDeleteOpen(false)} onSuccess={onDeleteSuccess} />}
+      {addGroupOpen && (
+        <AddToGroupModal
+          userId={user._id}
+          excludeGroupIds={userGroups.map((g) => g._id)}
+          onClose={() => setAddGroupOpen(false)}
+          onSuccess={(group) => {
+            setUserGroups((prev) => [...prev, { ...group, role: 'MEMBER' }]);
+            setAddGroupOpen(false);
+          }}
+        />
+      )}
     </>
   );
 }
