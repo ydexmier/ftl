@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Users, Trophy, ArrowLeft, Crown, UserMinus, Trash2, GitMerge } from 'lucide-react';
+import { Users, Trophy, ArrowLeft, Crown, UserMinus, Trash2, GitMerge, X } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { InviteMemberModal } from './InviteMemberModal';
@@ -21,6 +21,15 @@ interface GroupTournament {
   name: string;
 }
 
+interface PendingInvitation {
+  _id: string;
+  invitedUserId: string;
+  username: string;
+  email: string;
+  invitedByUsername: string;
+  expiresAt: string;
+}
+
 interface Group {
   _id: string;
   name: string;
@@ -36,6 +45,7 @@ interface Props {
   currentUserId: string;
   myRole: 'MEMBER' | 'ADMIN';
   groupTournaments: GroupTournament[];
+  pendingInvitations: PendingInvitation[];
 }
 
 function MergeMemberModal({
@@ -120,14 +130,26 @@ function MergeMemberModal({
   );
 }
 
-export function GroupDetail({ group, currentUserId, myRole, groupTournaments }: Props) {
+export function GroupDetail({ group, currentUserId, myRole, groupTournaments, pendingInvitations: initialPendingInvitations }: Props) {
   const router = useRouter();
   const [members, setMembers] = useState(group.members);
   const [showInvite, setShowInvite] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [mergeTarget, setMergeTarget] = useState<Member | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState(initialPendingInvitations);
+  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
 
   const isAdmin = myRole === 'ADMIN';
+
+  const cancelInvitation = async (invId: string) => {
+    setCancelLoading(invId);
+    try {
+      const res = await fetch(`/api/groups/${group._id}/invitations/${invId}`, { method: 'DELETE' });
+      if (res.ok) setPendingInvitations((prev) => prev.filter((i) => i._id !== invId));
+    } finally {
+      setCancelLoading(null);
+    }
+  };
 
   const removeMember = async (userId: string) => {
     if (!confirm('Retirer ce membre du groupe ?')) return;
@@ -273,6 +295,44 @@ export function GroupDetail({ group, currentUserId, myRole, groupTournaments }: 
           ))}
         </ul>
       </div>
+
+      {isAdmin && pendingInvitations.length > 0 && (
+        <div className="rounded-lg border border-border bg-card">
+          <div className="flex items-center gap-2 px-5 py-4 border-b border-border font-medium text-foreground text-sm">
+            Invitations en attente ({pendingInvitations.length})
+          </div>
+          <ul className="divide-y divide-border">
+            {pendingInvitations.map((inv) => (
+              <li key={inv._id} className="flex items-center justify-between px-5 py-3 gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-sm font-medium text-foreground shrink-0 uppercase">
+                    {inv.username.charAt(0)}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{inv.username}</span>
+                      <Badge label="En attente" color="warning" size="sm" />
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {inv.email} · invité par {inv.invitedByUsername} · expire le {new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  loading={cancelLoading === inv._id}
+                  onClick={() => cancelInvitation(inv._id)}
+                  title="Annuler l'invitation"
+                  className="hover:text-destructive shrink-0"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {showInvite && (
         <InviteMemberModal

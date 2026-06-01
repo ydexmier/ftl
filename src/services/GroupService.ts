@@ -265,15 +265,23 @@ export const GroupService = {
     if (!group) throw new Error('NOT_FOUND');
 
     const memberIds = group.members.map((m) => String(m.userId));
-    const [users, groupTournaments] = await Promise.all([
+    const [users, groupTournaments, pendingInvitations] = await Promise.all([
       UserRepository.findByIds(memberIds),
       GroupTournamentRepository.findByGroupId(groupId),
+      GroupInvitationRepository.findPendingByGroup(groupId),
     ]);
     const userMap = Object.fromEntries(users.map((u) => [String(u._id), u]));
 
     const tournamentIds = groupTournaments.map((gt) => gt.tournamentId);
     const tournaments = tournamentIds.length > 0 ? await TournamentRepository.findByIds(tournamentIds) : [];
     const tournamentMap = Object.fromEntries(tournaments.map((t) => [t.id, t]));
+
+    const invitedUserIds = [
+      ...pendingInvitations.map((i) => String(i.invitedUserId)),
+      ...pendingInvitations.map((i) => String(i.invitedBy)),
+    ];
+    const invitationUsers = invitedUserIds.length > 0 ? await UserRepository.findByIds(invitedUserIds) : [];
+    const invitationUserMap = Object.fromEntries(invitationUsers.map((u) => [String(u._id), u]));
 
     return {
       _id: String(group._id),
@@ -292,6 +300,14 @@ export const GroupService = {
         name: tournamentMap[gt.tournamentId]?.name ?? String(gt.tournamentId),
         start_datetime: tournamentMap[gt.tournamentId]?.start_datetime ?? null,
         status: gt.status,
+      })),
+      pendingInvitations: pendingInvitations.map((i) => ({
+        _id: String(i._id),
+        invitedUserId: String(i.invitedUserId),
+        username: invitationUserMap[String(i.invitedUserId)]?.username ?? '',
+        email: invitationUserMap[String(i.invitedUserId)]?.email ?? '',
+        invitedByUsername: invitationUserMap[String(i.invitedBy)]?.username ?? '',
+        expiresAt: i.expiresAt,
       })),
     };
   },
