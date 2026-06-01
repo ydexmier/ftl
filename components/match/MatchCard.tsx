@@ -1,6 +1,6 @@
 import { Badge } from '@components/ui/Badge';
 import Ink from '@components/ui/Ink';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, History } from 'lucide-react';
 import { getStatusFromMatch, showScoreFromMatch } from '@/src/domain/rules/matchRules';
 import type { Match, MatchStatusResult } from '@/src/types/match';
 
@@ -14,6 +14,7 @@ interface MatchCardProps {
 	onClick?: () => void;
 	className?: string;
 	onCommentClick?: (playerId: number, playerName: string) => void;
+	onHistoryClick?: (playerId: number, playerName: string) => void;
 	player1CommentCount?: number;
 	player2CommentCount?: number;
 }
@@ -32,7 +33,49 @@ const DeckDisplay = ({ playerId, decks }: { playerId: number; decks: InkCombinat
 	</div>
 );
 
-const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onCommentClick, player1CommentCount = 0, player2CommentCount = 0 }: MatchCardProps) => {
+const PlayerActions = ({
+	playerId,
+	playerName,
+	commentCount,
+	onCommentClick,
+	onHistoryClick,
+}: {
+	playerId: number;
+	playerName: string;
+	commentCount: number;
+	onCommentClick?: (playerId: number, playerName: string) => void;
+	onHistoryClick?: (playerId: number, playerName: string) => void;
+}) => {
+	if (!onCommentClick && !onHistoryClick) return null;
+	return (
+		<div className="flex items-center justify-center gap-3">
+			{onCommentClick && (
+				<button
+					type="button"
+					onClick={(e) => { e.stopPropagation(); onCommentClick(playerId, playerName); }}
+					className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+					aria-label="Voir les commentaires"
+				>
+					<MessageSquare className="h-3.5 w-3.5" />
+					<span>{commentCount > 0 ? commentCount : 'Notes'}</span>
+				</button>
+			)}
+			{onHistoryClick && (
+				<button
+					type="button"
+					onClick={(e) => { e.stopPropagation(); onHistoryClick(playerId, playerName); }}
+					className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+					aria-label="Voir le parcours"
+				>
+					<History className="h-3.5 w-3.5" />
+					<span>Parcours</span>
+				</button>
+			)}
+		</div>
+	);
+};
+
+const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onCommentClick, onHistoryClick, player1CommentCount = 0, player2CommentCount = 0 }: MatchCardProps) => {
 	const status: MatchStatusResult = getStatusFromMatch(match);
 	const player1 = match.player_match_relationships.find(
 		(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
@@ -69,16 +112,14 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onComm
 				{player1Deck && (
 					<DeckDisplay playerId={player1?.player.id ?? 0} decks={player1Deck} />
 				)}
-				{onCommentClick && player1 && (
-					<button
-						type="button"
-						onClick={(e) => { e.stopPropagation(); onCommentClick(player1.player.id, player1.player.best_identifier); }}
-						className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors self-center"
-						aria-label="Voir les commentaires"
-					>
-						<MessageSquare className="h-3.5 w-3.5" />
-						<span>{player1CommentCount > 0 ? player1CommentCount : 'Notes'}</span>
-					</button>
+				{player1 && (
+					<PlayerActions
+						playerId={player1.player.id}
+						playerName={player1.player.best_identifier}
+						commentCount={player1CommentCount}
+						onCommentClick={onCommentClick}
+						onHistoryClick={onHistoryClick}
+					/>
 				)}
 			</div>
 
@@ -103,17 +144,13 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onComm
 					{player2Deck && (
 						<DeckDisplay playerId={player2.player.id} decks={player2Deck as InkCombination} />
 					)}
-					{onCommentClick && (
-						<button
-							type="button"
-							onClick={(e) => { e.stopPropagation(); onCommentClick(player2.player.id, player2.player.best_identifier); }}
-							className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors self-center"
-							aria-label="Voir les commentaires"
-						>
-							<MessageSquare className="h-3.5 w-3.5" />
-							<span>{player2CommentCount > 0 ? player2CommentCount : 'Notes'}</span>
-						</button>
-					)}
+					<PlayerActions
+						playerId={player2.player.id}
+						playerName={player2.player.best_identifier}
+						commentCount={player2CommentCount}
+						onCommentClick={onCommentClick}
+						onHistoryClick={onHistoryClick}
+					/>
 				</div>
 			)}
 		</div>
