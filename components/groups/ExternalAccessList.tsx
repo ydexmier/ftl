@@ -18,6 +18,7 @@ const STATUS_LABELS: Record<TournamentExternalAccessStatus, string> = {
   ACCEPTED: 'Actif',
   REVOKED: 'Révoqué',
   EXPIRED: 'Expiré',
+  REJECTED: 'Refusé',
 };
 
 const STATUS_COLORS: Record<TournamentExternalAccessStatus, 'secondary' | 'success' | 'error' | 'default'> = {
@@ -25,6 +26,7 @@ const STATUS_COLORS: Record<TournamentExternalAccessStatus, 'secondary' | 'succe
   ACCEPTED: 'success',
   REVOKED: 'error',
   EXPIRED: 'default',
+  REJECTED: 'secondary',
 };
 
 function formatDate(iso: string) {

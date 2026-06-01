@@ -6,6 +6,7 @@ import { TournamentPlayersDeckRepository } from '@/src/repositories/db/Tournamen
 import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { TournamentRegistrationRepository } from '@/src/repositories/db/TournamentRegistrationRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { RegistrationService } from '@/src/services/RegistrationService';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -21,12 +22,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1'));
   const perPage = Math.min(100, Math.max(1, Number(url.searchParams.get('perPage') ?? '25')));
   const search = url.searchParams.get('search') ?? '';
+  const sortParam = url.searchParams.get('sort');
+  const sortOrder: 'asc' | 'desc' = sortParam === 'desc' ? 'desc' : 'asc';
 
   let scope: { groupId?: string | null; userId?: string | null };
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, auth.userId);
     if (!isMember && auth.role !== 'ADMIN' && auth.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(auth.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
     }
     scope = { groupId };
   } else {
@@ -56,6 +60,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       search,
       page,
       perPage,
+      sortOrder,
     });
 
     const totalPages = Math.max(1, Math.ceil(result.total / perPage));

@@ -33,7 +33,9 @@ function LoginForm() {
 			if (data.needsOnboarding) {
 				sessionStorage.setItem('ftl_onboarding_pending', '1');
 			}
-			router.push(data.role === 'ADMIN' || data.role === 'SUPERUSER' ? '/admin/dashboard' : '/');
+			if (data.role === 'ADMIN' || data.role === 'SUPERUSER') router.push('/admin/dashboard');
+				else if (data.isGuest) router.push('/guest/dashboard');
+				else router.push('/');
 		} catch {
 			setError('Erreur reseau.');
 		} finally {

@@ -8,9 +8,10 @@ import { FeedbackWidget } from './FeedbackWidget';
 
 interface BadgeCounts {
   groupInvitations: number;
+  isGuest: boolean;
 }
 
-const EMPTY_COUNTS: BadgeCounts = { groupInvitations: 0 };
+const EMPTY_COUNTS: BadgeCounts = { groupInvitations: 0, isGuest: false };
 
 function groupsBadgeCount(counts: BadgeCounts): number {
   return counts.groupInvitations;
@@ -44,6 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   const groupsCount = groupsBadgeCount(counts);
+  const isGuest = counts.isGuest;
 
   return (
     <>
@@ -81,18 +83,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             >
               Tournois
             </Link>
-            <Link
-              href="/groups"
-              className={cn(
-                'flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors',
-                pathname === '/groups'
-                  ? 'text-foreground bg-accent'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-              )}
-            >
-              Groupes
-              <NavBadge count={groupsCount} />
-            </Link>
+            {!isGuest && (
+              <Link
+                href="/groups"
+                className={cn(
+                  'flex items-center text-sm font-medium px-3 py-1.5 rounded-md transition-colors',
+                  pathname === '/groups'
+                    ? 'text-foreground bg-accent'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                )}
+              >
+                Groupes
+                <NavBadge count={groupsCount} />
+              </Link>
+            )}
           </nav>
 
           <div className="ml-auto" />
@@ -152,19 +156,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               >
                 Tournois
               </Link>
-              <Link
-                href="/groups"
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'flex items-center text-sm font-medium px-3 py-3 rounded-md transition-colors',
-                  pathname === '/groups'
-                    ? 'text-foreground bg-accent'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                )}
-              >
-                Groupes
-                <NavBadge count={groupsCount} />
-              </Link>
+              {!isGuest && (
+                <Link
+                  href="/groups"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    'flex items-center text-sm font-medium px-3 py-3 rounded-md transition-colors',
+                    pathname === '/groups'
+                      ? 'text-foreground bg-accent'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent',
+                  )}
+                >
+                  Groupes
+                  <NavBadge count={groupsCount} />
+                </Link>
+              )}
               <button
                 onClick={() => { setMobileMenuOpen(false); logout(); }}
                 className="flex items-center gap-2 text-sm font-medium px-3 py-3 rounded-md text-muted-foreground hover:text-destructive hover:bg-accent transition-colors"

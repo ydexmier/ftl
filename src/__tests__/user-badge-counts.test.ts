@@ -19,7 +19,7 @@ describe('GET /api/user/badge-counts', () => {
     const res = await getBadgeCounts(req);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).toEqual({ groupInvitations: 0 });
+    expect(data).toEqual({ groupInvitations: 0, isGuest: false });
   });
 
   it('compte les invitations PENDING reçues par l\'utilisateur', async () => {

@@ -8,7 +8,8 @@ interface Comment {
   _id: string;
   content: string;
   inks: string[];
-  authorId: { _id: string; username: string } | string;
+  authorId: { _id: string; username: string } | string | null;
+  guestDisplayName?: string | null;
   groupId: string | null;
   createdAt: string;
   updatedAt: string;
@@ -27,11 +28,13 @@ interface PlayerCommentHistoryProps {
 }
 
 function authorName(comment: Comment): string {
-  if (typeof comment.authorId === 'object') return comment.authorId.username;
+  if (comment.guestDisplayName) return comment.guestDisplayName;
+  if (comment.authorId && typeof comment.authorId === 'object') return comment.authorId.username;
   return 'Inconnu';
 }
 
 function authorId(comment: Comment): string {
+  if (!comment.authorId) return '';
   if (typeof comment.authorId === 'object') return comment.authorId._id;
   return String(comment.authorId);
 }

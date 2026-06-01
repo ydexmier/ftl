@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -25,7 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, session.userId);
     if (!isMember && session.role !== 'ADMIN' && session.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(session.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
     }
   }
 

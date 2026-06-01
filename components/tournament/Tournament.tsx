@@ -17,8 +17,14 @@ import { TournamentTour } from '@components/ui/TournamentTour';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
 import { UncertaintyModal } from '@components/groups/UncertaintyModal';
 import { StatsTab } from '@components/tournament/StatsTab';
+import { AdminGroupMenu } from '@components/tournament/AdminGroupMenu';
 import type { Tournament as TournamentType } from '@/src/types/tournament';
 import type { RoundType } from '@/src/types/round';
+
+interface AdminGroup {
+	groupId: string;
+	groupName: string;
+}
 
 interface AdminConflict {
 	_id: string;
@@ -56,8 +62,10 @@ export default function Tournament({ id }: TournamentProps) {
 	const [showConflictModal, setShowConflictModal] = useState(false);
 	const [activeTab, setActiveTab] = useState<TournamentTab>('scouting');
 	const [currentUserId, setCurrentUserId] = useState<string>('');
+	const [isGuest, setIsGuest] = useState(false);
 	const [groupRole, setGroupRole] = useState<'ADMIN' | 'MEMBER' | null>(null);
 	const [appRole, setAppRole] = useState<string>('USER');
+	const [adminGroups, setAdminGroups] = useState<AdminGroup[]>([]);
 	const [hasPendingMerge, setHasPendingMerge] = useState(false);
 	const [merging, setMerging] = useState(false);
 	const [adminConflicts, setAdminConflicts] = useState<AdminConflict[]>([]);
@@ -90,7 +98,10 @@ export default function Tournament({ id }: TournamentProps) {
 	useEffect(() => {
 		fetch('/api/auth/me')
 			.then((res) => (res.ok ? res.json() : null))
-			.then((data) => { if (data?.id) setCurrentUserId(data.id); })
+			.then((data) => {
+				if (data?.id) setCurrentUserId(data.id);
+				setIsGuest(data?.isGuest ?? false);
+			})
 			.catch(() => {});
 	}, []);
 
@@ -129,6 +140,13 @@ export default function Tournament({ id }: TournamentProps) {
 			.then((data) => setUncertainties((data.uncertainties ?? []).filter((c: UncertaintyConflict) => c.tournamentId === Number(id))))
 			.catch(() => {});
 	}, [groupId, groupRole, id]);
+
+	useEffect(() => {
+		fetch(`/api/tournaments/${id}/admin-groups`)
+			.then((res) => (res.ok ? res.json() : { groups: [] }))
+			.then((data) => setAdminGroups(data.groups ?? []))
+			.catch(() => {});
+	}, [id]);
 
 	const handleMerge = async () => {
 		if (!groupId) return;
@@ -178,7 +196,7 @@ export default function Tournament({ id }: TournamentProps) {
 	};
 
 	const isGroupAdmin = groupRole === 'ADMIN';
-	const showReports = groupId !== null && (isGroupAdmin || appRole === 'ADMIN' || appRole === 'SUPERUSER');
+	const showReports = !isGuest && groupId !== null && (isGroupAdmin || appRole === 'ADMIN' || appRole === 'SUPERUSER');
 	const visibleTabs: TournamentTab[] = ['scouting', 'players', 'stats', ...(showReports ? ['reports' as TournamentTab] : [])];
 	const showSidebar = visibleTabs.length >= 2;
 
@@ -241,13 +259,22 @@ export default function Tournament({ id }: TournamentProps) {
 							{tournament.registered_user_count}/{tournament.capacity} joueurs
 						</p>
 					</div>
-					<div data-tour="tournament-fetch-btn" className="self-start sm:self-auto shrink-0">
-						<FetchButton
-							defaultLabel="MAJ Tournoi"
-							onFetch={refreshTournament}
-							refreshDelay={60}
-							lastUpdate={lastFetchedAt}
-						/>
+					<div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+						{adminGroups.length > 0 && (
+							<AdminGroupMenu
+								tournamentId={Number(id)}
+								tournamentName={tournamentName}
+								adminGroups={adminGroups}
+							/>
+						)}
+						<div data-tour="tournament-fetch-btn">
+							<FetchButton
+								defaultLabel="MAJ Tournoi"
+								onFetch={refreshTournament}
+								refreshDelay={60}
+								lastUpdate={lastFetchedAt}
+							/>
+						</div>
 					</div>
 				</div>
 

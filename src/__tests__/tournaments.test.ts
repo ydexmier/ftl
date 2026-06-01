@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET as listTournaments, POST as upsertTournament } from '../../app/api/tournaments/route';
 import { GET as getTournament, DELETE as deleteTournament } from '../../app/api/tournaments/[id]/route';
 import { POST as fetchTournament } from '../../app/api/admin/fetchTournament/route';
+import { POST as fetchTournamentUser } from '../../app/api/tournaments/fetch/route';
 import { DELETE as adminDeleteTournament } from '../../app/api/admin/tournaments/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
@@ -171,6 +172,83 @@ describe('POST /api/admin/fetchTournament', () => {
     vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({ id: 9999 } as never);
     const req = makeRequest('POST', '/api/admin/fetchTournament', { tournamentId: tid }, cookie);
     const res = await fetchTournament(req);
+    expect(res.status).toBe(500);
+  });
+});
+
+describe('POST /api/tournaments/fetch', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('POST', '/api/tournaments/fetch', { tournamentId: 1 });
+    const res = await fetchTournamentUser(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 200 avec rôle USER', async () => {
+    const user = await createTestUser({ username: 'tfu_user1', email: 'tfu_user1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const tid = nextId();
+    vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({
+      id: tid,
+      name: 'User Fetched Tournament',
+      event_status: 'ENDED',
+      start_datetime: new Date().toISOString(),
+      tournament_phases: [],
+    } as never);
+    const req = makeRequest('POST', '/api/tournaments/fetch', { tournamentId: tid }, cookie);
+    const res = await fetchTournamentUser(req);
+    expect(res.status).toBe(200);
+    const saved = await TournamentModel.findOne({ id: tid });
+    expect(saved?.name).toBe('User Fetched Tournament');
+  });
+
+  it('retourne 200 avec rôle ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'tfu_admin1', email: 'tfu_admin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = nextId();
+    vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({
+      id: tid,
+      name: 'Admin Fetched Tournament',
+      event_status: 'ENDED',
+      start_datetime: new Date().toISOString(),
+      tournament_phases: [],
+    } as never);
+    const req = makeRequest('POST', '/api/tournaments/fetch', { tournamentId: tid }, cookie);
+    const res = await fetchTournamentUser(req);
+    expect(res.status).toBe(200);
+  });
+
+  it('retourne 400 sans tournamentId', async () => {
+    const user = await createTestUser({ username: 'tfu_user2', email: 'tfu_user2@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/tournaments/fetch', {}, cookie);
+    const res = await fetchTournamentUser(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 429 si refetch trop rapide', async () => {
+    const user = await createTestUser({ username: 'tfu_user3', email: 'tfu_user3@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const tid = nextId();
+    await TournamentModel.create({
+      id: tid,
+      name: 'T',
+      event_status: 'ENDED',
+      start_datetime: new Date(),
+      tournament_phases: [],
+      lastFetchedAt: new Date(),
+    });
+    const req = makeRequest('POST', '/api/tournaments/fetch', { tournamentId: tid }, cookie);
+    const res = await fetchTournamentUser(req);
+    expect(res.status).toBe(429);
+  });
+
+  it('retourne 500 si l\'id retourné par l\'API ne correspond pas', async () => {
+    const user = await createTestUser({ username: 'tfu_user4', email: 'tfu_user4@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const tid = nextId();
+    vi.mocked(RavensburgerClient.fetchTournament).mockResolvedValue({ id: 9999 } as never);
+    const req = makeRequest('POST', '/api/tournaments/fetch', { tournamentId: tid }, cookie);
+    const res = await fetchTournamentUser(req);
     expect(res.status).toBe(500);
   });
 });

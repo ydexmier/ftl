@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
+import { TournamentExternalAccessRepository } from '@/src/repositories/db/TournamentExternalAccessRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 
 type Params = { params: Promise<{ id: string; playerId: string }> };
@@ -22,7 +23,8 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, session.userId);
     if (!isMember && session.role !== 'ADMIN' && session.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(session.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
     }
 
     // Admin view: fetch a member's personal comments alongside group context
@@ -37,12 +39,10 @@ export async function GET(req: NextRequest, { params }: Params) {
   try {
     let comments;
     if (groupId && targetUserId) {
-      // Admin fetching a specific member's personal (groupId: null) comments
       const [groupComments, memberComments] = await Promise.all([
         PlayerCommentRepository.findByPlayer(tournamentId, playerId, { groupId }),
         PlayerCommentRepository.findByPlayer(tournamentId, playerId, { groupId: null }),
       ]);
-      // Filter member comments to only this user's
       const filtered = memberComments.filter((c) => {
         const id = typeof c.authorId === 'object' ? String((c.authorId as unknown as { _id: string })._id) : String(c.authorId);
         return id === targetUserId;
@@ -78,7 +78,24 @@ export async function POST(req: NextRequest, { params }: Params) {
   if (groupId) {
     const isMember = await GroupRepository.isMember(groupId, session.userId);
     if (!isMember && session.role !== 'ADMIN' && session.role !== 'SUPERUSER') {
-      return ApiResponse.forbidden();
+      const guestAccess = await TournamentExternalAccessRepository.findAcceptedForUser(session.userId, tournamentId, groupId);
+      if (!guestAccess) return ApiResponse.forbidden();
+
+      try {
+        const comment = await PlayerCommentRepository.create({
+          tournamentId,
+          playerId,
+          authorId: null,
+          guestAccessId: String(guestAccess._id),
+          guestDisplayName: guestAccess.displayName ?? undefined,
+          groupId,
+          inks: inks ?? [],
+          content: content.trim(),
+        });
+        return ApiResponse.created({ comment });
+      } catch (err) {
+        return ApiResponse.serverError(err);
+      }
     }
   }
 

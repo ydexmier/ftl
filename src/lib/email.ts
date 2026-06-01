@@ -3,6 +3,7 @@ import { InvitationEmail } from './emails/InvitationEmail';
 import { WelcomeEmail } from './emails/WelcomeEmail';
 import { PasswordResetEmail } from './emails/PasswordResetEmail';
 import { GuestInvitationEmail } from './emails/GuestInvitationEmail';
+import { GuestApprovedEmail } from './emails/GuestApprovedEmail';
 
 export const EMAIL_FROM = process.env.EMAIL_FROM ?? 'noreply@companion.yd-lab.com';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
@@ -49,6 +50,16 @@ export async function sendPasswordResetEmail(to: string, token: string) {
   const link = `${APP_URL}/reset-password/${token}`;
   const html = await render(PasswordResetEmail({ link }));
   await sendEmail(to, 'Réinitialisation de ton mot de passe', html);
+}
+
+export async function sendGuestApprovedEmail(
+  to: string,
+  username: string,
+  tournamentName: string,
+) {
+  const loginUrl = `${APP_URL}/login`;
+  const html = await render(GuestApprovedEmail({ username, tournamentName, loginUrl }));
+  await sendEmail(to, `Accès approuvé — ${tournamentName}`, html);
 }
 
 export async function sendGuestInvitationEmail(

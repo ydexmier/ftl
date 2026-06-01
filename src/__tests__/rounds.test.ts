@@ -3,6 +3,7 @@ import { GET as getMatches } from '../../app/api/rounds/[roundId]/matchs/route';
 import { GET as getMatch } from '../../app/api/rounds/[roundId]/matchs/[matchId]/route';
 import { POST as assignDeck } from '../../app/api/rounds/[roundId]/matchs/[matchId]/assign_deck/route';
 import { POST as fetchRound } from '../../app/api/admin/fetchRound/route';
+import { POST as fetchRoundUser } from '../../app/api/rounds/fetch/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
 import TournamentPlayersDeckModel from '@models/TournamentPlayersDeck';
@@ -416,5 +417,85 @@ describe('POST /api/admin/fetchRound', () => {
     expect(res.status).toBe(200);
     const saved = await RoundModel.findOne({ id: rid });
     expect(saved).not.toBeNull();
+  });
+});
+
+describe('POST /api/rounds/fetch', () => {
+  it('retourne 401 sans cookie', async () => {
+    const req = makeRequest('POST', '/api/rounds/fetch', { tournamentId: 1, roundId: 1 });
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 200 avec rôle USER', async () => {
+    const user = await createTestUser({ username: 'rfu_user1', email: 'rfu_user1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const tid = nextId();
+    const rid = nextId();
+    const mid = nextId();
+    await TournamentModel.create({
+      id: tid,
+      name: 'T',
+      event_status: 'ENDED',
+      start_datetime: new Date(),
+      tournament_phases: [{ id: 1, status: 'COMPLETE', order_in_phases: 1, number_of_rounds: 1, round_type: 'SWISS', first_round_type: null, rank_required_to_enter_phase: null, rounds: [{ id: rid, round_number: 1, final_round_in_event: true, pairings_status: 'PUBLISHED', standings_status: 'PUBLISHED', round_type: 'SWISS', status: 'COMPLETE' }] }],
+    });
+    vi.mocked(RavensburgerClient.fetchRound).mockResolvedValue({
+      id: rid, total: 1, results: [makeMatch(mid)],
+    } as never);
+    const req = makeRequest('POST', '/api/rounds/fetch', { tournamentId: tid, roundId: rid }, cookie);
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(200);
+    const saved = await RoundModel.findOne({ id: rid });
+    expect(saved).not.toBeNull();
+  });
+
+  it('retourne 200 avec rôle ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'rfu_admin1', email: 'rfu_admin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = nextId();
+    const rid = nextId();
+    const mid = nextId();
+    await TournamentModel.create({
+      id: tid,
+      name: 'T',
+      event_status: 'ENDED',
+      start_datetime: new Date(),
+      tournament_phases: [{ id: 1, status: 'COMPLETE', order_in_phases: 1, number_of_rounds: 1, round_type: 'SWISS', first_round_type: null, rank_required_to_enter_phase: null, rounds: [{ id: rid, round_number: 1, final_round_in_event: true, pairings_status: 'PUBLISHED', standings_status: 'PUBLISHED', round_type: 'SWISS', status: 'COMPLETE' }] }],
+    });
+    vi.mocked(RavensburgerClient.fetchRound).mockResolvedValue({
+      id: rid, total: 1, results: [makeMatch(mid)],
+    } as never);
+    const req = makeRequest('POST', '/api/rounds/fetch', { tournamentId: tid, roundId: rid }, cookie);
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(200);
+  });
+
+  it('retourne 400 sans tournamentId', async () => {
+    const user = await createTestUser({ username: 'rfu_user2', email: 'rfu_user2@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/rounds/fetch', { roundId: 1 }, cookie);
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 sans roundId', async () => {
+    const user = await createTestUser({ username: 'rfu_user3', email: 'rfu_user3@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('POST', '/api/rounds/fetch', { tournamentId: 1 }, cookie);
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 429 si refetch trop rapide', async () => {
+    const user = await createTestUser({ username: 'rfu_user4', email: 'rfu_user4@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const tid = nextId();
+    const rid = nextId();
+    await TournamentModel.create({ id: tid, name: 'T', event_status: 'ENDED', start_datetime: new Date(), tournament_phases: [] });
+    await RoundModel.create({ id: rid, tournamentId: tid, results: [], lastFetchedAt: new Date() });
+    const req = makeRequest('POST', '/api/rounds/fetch', { tournamentId: tid, roundId: rid }, cookie);
+    const res = await fetchRoundUser(req);
+    expect(res.status).toBe(429);
   });
 });

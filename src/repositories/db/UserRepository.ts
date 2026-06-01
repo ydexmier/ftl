@@ -67,7 +67,7 @@ export const UserRepository = {
     return (await UserModel.exists(query)) !== null;
   },
 
-  async create(data: { username: string; email: string; passwordHash: string; role: string }) {
+  async create(data: { username: string; email: string; passwordHash: string; role: string; isGuest?: boolean }) {
     await connectToMongoDB();
     return UserModel.create(data);
   },

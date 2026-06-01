@@ -2,12 +2,16 @@ import { redirect } from 'next/navigation';
 import { getServerUser } from '@/src/lib/auth/getServerUser';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { GroupInvitationRepository } from '@/src/repositories/db/GroupInvitationRepository';
+import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { GroupsList } from '@components/groups/GroupsList';
 import connectToMongoDB from '@/src/lib/db';
 
 export default async function GroupsPage() {
   const user = await getServerUser();
   if (!user) redirect('/login');
+
+  const fullUser = await UserRepository.findById(user.userId);
+  if (fullUser?.isGuest) redirect('/');
 
   await connectToMongoDB();
   const [rawGroups, rawInvitations] = await Promise.all([
