@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
-import { X, Search } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { X, Loader2 } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
+import { useDebounce } from '@/src/hooks/useDebounce';
 
 interface UserResult {
   _id: string;
@@ -23,19 +24,33 @@ export function InviteMemberModal({ groupId, onClose, onInvited }: Props) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const debouncedSearch = useDebounce(search, 300);
 
-  const searchUsers = async () => {
-    if (!search.trim()) return;
+  const searchUsers = useCallback(async (q: string) => {
     setSearching(true);
     setError('');
     try {
-      const res = await fetch(`/api/admin/users?search=${encodeURIComponent(search)}&limit=10`);
+      const res = await fetch(`/api/users/search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
-      setResults(data.users ?? []);
+      if (res.ok) {
+        setResults(data.users ?? []);
+      } else {
+        setResults([]);
+      }
     } finally {
       setSearching(false);
+      inputRef.current?.focus();
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (debouncedSearch.length < 3) {
+      setResults([]);
+      return;
+    }
+    searchUsers(debouncedSearch);
+  }, [debouncedSearch, searchUsers]);
 
   const invite = async (userId: string, username: string) => {
     setLoading(userId);
@@ -51,6 +66,7 @@ export function InviteMemberModal({ groupId, onClose, onInvited }: Props) {
       if (!res.ok) { setError(data.error); return; }
       setSuccess(`Invitation envoyée à ${username}`);
       setResults((prev) => prev.filter((u) => u._id !== userId));
+      setTimeout(onInvited, 800);
     } finally {
       setLoading(null);
     }
@@ -66,17 +82,18 @@ export function InviteMemberModal({ groupId, onClose, onInvited }: Props) {
           </button>
         </div>
         <div className="p-5 space-y-4">
-          <div className="flex gap-2">
+          <div className="relative">
             <Input
+              ref={inputRef}
               fullWidth
-              placeholder="Rechercher par nom ou email…"
+              autoFocus
+              placeholder="Rechercher par nom ou email (3 caractères min.)…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchUsers()}
             />
-            <Button variant="outline" loading={searching} onClick={searchUsers}>
-              <Search className="h-4 w-4" />
-            </Button>
+            {searching && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+            )}
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}
@@ -98,7 +115,7 @@ export function InviteMemberModal({ groupId, onClose, onInvited }: Props) {
             </ul>
           )}
 
-          {results.length === 0 && search && !searching && (
+          {search.length >= 3 && results.length === 0 && !searching && (
             <p className="text-sm text-muted-foreground text-center py-4">Aucun utilisateur trouvé.</p>
           )}
 
