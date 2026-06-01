@@ -50,6 +50,15 @@ export const GroupInvitationRepository = {
     })) !== null;
   },
 
+  async findPendingByGroup(groupId: string) {
+    await connectToMongoDB();
+    return GroupInvitationModel.find({
+      groupId,
+      status: 'PENDING',
+      expiresAt: { $gt: new Date() },
+    }).lean();
+  },
+
   async countPendingByUser(userId: string): Promise<number> {
     await connectToMongoDB();
     return GroupInvitationModel.countDocuments({
@@ -57,6 +66,11 @@ export const GroupInvitationRepository = {
       status: 'PENDING',
       expiresAt: { $gt: new Date() },
     });
+  },
+
+  async deleteById(id: string) {
+    await connectToMongoDB();
+    return GroupInvitationModel.findByIdAndDelete(id).lean();
   },
 
   async deleteManyByGroupId(groupId: string) {

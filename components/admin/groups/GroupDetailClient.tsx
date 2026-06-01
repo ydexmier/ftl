@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus } from 'lucide-react';
+import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus, X } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
@@ -10,6 +10,15 @@ import { InviteMemberModal } from './InviteMemberModal';
 import { AddTournamentModal } from './AddTournamentModal';
 import { MergeMemberModal } from './MergeMemberModal';
 import type { Member, Tournament, RawConflict } from './MergeMemberModal';
+
+interface PendingInvitation {
+  _id: string;
+  invitedUserId: string;
+  username: string;
+  email: string;
+  invitedByUsername: string;
+  expiresAt: string;
+}
 
 interface ConflictModalState {
   conflicts: RawConflict[];
@@ -23,9 +32,10 @@ interface Props {
   description?: string;
   members: Member[];
   tournaments: Tournament[];
+  pendingInvitations: PendingInvitation[];
 }
 
-export function GroupDetailClient({ groupId, groupName, description, members, tournaments }: Props) {
+export function GroupDetailClient({ groupId, groupName, description, members, tournaments, pendingInvitations: initialPendingInvitations }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<'members' | 'tournaments'>('members');
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -35,6 +45,8 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
   const [removeTournamentLoading, setRemoveTournamentLoading] = useState<number | null>(null);
   const [mergeTarget, setMergeTarget] = useState<Member | null>(null);
   const [conflictModal, setConflictModal] = useState<ConflictModalState | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState(initialPendingInvitations);
+  const [cancelLoading, setCancelLoading] = useState<string | null>(null);
 
   const onMutationSuccess = () => {
     setInviteOpen(false);
@@ -65,6 +77,16 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
     await fetch(`/api/admin/groups/${groupId}/tournaments/${tournamentId}`, { method: 'DELETE' });
     setRemoveTournamentLoading(null);
     router.refresh();
+  };
+
+  const cancelInvitation = async (invId: string) => {
+    setCancelLoading(invId);
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}/invitations/${invId}`, { method: 'DELETE' });
+      if (res.ok) setPendingInvitations((prev) => prev.filter((i) => i._id !== invId));
+    } finally {
+      setCancelLoading(null);
+    }
   };
 
   const handleMergeConflicts = (conflicts: RawConflict[], tournamentName: string) => {
@@ -173,6 +195,49 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
                 </table>
               )}
             </div>
+
+            {pendingInvitations.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Invitations en attente ({pendingInvitations.length})
+                </h3>
+                <div className="bg-card border border-border rounded-xl overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground text-xs uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left">Utilisateur</th>
+                        <th className="px-4 py-3 text-left hidden sm:table-cell">Email</th>
+                        <th className="px-4 py-3 text-left hidden md:table-cell">Invité par</th>
+                        <th className="px-4 py-3 text-left hidden md:table-cell">Expire le</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pendingInvitations.map((inv) => (
+                        <tr key={inv._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                          <td className="px-4 py-3 font-medium text-foreground">{inv.username}</td>
+                          <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{inv.email}</td>
+                          <td className="px-4 py-3 hidden md:table-cell text-muted-foreground">{inv.invitedByUsername}</td>
+                          <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs font-mono">
+                            {new Date(inv.expiresAt).toLocaleDateString('fr-FR')}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => cancelInvitation(inv._id)}
+                              disabled={cancelLoading === inv._id}
+                              className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                              title="Annuler l'invitation"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

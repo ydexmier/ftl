@@ -29,6 +29,10 @@ export default async function AdminGroupDetailPage({ params }: Props) {
         ...t,
         start_datetime: t.start_datetime instanceof Date ? t.start_datetime.toISOString() : t.start_datetime ? String(t.start_datetime) : null,
       }))}
+      pendingInvitations={group.pendingInvitations.map((i) => ({
+        ...i,
+        expiresAt: i.expiresAt instanceof Date ? i.expiresAt.toISOString() : String(i.expiresAt),
+      }))}
     />
   );
 }
