@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { UserPlus, Search, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UserPlus, Search, Pencil, Trash2, ChevronLeft, ChevronRight, NotebookPen } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Input } from '@components/ui/Input';
 import { Select } from '@components/ui/Select';
@@ -10,6 +10,7 @@ import { Badge } from '@components/ui/Badge';
 import { UserCreateModal } from './UserCreateModal';
 import { UserEditModal, type UserForEdit } from './UserEditModal';
 import { UserDeleteConfirm } from './UserDeleteConfirm';
+import { AdminMemoModal } from './AdminMemoModal';
 import type { UserRole } from '@models/User';
 
 const ROLE_OPTIONS = [
@@ -37,6 +38,7 @@ interface UserRow {
   role: UserRole;
   createdAt: string;
   groups: UserGroup[];
+  hasMemo: boolean;
 }
 
 interface Props {
@@ -75,6 +77,10 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<UserForEdit | null>(null);
   const [deleteUser, setDeleteUser] = useState<{ _id: string; username: string } | null>(null);
+  const [memoUser, setMemoUser] = useState<{ _id: string; username: string; hasMemo: boolean } | null>(null);
+  const [memoStates, setMemoStates] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(users.map((u) => [u._id, u.hasMemo])),
+  );
 
   const pushParams = useCallback((overrides: Record<string, string>) => {
     const params = new URLSearchParams({ search, role, page: String(page), ...overrides });
@@ -172,6 +178,13 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button
+                            onClick={() => setMemoUser({ _id: u._id, username: u.username, hasMemo: memoStates[u._id] ?? false })}
+                            className={`p-1.5 rounded-md transition-colors ${memoStates[u._id] ? 'text-amber-400 hover:bg-amber-900/20' : 'text-muted-foreground hover:text-amber-400 hover:bg-amber-900/20'}`}
+                            title="Mémo"
+                          >
+                            <NotebookPen className="h-3.5 w-3.5" />
+                          </button>
+                          <button
                             onClick={() => setEditUser({ _id: u._id, username: u.username, email: u.email, role: u.role })}
                             className="p-2 sm:p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                             title="Modifier"
@@ -216,6 +229,21 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
       {createOpen && <UserCreateModal onClose={() => setCreateOpen(false)} onSuccess={onMutationSuccess} />}
       {editUser && <UserEditModal user={editUser} onClose={() => setEditUser(null)} onSuccess={onMutationSuccess} />}
       {deleteUser && <UserDeleteConfirm userId={deleteUser._id} username={deleteUser.username} onClose={() => setDeleteUser(null)} onSuccess={onMutationSuccess} />}
+      {memoUser && (
+        <AdminMemoModal
+          userId={memoUser._id}
+          username={memoUser.username}
+          onClose={() => setMemoUser(null)}
+          onSaved={() => {
+            setMemoStates((prev) => ({ ...prev, [memoUser._id]: true }));
+            setMemoUser(null);
+          }}
+          onDeleted={() => {
+            setMemoStates((prev) => ({ ...prev, [memoUser._id]: false }));
+            setMemoUser(null);
+          }}
+        />
+      )}
     </>
   );
 }

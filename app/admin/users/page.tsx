@@ -1,6 +1,8 @@
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
+import { AdminMemoRepository } from '@/src/repositories/db/AdminMemoRepository';
+import { getServerUser } from '@/src/lib/auth/getServerUser';
 import { UsersPageClient } from '@components/admin/users/UsersPageClient';
 
 interface SearchParams {
@@ -17,6 +19,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const limit = 25;
 
   await connectToMongoDB();
+  const adminUser = await getServerUser();
 
   const query: Record<string, unknown> = {};
   if (search) {
@@ -38,7 +41,11 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   ]);
 
   const userIds = rawUsers.map((u) => String(u._id));
-  const rawGroups = userIds.length > 0 ? await GroupRepository.findByMemberIds(userIds) : [];
+  const [rawGroups, adminMemos] = await Promise.all([
+    userIds.length > 0 ? GroupRepository.findByMemberIds(userIds) : Promise.resolve([]),
+    adminUser ? AdminMemoRepository.findByAdminId(adminUser.userId) : Promise.resolve([]),
+  ]);
+  const memoUserIds = new Set(adminMemos.map((m) => String(m.targetUserId)));
 
   const groupsByUserId: Record<string, { _id: string; name: string }[]> = {};
   for (const group of rawGroups) {
@@ -56,6 +63,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     role: u.role,
     createdAt: u.createdAt.toISOString(),
     groups: groupsByUserId[String(u._id)] ?? [],
+    hasMemo: memoUserIds.has(String(u._id)),
   }));
 
   return (
