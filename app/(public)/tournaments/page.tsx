@@ -144,6 +144,7 @@ export default async function TournamentsPage() {
       groupId,
       groupName: group.name,
       myRole: group.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER',
+      infoMessage: group.infoMessage,
       tournaments,
       archivedTournaments: archivedGroupTournaments,
     };

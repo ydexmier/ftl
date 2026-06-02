@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
-import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX } from 'lucide-react';
+import { BookUser, Users, UserCheck, ChevronDown, ChevronRight, ArchiveX, Info } from 'lucide-react';
 import TournamentCard from './TournamentCard';
 import { TournamentSearchBar } from './TournamentSearchBar';
 import { GroupAssignPopover } from './GroupAssignPopover';
@@ -127,6 +127,12 @@ function GroupSubSection({
       </button>
       {open && (
         <div className="p-4 flex flex-col gap-3">
+          {section.infoMessage && (
+            <div className="flex gap-3 rounded-lg border border-blue-700 bg-blue-900/20 px-4 py-3 text-sm text-blue-300">
+              <Info className="h-4 w-4 shrink-0 mt-0.5" />
+              <p className="whitespace-pre-wrap">{section.infoMessage}</p>
+            </div>
+          )}
           {section.tournaments.length === 0 ? (
             <p className="text-sm text-muted-foreground py-4 text-center border border-dashed border-border rounded-lg">
               Aucun tournoi actif dans ce groupe.
