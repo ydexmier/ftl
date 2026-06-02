@@ -382,6 +382,16 @@ export const GroupService = {
     return GroupTournamentRepository.remove(groupId, tournamentId);
   },
 
+  async adminUpdateGroup(groupId: string, data: { name?: string; description?: string; infoMessage?: string }) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+    if (data.name) {
+      const existing = await GroupRepository.findByName(data.name.trim());
+      if (existing && String(existing._id) !== groupId) throw new Error('Ce nom de groupe est déjà pris');
+    }
+    return GroupRepository.update(groupId, data);
+  },
+
   async adminDeleteGroup(groupId: string) {
     const group = await GroupRepository.findById(groupId);
     if (!group) throw new Error('NOT_FOUND');

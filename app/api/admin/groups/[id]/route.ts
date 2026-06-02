@@ -24,18 +24,17 @@ export async function GET(request: NextRequest, { params }: Params) {
 export async function PATCH(request: NextRequest, { params }: Params) {
   const result = await requireAdminSession(request);
   if ('error' in result) return result.error;
-  const { session } = result;
 
   const v = validateAdminGroupBody(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);
 
   try {
     const { id } = await params;
-    const updated = await GroupService.updateGroup(id, session.userId, v.data);
+    const updated = await GroupService.adminUpdateGroup(id, v.data);
     return ApiResponse.ok(updated);
   } catch (err) {
     const msg = (err as Error).message;
-    if (msg === 'FORBIDDEN') return ApiResponse.forbidden();
+    if (msg === 'NOT_FOUND') return ApiResponse.notFound('Groupe introuvable');
     return ApiResponse.badRequest(msg);
   }
 }

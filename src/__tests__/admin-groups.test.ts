@@ -195,18 +195,18 @@ describe('PATCH /api/admin/groups/[id]', () => {
   });
 });
 
-// ─── PATCH /api/admin/groups/[id] — FORBIDDEN ────────────────────────────────
+// ─── PATCH /api/admin/groups/[id] — non-membre autorisé ─────────────────────
 
-describe('PATCH /api/admin/groups/[id] — FORBIDDEN', () => {
-  it('retourne 403 si le système ADMIN n\'est pas admin du groupe', async () => {
+describe('PATCH /api/admin/groups/[id] — non-membre autorisé', () => {
+  it('retourne 200 même si le système ADMIN n\'est pas membre du groupe', async () => {
     const owner = await createAdminUser({ username: 'ag-patch-owner', email: 'ag-patch-owner@example.com' });
     const sysAdmin = await createAdminUser({ username: 'ag-patch-sysadmin', email: 'ag-patch-sysadmin@example.com' });
-    const group = await createTestGroup(owner._id, { name: 'ag-patch-forbidden-group' });
+    const group = await createTestGroup(owner._id, { name: 'ag-patch-nonmember-group' });
     const cookie = await createAuthCookie(sysAdmin._id, 'ADMIN');
 
-    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}`, { name: 'Nouveau nom' }, cookie);
+    const req = makeRequest('PATCH', `/api/admin/groups/${group._id}`, { name: 'ag-patch-nonmember-group' }, cookie);
     const res = await updateGroup(req, groupParams(String(group._id)));
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
   });
 });
 
