@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus, X, MessageSquare } from 'lucide-react';
+import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus, X, MessageSquare, Pin, PinOff } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
@@ -31,16 +31,20 @@ interface Props {
   groupName: string;
   description?: string;
   infoMessage?: string;
+  isPinned: boolean;
   members: Member[];
   tournaments: Tournament[];
   pendingInvitations: PendingInvitation[];
 }
 
-export function GroupDetailClient({ groupId, groupName, description, infoMessage: initialInfoMessage, members, tournaments, pendingInvitations: initialPendingInvitations }: Props) {
+export function GroupDetailClient({ groupId, groupName, description, infoMessage: initialInfoMessage, isPinned: initialIsPinned, members, tournaments, pendingInvitations: initialPendingInvitations }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<'members' | 'tournaments'>('members');
   const [infoMessage, setInfoMessage] = useState(initialInfoMessage ?? '');
   const [savingMessage, setSavingMessage] = useState(false);
+  const [isPinned, setIsPinned] = useState(initialIsPinned);
+  const [pinLoading, setPinLoading] = useState(false);
+  const [pinConfirm, setPinConfirm] = useState<{ name: string } | null>(null);
   const [messageError, setMessageError] = useState('');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [addTournamentOpen, setAddTournamentOpen] = useState(false);
@@ -111,6 +115,37 @@ export function GroupDetailClient({ groupId, groupName, description, infoMessage
     }
   };
 
+  const doPin = async () => {
+    setPinLoading(true);
+    try {
+      await fetch(`/api/admin/groups/${groupId}/pin`, { method: 'POST' });
+      setIsPinned(true);
+      setPinConfirm(null);
+    } finally {
+      setPinLoading(false);
+    }
+  };
+
+  const handlePin = async () => {
+    if (isPinned) {
+      setPinLoading(true);
+      try {
+        await fetch(`/api/admin/groups/${groupId}/pin`, { method: 'DELETE' });
+        setIsPinned(false);
+      } finally {
+        setPinLoading(false);
+      }
+    } else {
+      const res = await fetch('/api/admin/groups/pinned');
+      const data = await res.json();
+      if (data.group && data.group._id !== groupId) {
+        setPinConfirm({ name: data.group.name });
+      } else {
+        await doPin();
+      }
+    }
+  };
+
   const handleMergeConflicts = (conflicts: RawConflict[], tournamentName: string) => {
     const member = mergeTarget!;
     setMergeTarget(null);
@@ -154,6 +189,45 @@ export function GroupDetailClient({ groupId, groupName, description, infoMessage
               Enregistrer
             </Button>
           </div>
+        </div>
+
+        {/* Épingler le groupe */}
+        <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5">
+              {isPinned ? (
+                <Pin className="h-4 w-4 text-amber-400" />
+              ) : (
+                <Pin className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Groupe épinglé</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {isPinned
+                  ? 'Ce groupe apparaît en premier sur la page /tournaments.'
+                  : 'Forcer ce groupe à apparaître en premier sur la page /tournaments.'}
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant={isPinned ? 'outline' : 'default'}
+            loading={pinLoading}
+            onClick={handlePin}
+          >
+            {isPinned ? (
+              <>
+                <PinOff className="h-3.5 w-3.5" />
+                Désépingler
+              </>
+            ) : (
+              <>
+                <Pin className="h-3.5 w-3.5" />
+                Épingler
+              </>
+            )}
+          </Button>
         </div>
 
         {/* Onglets */}
@@ -361,6 +435,29 @@ export function GroupDetailClient({ groupId, groupName, description, infoMessage
           onConflicts={handleMergeConflicts}
           onSuccess={() => { setMergeTarget(null); router.refresh(); }}
         />
+      )}
+      {pinConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-xl shadow-xl p-6 max-w-sm w-full mx-4 flex flex-col gap-4">
+            <div className="flex items-start gap-3">
+              <Pin className="h-5 w-5 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <h2 className="text-base font-semibold text-foreground">Changer le groupe épinglé</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Le groupe <span className="font-medium text-foreground">{pinConfirm.name}</span> est actuellement épinglé. Il ne sera plus affiché en premier sur /tournaments.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setPinConfirm(null)}>
+                Annuler
+              </Button>
+              <Button size="sm" loading={pinLoading} onClick={doPin}>
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
       {conflictModal && (
         <AdminConflictModal

@@ -28,9 +28,10 @@ interface Props {
   groups: GroupSummary[];
   invitations: InvitationSummary[];
   currentUserId: string;
+  canCreateGroup: boolean;
 }
 
-export function GroupsList({ groups, invitations, currentUserId }: Props) {
+export function GroupsList({ groups, invitations, canCreateGroup }: Props) {
   const router = useRouter();
   const [showCreate, setShowCreate] = useState(false);
   const [showInvitations, setShowInvitations] = useState(invitations.length > 0);
@@ -51,10 +52,12 @@ export function GroupsList({ groups, invitations, currentUserId }: Props) {
               {invitations.length} invitation{invitations.length > 1 ? 's' : ''}
             </Button>
           )}
-          <Button onClick={() => setShowCreate(true)}>
-            <Plus className="h-4 w-4" />
-            Créer un groupe
-          </Button>
+          {canCreateGroup && (
+            <Button onClick={() => setShowCreate(true)}>
+              <Plus className="h-4 w-4" />
+              Créer un groupe
+            </Button>
+          )}
         </div>
       </div>
 

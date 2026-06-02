@@ -145,10 +145,11 @@ export default async function TournamentsPage() {
       groupName: group.name,
       myRole: group.members.find((m) => String(m.userId) === user.userId)?.role ?? 'MEMBER',
       infoMessage: group.infoMessage,
+      isPinned: group.isPinned ?? false,
       tournaments,
       archivedTournaments: archivedGroupTournaments,
     };
-  });
+  }).sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
 
   const adminGroups = groupSections
     .filter((s) => s.myRole === 'ADMIN')
