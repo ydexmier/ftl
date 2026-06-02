@@ -49,6 +49,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
         username: user.username,
         email: user.email,
         role: user.role,
+        canCreateGroup: user.canCreateGroup ?? false,
         createdAt: user.createdAt.toISOString(),
         updatedAt: user.updatedAt.toISOString(),
       }}

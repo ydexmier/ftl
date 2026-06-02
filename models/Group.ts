@@ -13,6 +13,7 @@ export interface IGroup extends Document {
   name: string;
   description?: string;
   infoMessage?: string;
+  isPinned: boolean;
   createdBy: mongoose.Types.ObjectId;
   members: IGroupMember[];
   createdAt: Date;
@@ -34,6 +35,7 @@ const GroupSchema = new Schema<IGroup>(
     name: { type: String, required: true, unique: true, trim: true },
     description: { type: String, trim: true },
     infoMessage: { type: String, trim: true },
+    isPinned: { type: Boolean, default: false },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     members: { type: [GroupMemberSchema], default: [] },
   },

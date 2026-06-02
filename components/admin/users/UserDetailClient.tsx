@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2, ShieldOff, Target, Users, UserPlus } from 'lucide-react';
+import { Pencil, Trash2, ShieldOff, Target, Users, UserPlus, FolderPlus } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { Alert } from '@components/ui/Alert';
@@ -48,7 +48,7 @@ interface UserGroupRow {
 }
 
 interface Props {
-  user: UserForEdit & { createdAt: string; updatedAt: string };
+  user: UserForEdit & { createdAt: string; updatedAt: string; canCreateGroup: boolean };
   activeSessions: number;
   recentLogs: AuditLogRow[];
   scoutingStats: { total: number; byTournament: ScoutingTournamentStat[] };
@@ -64,6 +64,8 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
   const [revoking, setRevoking] = useState(false);
   const [revokeError, setRevokeError] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState(false);
+  const [canCreateGroup, setCanCreateGroup] = useState(user.canCreateGroup);
+  const [togglingGroup, setTogglingGroup] = useState(false);
 
   const onMutationSuccess = () => {
     setEditOpen(false);
@@ -73,6 +75,20 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
 
   const onDeleteSuccess = () => {
     router.push('/admin/users');
+  };
+
+  const toggleCanCreateGroup = async () => {
+    setTogglingGroup(true);
+    try {
+      await fetch(`/api/admin/users/${user._id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ canCreateGroup: !canCreateGroup }),
+      });
+      setCanCreateGroup((v) => !v);
+    } finally {
+      setTogglingGroup(false);
+    }
   };
 
   const revokeSessions = async () => {
@@ -157,6 +173,29 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
           >
             <ShieldOff className="h-3.5 w-3.5" />
             Révoquer toutes les sessions
+          </Button>
+        </div>
+
+        {/* Création de groupe */}
+        <div className="bg-card border border-border rounded-xl p-5 flex items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <FolderPlus className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <h2 className="text-sm font-semibold text-foreground">Création de groupes</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {canCreateGroup
+                  ? 'Cet utilisateur peut créer des groupes.'
+                  : 'Cet utilisateur ne peut pas créer de groupes.'}
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant={canCreateGroup ? 'outline' : 'default'}
+            loading={togglingGroup}
+            onClick={toggleCanCreateGroup}
+          >
+            {canCreateGroup ? 'Révoquer' : 'Autoriser'}
           </Button>
         </div>
 

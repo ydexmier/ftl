@@ -40,7 +40,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   const v = validateAdminUserUpdate(await request.json());
   if (!v.ok) return ApiResponse.badRequest(v.error);
-  const { username, email, role, password } = v.data;
+  const { username, email, role, password, canCreateGroup } = v.data;
 
   const updates: Record<string, unknown> = {};
 
@@ -59,6 +59,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   if (role !== undefined) updates.role = role;
+  if (canCreateGroup !== undefined) updates.canCreateGroup = canCreateGroup;
 
   const adminUser = await UserRepository.findById(session.userId);
   const adminUsername = adminUser?.username ?? '';

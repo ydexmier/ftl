@@ -111,9 +111,10 @@ export function validateAdminUserUpdate(body: unknown): ValidationResult<{
   email?: string;
   role?: UserRole;
   password?: string;
+  canCreateGroup?: boolean;
 }> {
   const b = body as Record<string, unknown>;
-  const data: { username?: string; email?: string; role?: UserRole; password?: string } = {};
+  const data: { username?: string; email?: string; role?: UserRole; password?: string; canCreateGroup?: boolean } = {};
   if (b.username !== undefined) {
     if (typeof b.username !== 'string' || !b.username.trim()) return err('Le pseudo est invalide');
     if (b.username.trim().length > 30) return err('Le pseudo ne peut pas dépasser 30 caractères');
@@ -132,6 +133,10 @@ export function validateAdminUserUpdate(body: unknown): ValidationResult<{
   if (b.password !== undefined) {
     if (typeof b.password !== 'string') return err('Mot de passe invalide');
     data.password = b.password;
+  }
+  if (b.canCreateGroup !== undefined) {
+    if (typeof b.canCreateGroup !== 'boolean') return err('canCreateGroup doit être un booléen');
+    data.canCreateGroup = b.canCreateGroup;
   }
   if (Object.keys(data).length === 0) return err('Aucun champ à mettre à jour');
   return ok(data);

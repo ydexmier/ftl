@@ -25,6 +25,22 @@ export const GroupRepository = {
       .lean();
   },
 
+  async findPinned() {
+    await connectToMongoDB();
+    return GroupModel.findOne({ isPinned: true }).select('_id name').lean();
+  },
+
+  async pin(groupId: string) {
+    await connectToMongoDB();
+    await GroupModel.updateMany({ isPinned: true }, { isPinned: false });
+    return GroupModel.findByIdAndUpdate(groupId, { isPinned: true }, { new: true }).lean();
+  },
+
+  async unpin(groupId: string) {
+    await connectToMongoDB();
+    return GroupModel.findByIdAndUpdate(groupId, { isPinned: false }, { new: true }).lean();
+  },
+
   async findByName(name: string) {
     await connectToMongoDB();
     return GroupModel.findOne({ name }).lean();

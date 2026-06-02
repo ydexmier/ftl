@@ -22,6 +22,7 @@ export default async function AdminGroupDetailPage({ params }: Props) {
       groupName={group.name}
       description={group.description}
       infoMessage={group.infoMessage}
+      isPinned={group.isPinned}
       members={group.members.map((m) => ({
         ...m,
         joinedAt: m.joinedAt instanceof Date ? m.joinedAt.toISOString() : String(m.joinedAt),
