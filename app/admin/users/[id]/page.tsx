@@ -6,6 +6,7 @@ import AuditLogModel from '@models/AuditLog';
 import { UserDetailClient } from '@components/admin/users/UserDetailClient';
 import { ScoutingReportRepository } from '@/src/repositories/db/ScoutingReportRepository';
 import { TournamentRepository } from '@/src/repositories/db/TournamentRepository';
+import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 
 export default async function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -15,13 +16,14 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const user = await UserModel.findById(id).select('-passwordHash').lean().catch(() => null);
   if (!user) notFound();
 
-  const [activeSessions, recentLogs, scoutingStats] = await Promise.all([
+  const [activeSessions, recentLogs, scoutingStats, rawGroups] = await Promise.all([
     SessionModel.countDocuments({ userId: user._id, expiresAt: { $gt: new Date() } }),
     AuditLogModel.find({ userId: user._id })
       .sort({ timestamp: -1 })
       .limit(10)
       .lean(),
     ScoutingReportRepository.countGlobalByUser(String(user._id)),
+    GroupRepository.findByMemberId(String(user._id)),
   ]);
 
   const tournamentIds = scoutingStats.byTournament.map((t) => t.tournamentId);
@@ -30,10 +32,20 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     tournaments.filter(Boolean).map((t) => [t!.id, t!.name]),
   );
 
+  const userId = String(user._id);
+  const groups = rawGroups.map((g) => {
+    const member = g.members.find((m) => String(m.userId) === userId);
+    return {
+      _id: String(g._id),
+      name: g.name,
+      role: (member?.role ?? 'MEMBER') as 'ADMIN' | 'MEMBER',
+    };
+  });
+
   return (
     <UserDetailClient
       user={{
-        _id: String(user._id),
+        _id: userId,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -55,6 +67,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           count: t.count,
         })),
       }}
+      groups={groups}
     />
   );
 }

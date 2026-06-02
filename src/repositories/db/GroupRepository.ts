@@ -18,6 +18,13 @@ export const GroupRepository = {
     return GroupModel.find({ 'members.userId': userId }).lean();
   },
 
+  async findByMemberIds(userIds: string[]) {
+    await connectToMongoDB();
+    return GroupModel.find({ 'members.userId': { $in: userIds } })
+      .select('name members')
+      .lean();
+  },
+
   async findByName(name: string) {
     await connectToMongoDB();
     return GroupModel.findOne({ name }).lean();
