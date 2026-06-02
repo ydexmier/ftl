@@ -1,5 +1,6 @@
 import connectToMongoDB from '@/src/lib/db';
 import UserModel from '@models/User';
+import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { UsersPageClient } from '@components/admin/users/UsersPageClient';
 
 interface SearchParams {
@@ -36,12 +37,25 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
     UserModel.countDocuments(query),
   ]);
 
+  const userIds = rawUsers.map((u) => String(u._id));
+  const rawGroups = userIds.length > 0 ? await GroupRepository.findByMemberIds(userIds) : [];
+
+  const groupsByUserId: Record<string, { _id: string; name: string }[]> = {};
+  for (const group of rawGroups) {
+    for (const member of group.members) {
+      const uid = String(member.userId);
+      if (!groupsByUserId[uid]) groupsByUserId[uid] = [];
+      groupsByUserId[uid].push({ _id: String(group._id), name: group.name });
+    }
+  }
+
   const users = rawUsers.map((u) => ({
     _id: String(u._id),
     username: u.username,
     email: u.email,
     role: u.role,
     createdAt: u.createdAt.toISOString(),
+    groups: groupsByUserId[String(u._id)] ?? [],
   }));
 
   return (

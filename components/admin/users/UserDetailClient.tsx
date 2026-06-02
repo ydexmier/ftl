@@ -41,10 +41,10 @@ interface ScoutingTournamentStat {
   count: number;
 }
 
-interface UserGroup {
+interface UserGroupRow {
   _id: string;
   name: string;
-  role: 'MEMBER' | 'ADMIN';
+  role: 'ADMIN' | 'MEMBER';
 }
 
 interface Props {
@@ -52,15 +52,15 @@ interface Props {
   activeSessions: number;
   recentLogs: AuditLogRow[];
   scoutingStats: { total: number; byTournament: ScoutingTournamentStat[] };
-  userGroups: UserGroup[];
+  groups: UserGroupRow[];
 }
 
-export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats, userGroups: initialUserGroups }: Props) {
+export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats, groups: initialGroups }: Props) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [addGroupOpen, setAddGroupOpen] = useState(false);
-  const [userGroups, setUserGroups] = useState(initialUserGroups);
+  const [groups, setGroups] = useState(initialGroups);
   const [revoking, setRevoking] = useState(false);
   const [revokeError, setRevokeError] = useState('');
   const [revokeSuccess, setRevokeSuccess] = useState(false);
@@ -165,19 +165,19 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-semibold text-foreground">Groupes ({userGroups.length})</h2>
+              <h2 className="text-sm font-semibold text-foreground">Groupes ({groups.length})</h2>
             </div>
             <Button size="sm" variant="outline" onClick={() => setAddGroupOpen(true)}>
               <UserPlus className="h-3.5 w-3.5" />
               Ajouter
             </Button>
           </div>
-          {userGroups.length === 0 ? (
+          {groups.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">Aucun groupe.</p>
           ) : (
             <table className="w-full text-sm">
               <tbody>
-                {userGroups.map((g) => (
+                {groups.map((g) => (
                   <tr key={g._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
                     <td className="px-5 py-3">
                       <a href={`/admin/groups/${g._id}`} className="font-medium text-foreground hover:text-primary transition-colors">
@@ -254,10 +254,10 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
       {addGroupOpen && (
         <AddToGroupModal
           userId={user._id}
-          excludeGroupIds={userGroups.map((g) => g._id)}
+          excludeGroupIds={groups.map((g) => g._id)}
           onClose={() => setAddGroupOpen(false)}
           onSuccess={(group) => {
-            setUserGroups((prev) => [...prev, { ...group, role: 'MEMBER' }]);
+            setGroups((prev) => [...prev, { ...group, role: 'MEMBER' }]);
             setAddGroupOpen(false);
           }}
         />

@@ -25,12 +25,18 @@ const ROLE_BADGE: Record<UserRole, React.ComponentProps<typeof Badge>['color']> 
   SUPERUSER: 'error',
 };
 
+interface UserGroup {
+  _id: string;
+  name: string;
+}
+
 interface UserRow {
   _id: string;
   username: string;
   email: string;
   role: UserRole;
   createdAt: string;
+  groups: UserGroup[];
 }
 
 interface Props {
@@ -40,6 +46,24 @@ interface Props {
   pages: number;
   search: string;
   role: string;
+}
+
+function UserGroupsList({ groups }: { groups: UserGroup[] }) {
+  if (groups.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+  const visible = groups.slice(0, 2);
+  const overflow = groups.length - visible.length;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {visible.map((g) => (
+        <span key={g._id} className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-muted text-muted-foreground truncate max-w-[120px]" title={g.name}>
+          {g.name}
+        </span>
+      ))}
+      {overflow > 0 && (
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-muted text-muted-foreground">+{overflow}</span>
+      )}
+    </div>
+  );
 }
 
 export function UsersPageClient({ users, total, page, pages, search: initialSearch, role: initialRole }: Props) {
@@ -117,6 +141,7 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
                     <th className="px-4 py-3 text-left">Utilisateur</th>
                     <th className="px-4 py-3 text-left hidden sm:table-cell">Email</th>
                     <th className="px-4 py-3 text-left">Rôle</th>
+                    <th className="px-4 py-3 text-left hidden lg:table-cell">Groupes</th>
                     <th className="px-4 py-3 text-left hidden md:table-cell whitespace-nowrap">Créé le</th>
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
@@ -137,6 +162,9 @@ export function UsersPageClient({ users, total, page, pages, search: initialSear
                       <td className="px-4 py-3 hidden sm:table-cell text-muted-foreground">{u.email}</td>
                       <td className="px-4 py-3">
                         <Badge label={u.role} color={ROLE_BADGE[u.role]} />
+                      </td>
+                      <td className="px-4 py-3 hidden lg:table-cell">
+                        <UserGroupsList groups={u.groups} />
                       </td>
                       <td className="px-4 py-3 hidden md:table-cell text-muted-foreground text-xs font-mono">
                         {new Date(u.createdAt).toLocaleDateString('fr-FR')}

@@ -16,7 +16,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
   const user = await UserModel.findById(id).select('-passwordHash').lean().catch(() => null);
   if (!user) notFound();
 
-  const [activeSessions, recentLogs, scoutingStats, userGroups] = await Promise.all([
+  const [activeSessions, recentLogs, scoutingStats, rawGroups] = await Promise.all([
     SessionModel.countDocuments({ userId: user._id, expiresAt: { $gt: new Date() } }),
     AuditLogModel.find({ userId: user._id })
       .sort({ timestamp: -1 })
@@ -32,10 +32,20 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
     tournaments.filter(Boolean).map((t) => [t!.id, t!.name]),
   );
 
+  const userId = String(user._id);
+  const groups = rawGroups.map((g) => {
+    const member = g.members.find((m) => String(m.userId) === userId);
+    return {
+      _id: String(g._id),
+      name: g.name,
+      role: (member?.role ?? 'MEMBER') as 'ADMIN' | 'MEMBER',
+    };
+  });
+
   return (
     <UserDetailClient
       user={{
-        _id: String(user._id),
+        _id: userId,
         username: user.username,
         email: user.email,
         role: user.role,
@@ -57,11 +67,7 @@ export default async function UserDetailPage({ params }: { params: Promise<{ id:
           count: t.count,
         })),
       }}
-      userGroups={userGroups.map((g) => ({
-        _id: String(g._id),
-        name: g.name,
-        role: g.members.find((m) => String(m.userId) === String(user._id))?.role ?? 'MEMBER',
-      }))}
+      groups={groups}
     />
   );
 }

@@ -140,6 +140,7 @@ export function validateAdminUserUpdate(body: unknown): ValidationResult<{
 export function validateAdminGroupBody(body: unknown): ValidationResult<{
   name: string;
   description: string;
+  infoMessage: string;
 }> {
   const b = body as Record<string, unknown>;
   if (!b?.name || typeof b.name !== 'string' || !b.name.trim()) return err('Le nom du groupe est requis');
@@ -147,7 +148,9 @@ export function validateAdminGroupBody(body: unknown): ValidationResult<{
   if (name.length > 100) return err('Le nom ne peut pas dépasser 100 caractères');
   const description = typeof b.description === 'string' ? b.description.trim() : '';
   if (description.length > 500) return err('La description ne peut pas dépasser 500 caractères');
-  return ok({ name, description });
+  const infoMessage = typeof b.infoMessage === 'string' ? b.infoMessage.trim() : '';
+  if (infoMessage.length > 500) return err('Le message ne peut pas dépasser 500 caractères');
+  return ok({ name, description, infoMessage });
 }
 
 export function validateAdminFeedbackStatus(body: unknown): ValidationResult<{ status: FeedbackStatus }> {
