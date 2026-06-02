@@ -36,5 +36,12 @@ export default async function GroupsPage() {
     expiresAt: inv.expiresAt.toISOString(),
   }));
 
-  return <GroupsList groups={groups} invitations={invitations} currentUserId={user.userId} />;
+  return (
+    <GroupsList
+      groups={groups}
+      invitations={invitations}
+      currentUserId={user.userId}
+      canCreateGroup={fullUser?.canCreateGroup ?? false}
+    />
+  );
 }

@@ -14,6 +14,7 @@ export async function createTestUser(overrides: Partial<{
   email: string;
   password: string;
   role: UserRole;
+  canCreateGroup: boolean;
 }> = {}) {
   const passwordHash = await hashPassword(overrides.password ?? DEFAULT_PASSWORD);
   return UserModel.create({
@@ -21,6 +22,7 @@ export async function createTestUser(overrides: Partial<{
     email: overrides.email ?? 'test@example.com',
     passwordHash,
     role: overrides.role ?? 'USER',
+    canCreateGroup: overrides.canCreateGroup ?? false,
   });
 }
 

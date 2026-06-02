@@ -51,7 +51,7 @@ describe('POST /api/groups', () => {
   });
 
   it('retourne 400 si le nom est vide', async () => {
-    const user = await createTestUser({ username: 'groupcreate1', email: 'groupcreate1@example.com' });
+    const user = await createTestUser({ username: 'groupcreate1', email: 'groupcreate1@example.com', canCreateGroup: true });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('POST', '/api/groups', { name: '  ' }, cookie);
     const res = await createGroup(req);
@@ -59,7 +59,7 @@ describe('POST /api/groups', () => {
   });
 
   it('retourne 400 si le nom est déjà pris', async () => {
-    const user = await createTestUser({ username: 'groupcreate2', email: 'groupcreate2@example.com' });
+    const user = await createTestUser({ username: 'groupcreate2', email: 'groupcreate2@example.com', canCreateGroup: true });
     const cookie = await createAuthCookie(user._id, 'USER');
     await createTestGroup(user._id, { name: 'taken-group-name' });
     const req = makeRequest('POST', '/api/groups', { name: 'taken-group-name' }, cookie);
@@ -68,7 +68,7 @@ describe('POST /api/groups', () => {
   });
 
   it('crée un groupe et retourne 201 avec l\'utilisateur comme admin', async () => {
-    const user = await createTestUser({ username: 'groupcreate3', email: 'groupcreate3@example.com' });
+    const user = await createTestUser({ username: 'groupcreate3', email: 'groupcreate3@example.com', canCreateGroup: true });
     const cookie = await createAuthCookie(user._id, 'USER');
     const req = makeRequest('POST', '/api/groups', { name: 'brand-new-group', description: 'desc' }, cookie);
     const res = await createGroup(req);

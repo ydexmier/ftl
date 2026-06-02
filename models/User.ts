@@ -8,6 +8,7 @@ export interface IUser extends Document {
   passwordHash: string;
   role: UserRole;
   isGuest: boolean;
+  canCreateGroup: boolean;
   onboardingCompletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
@@ -19,6 +20,7 @@ const UserSchema = new Schema<IUser>({
   passwordHash: { type: String, required: true },
   role: { type: String, enum: ['USER', 'ADMIN', 'SUPERUSER'], default: 'USER' },
   isGuest: { type: Boolean, default: false },
+  canCreateGroup: { type: Boolean, default: false },
   onboardingCompletedAt: { type: Date, default: null },
 }, { timestamps: true });
 

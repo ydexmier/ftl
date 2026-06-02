@@ -10,6 +10,7 @@ export interface GroupSection {
   groupName: string;
   myRole: string;
   infoMessage?: string;
+  isPinned?: boolean;
   tournaments: TournamentSummary[];
   archivedTournaments?: TournamentSummary[];
 }

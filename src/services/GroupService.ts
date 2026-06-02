@@ -288,6 +288,7 @@ export const GroupService = {
       name: group.name,
       description: group.description,
       infoMessage: group.infoMessage,
+      isPinned: group.isPinned ?? false,
       createdAt: group.createdAt,
       members: group.members.map((m) => ({
         userId: String(m.userId),
