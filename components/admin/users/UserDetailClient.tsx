@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Pencil, Trash2, ShieldOff, Target } from 'lucide-react';
+import { Pencil, Trash2, ShieldOff, Target, Users } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { Alert } from '@components/ui/Alert';
@@ -40,14 +40,21 @@ interface ScoutingTournamentStat {
   count: number;
 }
 
+interface UserGroupRow {
+  _id: string;
+  name: string;
+  role: 'ADMIN' | 'MEMBER';
+}
+
 interface Props {
   user: UserForEdit & { createdAt: string; updatedAt: string };
   activeSessions: number;
   recentLogs: AuditLogRow[];
   scoutingStats: { total: number; byTournament: ScoutingTournamentStat[] };
+  groups: UserGroupRow[];
 }
 
-export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats }: Props) {
+export function UserDetailClient({ user, activeSessions, recentLogs, scoutingStats, groups }: Props) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -148,6 +155,42 @@ export function UserDetailClient({ user, activeSessions, recentLogs, scoutingSta
             <ShieldOff className="h-3.5 w-3.5" />
             Révoquer toutes les sessions
           </Button>
+        </div>
+
+        {/* Groupes */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-foreground">Groupes</h2>
+            </div>
+            <span className="text-sm font-semibold text-foreground">{groups.length}</span>
+          </div>
+          {groups.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">Aucun groupe.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <tbody>
+                {groups.map((g) => (
+                  <tr key={g._id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="px-5 py-3">
+                      <a href={`/admin/groups/${g._id}`} className="text-foreground hover:text-primary transition-colors font-medium">
+                        {g.name}
+                      </a>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <span className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                        g.role === 'ADMIN' ? 'bg-blue-900/40 text-blue-400' : 'bg-muted text-muted-foreground',
+                      )}>
+                        {g.role}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Scouting */}
