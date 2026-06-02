@@ -44,6 +44,7 @@ export default async function GroupTournamentsPage({ params }: Params) {
     <GroupTournaments
       groupId={id}
       groupName={group.name}
+      infoMessage={group.infoMessage}
       tournaments={serialized}
       myRole={myRole}
     />

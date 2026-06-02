@@ -78,7 +78,7 @@ export const GroupService = {
     };
   },
 
-  async updateGroup(groupId: string, userId: string, data: { name?: string; description?: string }) {
+  async updateGroup(groupId: string, userId: string, data: { name?: string; description?: string; infoMessage?: string }) {
     await assertGroupAdmin(groupId, userId);
     if (data.name) {
       const existing = await GroupRepository.findByName(data.name.trim());
@@ -287,6 +287,7 @@ export const GroupService = {
       _id: String(group._id),
       name: group.name,
       description: group.description,
+      infoMessage: group.infoMessage,
       createdAt: group.createdAt,
       members: group.members.map((m) => ({
         userId: String(m.userId),
@@ -379,6 +380,16 @@ export const GroupService = {
     const group = await GroupRepository.findById(groupId);
     if (!group) throw new Error('NOT_FOUND');
     return GroupTournamentRepository.remove(groupId, tournamentId);
+  },
+
+  async adminUpdateGroup(groupId: string, data: { name?: string; description?: string; infoMessage?: string }) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+    if (data.name) {
+      const existing = await GroupRepository.findByName(data.name.trim());
+      if (existing && String(existing._id) !== groupId) throw new Error('Ce nom de groupe est déjà pris');
+    }
+    return GroupRepository.update(groupId, data);
   },
 
   async adminDeleteGroup(groupId: string) {

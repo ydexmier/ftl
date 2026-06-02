@@ -9,6 +9,7 @@ export interface GroupSection {
   groupId: string;
   groupName: string;
   myRole: string;
+  infoMessage?: string;
   tournaments: TournamentSummary[];
   archivedTournaments?: TournamentSummary[];
 }
