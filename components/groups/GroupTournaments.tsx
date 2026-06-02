@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle, HelpCircle, GitMerge } from 'lucide-react';
+import { ArrowLeft, Trophy, Plus, Trash2, Users, AlertTriangle, HelpCircle, GitMerge, Info } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AddTournamentModal } from './AddTournamentModal';
@@ -43,6 +43,7 @@ interface UncertaintyConflict {
 interface Props {
   groupId: string;
   groupName: string;
+  infoMessage?: string;
   tournaments: GroupTournamentEntry[];
   myRole: 'MEMBER' | 'ADMIN';
 }
@@ -54,7 +55,7 @@ function statusColor(status: string): 'success' | 'info' | 'warning' | 'secondar
   return 'secondary';
 }
 
-export function GroupTournaments({ groupId, groupName, tournaments: initial, myRole }: Props) {
+export function GroupTournaments({ groupId, groupName, infoMessage, tournaments: initial, myRole }: Props) {
   const router = useRouter();
   const [tournaments, setTournaments] = useState(initial);
   const [showAdd, setShowAdd] = useState(false);
@@ -158,6 +159,13 @@ export function GroupTournaments({ groupId, groupName, tournaments: initial, myR
           </Button>
         )}
       </div>
+
+      {infoMessage && (
+        <div className="flex gap-3 rounded-lg border border-blue-700 bg-blue-900/20 px-4 py-3 text-sm text-blue-300">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <p className="whitespace-pre-wrap">{infoMessage}</p>
+        </div>
+      )}
 
       {tournaments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-border rounded-lg">

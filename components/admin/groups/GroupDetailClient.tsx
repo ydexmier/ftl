@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus, X } from 'lucide-react';
+import { Trash2, ChevronDown, Trophy, ArrowLeft, GitMerge, UserPlus, X, MessageSquare } from 'lucide-react';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { AdminConflictModal } from '@components/groups/AdminConflictModal';
@@ -30,14 +30,18 @@ interface Props {
   groupId: string;
   groupName: string;
   description?: string;
+  infoMessage?: string;
   members: Member[];
   tournaments: Tournament[];
   pendingInvitations: PendingInvitation[];
 }
 
-export function GroupDetailClient({ groupId, groupName, description, members, tournaments, pendingInvitations: initialPendingInvitations }: Props) {
+export function GroupDetailClient({ groupId, groupName, description, infoMessage: initialInfoMessage, members, tournaments, pendingInvitations: initialPendingInvitations }: Props) {
   const router = useRouter();
   const [tab, setTab] = useState<'members' | 'tournaments'>('members');
+  const [infoMessage, setInfoMessage] = useState(initialInfoMessage ?? '');
+  const [savingMessage, setSavingMessage] = useState(false);
+  const [messageError, setMessageError] = useState('');
   const [inviteOpen, setInviteOpen] = useState(false);
   const [addTournamentOpen, setAddTournamentOpen] = useState(false);
   const [roleLoading, setRoleLoading] = useState<string | null>(null);
@@ -89,6 +93,24 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
     }
   };
 
+  const saveInfoMessage = async () => {
+    setSavingMessage(true);
+    setMessageError('');
+    try {
+      const res = await fetch(`/api/admin/groups/${groupId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: groupName, description, infoMessage }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setMessageError(data.error ?? 'Erreur lors de la sauvegarde');
+      }
+    } finally {
+      setSavingMessage(false);
+    }
+  };
+
   const handleMergeConflicts = (conflicts: RawConflict[], tournamentName: string) => {
     const member = mergeTarget!;
     setMergeTarget(null);
@@ -105,6 +127,33 @@ export function GroupDetailClient({ groupId, groupName, description, members, to
           </Link>
           <h1 className="text-2xl font-bold text-foreground">{groupName}</h1>
           {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
+        </div>
+
+        {/* Message informatif */}
+        <div className="bg-card border border-border rounded-xl p-5 flex flex-col gap-3">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Message informatif</h2>
+            <span className="text-xs text-muted-foreground">— affiché aux membres sur la page tournois du groupe</span>
+          </div>
+          <textarea
+            value={infoMessage}
+            onChange={(e) => setInfoMessage(e.target.value)}
+            placeholder="Laissez vide pour ne rien afficher…"
+            maxLength={500}
+            rows={3}
+            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+          />
+          <div className="flex items-center justify-between gap-2">
+            {messageError ? (
+              <span className="text-xs text-destructive">{messageError}</span>
+            ) : (
+              <span className="text-xs text-muted-foreground">{infoMessage.length}/500</span>
+            )}
+            <Button size="sm" loading={savingMessage} onClick={saveInfoMessage}>
+              Enregistrer
+            </Button>
+          </div>
         </div>
 
         {/* Onglets */}

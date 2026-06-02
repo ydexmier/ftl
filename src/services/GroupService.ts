@@ -78,7 +78,7 @@ export const GroupService = {
     };
   },
 
-  async updateGroup(groupId: string, userId: string, data: { name?: string; description?: string }) {
+  async updateGroup(groupId: string, userId: string, data: { name?: string; description?: string; infoMessage?: string }) {
     await assertGroupAdmin(groupId, userId);
     if (data.name) {
       const existing = await GroupRepository.findByName(data.name.trim());
@@ -287,6 +287,7 @@ export const GroupService = {
       _id: String(group._id),
       name: group.name,
       description: group.description,
+      infoMessage: group.infoMessage,
       createdAt: group.createdAt,
       members: group.members.map((m) => ({
         userId: String(m.userId),

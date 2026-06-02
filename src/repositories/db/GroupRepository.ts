@@ -47,7 +47,7 @@ export const GroupRepository = {
     });
   },
 
-  async update(id: string, data: { name?: string; description?: string }) {
+  async update(id: string, data: { name?: string; description?: string; infoMessage?: string }) {
     await connectToMongoDB();
     return GroupModel.findByIdAndUpdate(id, data, { new: true }).lean();
   },
