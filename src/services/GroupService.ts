@@ -329,6 +329,19 @@ export const GroupService = {
     return GroupInvitationRepository.create(groupId, invitedUserId, invitedBy);
   },
 
+  async adminAddDirectMember(groupId: string, adminId: string, userId: string) {
+    const group = await GroupRepository.findById(groupId);
+    if (!group) throw new Error('NOT_FOUND');
+
+    const alreadyMember = await GroupRepository.isMember(groupId, userId);
+    if (alreadyMember) throw new Error('Cet utilisateur est déjà membre du groupe');
+
+    const user = await UserRepository.findById(userId);
+    if (!user) throw new Error('Utilisateur introuvable');
+
+    return GroupRepository.addMember(groupId, userId, adminId);
+  },
+
   async adminRemoveMember(groupId: string, userId: string) {
     const group = await GroupRepository.findById(groupId);
     if (!group) throw new Error('NOT_FOUND');
