@@ -5,6 +5,8 @@ import RoundModel from '@models/Round';
 import ScoutingReportModel from '@models/ScoutingReport';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { ScoutingService } from '@/src/services/ScoutingService';
+import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
+import type { Deck } from '@/src/types/ink';
 import { createTestUser } from '../test/helpers';
 
 let _counter = 0;
@@ -160,9 +162,9 @@ describe('ScoutingService.assignDecks — écritures parallèles', () => {
     await seedRound(tid, roundId, matchId, 10, 20);
     await TournamentPlayersDeckModel.create({ tournamentId: tid, groupId: null, userId: user._id, players: [] });
 
-    const assignments = [
-      { playerId: 10, decks: [['Amber', 'Ruby'] as [string, string]] },
-      { playerId: 20, decks: [['Sapphire', 'Steel'] as [string, string]] },
+    const assignments: DeckAssignment[] = [
+      { playerId: 10, decks: [['Amber', 'Ruby'] as Deck] },
+      { playerId: 20, decks: [['Sapphire', 'Steel'] as Deck] },
     ];
 
     await ScoutingService.assignDecks(roundId, matchId, assignments, scope, { userId: user._id.toString() });
@@ -195,7 +197,7 @@ describe('ScoutingService.assignDecks — écritures parallèles', () => {
 
     await ScoutingService.assignDecks(
       roundId, matchId,
-      [{ playerId: 10, decks: [] }, { playerId: 20, decks: [['Emerald', 'Ruby'] as [string, string]] }],
+      [{ playerId: 10, decks: [] }, { playerId: 20, decks: [['Emerald', 'Ruby'] as Deck] }] as DeckAssignment[],
       scope,
       { userId: user._id.toString() },
     );

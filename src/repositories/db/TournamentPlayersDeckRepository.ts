@@ -138,7 +138,8 @@ export const TournamentPlayersDeckRepository = {
         return {
           updateOne: {
             filter: { _id: doc._id },
-            update: { $push: { players: { $each: missing } } },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            update: { $push: { players: { $each: missing } } } as any,
           },
         };
       })
