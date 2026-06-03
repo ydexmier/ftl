@@ -232,16 +232,20 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 						<div className="flex flex-col sm:flex-row gap-2">
 							{[p1, p2].map((p) => {
 								const active = state.combination1.playerId === p.player.id;
+								const pseudo = p.user_event_status?.best_identifier;
 								return (
 									<Button
 										key={p.player.id}
 										variant={active ? 'outline' : 'ghost'}
 										size="sm"
 										onClick={onAssignPlayer('combination1', p.player.id)}
-										className={`w-full sm:w-auto truncate${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
+										className={`w-full sm:w-auto${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
 									>
 										{active && <Check className="h-3.5 w-3.5 shrink-0" />}
-										{p.player.best_identifier}
+										<span className="flex flex-col items-start text-left min-w-0">
+											<span className="truncate">{p.player.best_identifier}</span>
+											{pseudo && <span className="text-xs font-normal opacity-60 truncate">{pseudo}</span>}
+										</span>
 									</Button>
 								);
 							})}
@@ -277,16 +281,20 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 							<div className="flex gap-2 flex-wrap">
 								{[p1, p2].map((p) => {
 									const active = state.combination2.playerId === p.player.id;
+									const pseudo = p.user_event_status?.best_identifier;
 									return (
 										<Button
 											key={p.player.id}
 											variant={active ? 'outline' : 'ghost'}
 											size="sm"
 											onClick={onAssignPlayer('combination2', p.player.id)}
-											className={`w-full sm:w-auto truncate${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
+											className={`w-full sm:w-auto${active ? ' border-primary/50 bg-primary/10 text-primary' : ''}`}
 										>
 											{active && <Check className="h-3.5 w-3.5 shrink-0" />}
-											{p.player.best_identifier}
+											<span className="flex flex-col items-start text-left min-w-0">
+												<span className="truncate">{p.player.best_identifier}</span>
+												{pseudo && <span className="text-xs font-normal opacity-60 truncate">{pseudo}</span>}
+											</span>
 										</Button>
 									);
 								})}
