@@ -384,6 +384,41 @@ Les combinaisons d'encres sont toujours stockées et affichées dans l'ordre can
 
 ---
 
+## Stratégie de performance (scouting sous charge)
+
+Ces règles s'appliquent aux opérations critiques du scouting sur les gros tournois (2000 joueurs, ~30 utilisateurs simultanés).
+
+### Atomicité des écritures de deck (`assignDecks`)
+`TournamentPlayersDeckRepository.assignDecks` est **entièrement atomique** — aucun read-modify-write :
+- Création du document parent : `$setOnInsert` (no-op si déjà existant, sûr en concurrence)
+- Mise à jour d'un joueur existant : `$set 'players.$.decks'` via opérateur positionnel
+- Ajout d'un nouveau joueur : `$push` (après `matchedCount === 0` sur le `$set`)
+- Suppression (decks vides) : `$pull`
+
+Ne jamais revenir à un pattern read-modify-save (`doc.save()`) pour cette méthode — cela crée des race conditions sous charge concurrente.
+
+### Synchronisation multi-scope (`upsertMissingPlayersAllExisting`)
+Après un fetch de ronde, tous les documents `TournamentPlayersDeck` du tournoi (toutes portées) sont mis à jour via un seul **`bulkWrite`** plutôt qu'une boucle de `updateOne` séquentiels.
+
+### Parallélisme dans `ScoutingService.assignDecks`
+Les trois écritures indépendantes sont parallélisées via `Promise.all` :
+- `TournamentPlayersDeckRepository.assignDecks`
+- `ScoutingReportRepository.createMany`
+- `PlayerCommentRepository.create` (si commentaire présent)
+
+### Pagination des matchs par aggregation MongoDB
+`RoundRepository.findMatchesPaginated` utilise une **aggregation** `$unwind → $match → $facet` sur le tableau `results` du document Round. Cela évite de charger le document complet en mémoire (potentiellement ~1000 matchs) pour retourner une page de 10.
+
+Structure du pipeline :
+1. `$match { id: roundId }` — sélectionne le document
+2. `$unwind '$results'` — dénormalise les matchs
+3. Filtres optionnels : `excludeOnePlayer` (`$size` ≥ 2), recherche textuelle (regex sur les identifiants) ou numérique (`table_number`)
+4. `$facet { total: [$count], data: [$skip, $limit, $replaceRoot] }` — compte total + slice paginé
+
+La query de métadonnées (`tournamentId`, `lastFetchedAt`, `updatedAt`) s'exécute en `Promise.all` avec l'aggregation pour éviter un aller-retour supplémentaire.
+
+---
+
 ## Principes d'architecture
 
 - **Server Components par défaut** — `'use client'` uniquement si interaction utilisateur ou hooks nécessaires
