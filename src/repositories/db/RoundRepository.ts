@@ -50,39 +50,79 @@ export const RoundRepository = {
 		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
 		await connectToMongoDB();
 
-		const round = (await RoundModel.findOne({ id: roundId }).lean()) as RoundDocument | null;
-		if (!round) return null;
-
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
 		const limit = Math.max(perPage, 1);
 
-		let results = round.results ?? [];
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const pipeline: any[] = [
+			{ $match: { id: roundId } },
+			{ $unwind: '$results' },
+		];
 
-		if (search.trim() || excludeOnePlayer) {
-			const isNumeric = !isNaN(Number(search));
-			const lowerSearch = search.toLowerCase();
-
-			results = results.filter((match) => {
-				if (excludeOnePlayer && match.player_match_relationships.length < 2) return false;
-				if (!search.trim()) return true;
-				if (isNumeric) return String(match.table_number) === search;
-				return match.player_match_relationships.some(
-					(pmr) =>
-						pmr.player?.best_identifier?.toLowerCase().includes(lowerSearch) ||
-						pmr.user_event_status?.best_identifier?.toLowerCase().includes(lowerSearch),
-				);
+		if (excludeOnePlayer) {
+			pipeline.push({
+				$match: {
+					$expr: { $gte: [{ $size: { $ifNull: ['$results.player_match_relationships', []] } }, 2] },
+				},
 			});
 		}
 
-		const total = results.length;
-		const totalPages = Math.ceil(total / limit);
-		const paginatedResults = results.slice((currentPage - 1) * limit, currentPage * limit);
+		if (search.trim()) {
+			const isNumeric = !isNaN(Number(search));
+			if (isNumeric) {
+				pipeline.push({ $match: { 'results.table_number': Number(search) } });
+			} else {
+				const regex = { $regex: search.trim(), $options: 'i' };
+				pipeline.push({
+					$match: {
+						$or: [
+							{ 'results.player_match_relationships.player.best_identifier': regex },
+							{ 'results.player_match_relationships.user_event_status.best_identifier': regex },
+						],
+					},
+				});
+			}
+		}
 
-		const playerIdsInPage = paginatedResults.flatMap((match) =>
+		pipeline.push({
+			$facet: {
+				total: [{ $count: 'count' }],
+				data: [
+					{ $skip: (currentPage - 1) * limit },
+					{ $limit: limit },
+					{ $replaceRoot: { newRoot: '$results' } },
+				],
+			},
+		});
+
+		const [aggResult, meta] = await Promise.all([
+			RoundModel.aggregate(pipeline),
+			RoundModel.findOne(
+				{ id: roundId },
+				{ tournamentId: 1, lastFetchedAt: 1, updatedAt: 1 },
+			).lean(),
+		]);
+
+		if (!meta) return null;
+
+		const { tournamentId, lastFetchedAt, updatedAt } = meta as {
+			tournamentId: number;
+			lastFetchedAt: Date | null;
+			updatedAt: Date;
+		};
+
+		const { total: totalArr, data } = (aggResult[0] ?? { total: [], data: [] }) as {
+			total: Array<{ count: number }>;
+			data: Match[];
+		};
+		const total = totalArr[0]?.count ?? 0;
+		const totalPages = Math.ceil(total / limit);
+
+		const playerIdsInPage = data.flatMap((match) =>
 			(match.player_match_relationships ?? []).map((pmr) => pmr.player?.id).filter(Boolean),
 		);
 
-		const rawDecks = await TournamentPlayersDeckRepository.findByScope(round.tournamentId, scope);
+		const rawDecks = await TournamentPlayersDeckRepository.findByScope(tournamentId, scope);
 		const playersDecks = rawDecks as PlayersDecksMap | null;
 		const filteredPlayersDecks =
 			playersDecks && playersDecks.players
@@ -93,11 +133,11 @@ export const RoundRepository = {
 				: null;
 
 		return {
-			results: paginatedResults,
+			results: data,
 			playersDecks: filteredPlayersDecks,
 			pagination: { page: currentPage, perPage: limit, total, totalPages },
-			lastFetchedAt: round.lastFetchedAt ?? null,
-			updatedAt: round.updatedAt,
+			lastFetchedAt: lastFetchedAt ?? null,
+			updatedAt,
 		};
 	},
 
