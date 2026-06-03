@@ -130,15 +130,22 @@ export const TournamentPlayersDeckRepository = {
 
     const toInsert = players.map(toPlayerDoc);
 
-    for (const doc of docs) {
-      const existingIds = new Set(doc.players.map((p) => p.playerId));
-      const missing = toInsert.filter((p) => !existingIds.has(p.playerId));
-      if (missing.length > 0) {
-        await TournamentPlayersDeckModel.updateOne(
-          { _id: doc._id },
-          { $push: { players: { $each: missing } } },
-        );
-      }
+    const ops = docs
+      .map((doc) => {
+        const existingIds = new Set(doc.players.map((p) => p.playerId));
+        const missing = toInsert.filter((p) => !existingIds.has(p.playerId));
+        if (missing.length === 0) return null;
+        return {
+          updateOne: {
+            filter: { _id: doc._id },
+            update: { $push: { players: { $each: missing } } },
+          },
+        };
+      })
+      .filter((op): op is NonNullable<typeof op> => op !== null);
+
+    if (ops.length > 0) {
+      await TournamentPlayersDeckModel.bulkWrite(ops);
     }
   },
 

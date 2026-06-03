@@ -45,12 +45,6 @@ export const ScoutingService = {
 				};
 			});
 
-		const playersModified = await TournamentPlayersDeckRepository.assignDecks(
-			round.tournamentId,
-			fullAssignments,
-			scope,
-		);
-
 		const reportsToLog = assignments
 			.filter((a) => a.decks && a.decks.length > 0)
 			.map((a) => ({
@@ -61,27 +55,30 @@ export const ScoutingService = {
 				playerId: a.playerId,
 			}));
 
-		await ScoutingReportRepository.createMany(reportsToLog);
-
 		const commentsToCreate = assignments.filter(
 			(a) => a.decks && a.decks.length > 0 && a.comment?.trim(),
 		);
-		if (commentsToCreate.length > 0) {
-			await Promise.all(
-				commentsToCreate.map((a) =>
-					PlayerCommentRepository.create({
-						tournamentId: round.tournamentId,
-						playerId: a.playerId,
-						authorId: reporter.userId ?? null,
-						guestAccessId: reporter.guestAccessId ?? null,
-						guestDisplayName: reporter.guestDisplayName ?? null,
-						groupId: scope.groupId ?? null,
-						inks: a.decks[0] ?? [],
-						content: a.comment!.trim(),
-					}),
-				),
-			);
-		}
+
+		const [playersModified] = await Promise.all([
+			TournamentPlayersDeckRepository.assignDecks(round.tournamentId, fullAssignments, scope),
+			ScoutingReportRepository.createMany(reportsToLog),
+			commentsToCreate.length > 0
+				? Promise.all(
+						commentsToCreate.map((a) =>
+							PlayerCommentRepository.create({
+								tournamentId: round.tournamentId,
+								playerId: a.playerId,
+								authorId: reporter.userId ?? null,
+								guestAccessId: reporter.guestAccessId ?? null,
+								guestDisplayName: reporter.guestDisplayName ?? null,
+								groupId: scope.groupId ?? null,
+								inks: a.decks[0] ?? [],
+								content: a.comment!.trim(),
+							}),
+						),
+					)
+				: Promise.resolve(),
+		]);
 
 		return { matchs: round.results, playersDecks: { players: playersModified } };
 	},
