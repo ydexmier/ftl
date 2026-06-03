@@ -130,15 +130,23 @@ export const TournamentPlayersDeckRepository = {
 
     const toInsert = players.map(toPlayerDoc);
 
-    for (const doc of docs) {
-      const existingIds = new Set(doc.players.map((p) => p.playerId));
-      const missing = toInsert.filter((p) => !existingIds.has(p.playerId));
-      if (missing.length > 0) {
-        await TournamentPlayersDeckModel.updateOne(
-          { _id: doc._id },
-          { $push: { players: { $each: missing } } },
-        );
-      }
+    const ops = docs
+      .map((doc) => {
+        const existingIds = new Set(doc.players.map((p) => p.playerId));
+        const missing = toInsert.filter((p) => !existingIds.has(p.playerId));
+        if (missing.length === 0) return null;
+        return {
+          updateOne: {
+            filter: { _id: doc._id },
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            update: { $push: { players: { $each: missing } } } as any,
+          },
+        };
+      })
+      .filter((op): op is NonNullable<typeof op> => op !== null);
+
+    if (ops.length > 0) {
+      await TournamentPlayersDeckModel.bulkWrite(ops);
     }
   },
 
@@ -305,43 +313,52 @@ export const TournamentPlayersDeckRepository = {
     await connectToMongoDB();
     const query = { tournamentId, ...scopeQuery(scope) };
 
-    let doc: ITournamentPlayersDeck | null = await TournamentPlayersDeckModel.findOne(query);
-    if (!doc) {
-      try {
-        doc = await TournamentPlayersDeckModel.create({ ...query, players: [] });
-      } catch (err: unknown) {
-        // Stale unique index on tournamentId from before group scoping — ignore.
-        if ((err as { code?: number }).code === 11000) {
-          doc = await TournamentPlayersDeckModel.findOne({ tournamentId });
-          if (!doc) throw err;
-        } else {
-          throw err;
-        }
-      }
-    }
+    // Ensure the parent document exists. $setOnInsert is a no-op if it already exists,
+    // making this safe under concurrent calls.
+    await TournamentPlayersDeckModel.findOneAndUpdate(
+      query,
+      { $setOnInsert: { ...query, players: [] } },
+      { upsert: true },
+    );
 
-    const modified: unknown[] = [];
+    const modified: Array<{
+      playerId: number;
+      best_identifier: string;
+      event_best_identifier: string;
+      decks: string[][];
+    }> = [];
 
     for (const { playerId, bestIdentifier, eventBestIdentifier, decks } of assignments) {
-      const idx = doc.players.findIndex((p) => p.playerId === playerId);
+      const normalizedDecks = (decks ?? []).map((d) => normalizeInkCombo(d) as Deck);
 
-      if (idx !== -1) {
-        if (!decks || decks.length === 0) {
-          doc.players.splice(idx, 1);
-          modified.push({ playerId, decks });
-        } else {
-          doc.players[idx].decks = decks.map((d) => normalizeInkCombo(d) as Deck);
-          modified.push({ ...doc.players[idx], decks });
+      if (!decks || decks.length === 0) {
+        // Atomic removal — no read required.
+        await TournamentPlayersDeckModel.updateOne(query, { $pull: { players: { playerId } } });
+        modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks: [] });
+      } else {
+        // Atomic update of an existing player's decks via positional operator.
+        const result = await TournamentPlayersDeckModel.updateOne(
+          { ...query, 'players.playerId': playerId },
+          { $set: { 'players.$.decks': normalizedDecks } },
+        );
+        if (result.matchedCount === 0) {
+          // Player not yet in the array — add atomically.
+          await TournamentPlayersDeckModel.updateOne(query, {
+            $push: {
+              players: {
+                playerId,
+                best_identifier: bestIdentifier,
+                event_best_identifier: eventBestIdentifier,
+                pronouns: null,
+                decks: normalizedDecks,
+              },
+            },
+          });
         }
-      } else if (decks.length > 0) {
-        doc.players.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, pronouns: null, decks: decks.map((d) => normalizeInkCombo(d) as Deck) });
-        modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks });
+        modified.push({ playerId, best_identifier: bestIdentifier, event_best_identifier: eventBestIdentifier, decks: normalizedDecks });
       }
     }
 
-    // Explicit markModified needed for subdocuments without _id (Mongoose dirty tracking).
-    doc.markModified('players');
-    await doc.save();
     return modified;
   },
 };
