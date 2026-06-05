@@ -4,7 +4,7 @@ import { useDeckAssignment } from '@/src/hooks/useDeckAssignment';
 import { useDebounce } from '@/src/hooks/useDebounce';
 import { mergePlayersDecks, getPlayerDecksInk, getMatchPlayerInks } from '@/src/domain/rules/scoutingRules';
 import { FETCH_ALL_ASYNC } from '@/src/lib/constants';
-import type { PaginatedMatches } from '@/src/types/round';
+import type { PaginatedMatches, ScoutingFilter } from '@/src/types/round';
 import type { Match } from '@/src/types/match';
 import type { DeckAssignment } from '@/src/domain/rules/scoutingRules';
 
@@ -16,6 +16,7 @@ interface RoundOptions {
 	search?: string;
 	excludeOnePlayerMatches?: boolean;
 	groupId?: string | null;
+	scoutingFilter?: ScoutingFilter | null;
 }
 
 interface ValidateAssignDeckPayload {
@@ -39,12 +40,12 @@ async function fetchRoundFromAPI(
 
 export function useRound(roundId: number, tournamentId: number, options: RoundOptions = {}) {
 	const [matchToShow, setMatchToShow] = useState<Match | null>(null);
-	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, groupId = null } = options;
+	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, groupId = null, scoutingFilter = null } = options;
 	const debouncedSearch = useDebounce(search, 300);
 	const { assignDecks } = useDeckAssignment(roundId, groupId);
 
 	const { data: round, loading, error, setData, refetch } = useFetch<PaginatedMatches>(
-		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}`,
+		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}&tournamentId=${tournamentId}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}${scoutingFilter ? `&scoutingFilter=${scoutingFilter}` : ''}`,
 	);
 
 	const {
@@ -52,6 +53,7 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		lastFetchedAt,
 		updatedAt,
 		pagination = { page: 1, perPage: 10, total: 0, totalPages: 1 },
+		scoutingStats,
 	} = round ?? {};
 	const playersDecks = round?.playersDecks ?? { players: [] };
 
@@ -101,5 +103,6 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		getMatchPlayerInks: (match: Match) => getMatchPlayerInks(match, { players: playersDecks.players }),
 		refreshRound,
 		pagination,
+		scoutingStats: scoutingStats ?? null,
 	};
 }
