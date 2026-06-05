@@ -3,6 +3,7 @@ import connectToMongoDB from '@/src/lib/db';
 import { mergeDeep, mergeArrayById } from '@/src/lib/mergeDeep';
 import type { Match } from '@/src/types/match';
 import type { PlayersDecksMap } from '@/src/domain/rules/scoutingRules';
+import type { ScoutingFilter, ScoutingStats } from '@/src/types/round';
 import { TournamentPlayersDeckRepository, type DeckScope } from './TournamentPlayersDeckRepository';
 
 export interface RoundDocument {
@@ -20,6 +21,8 @@ export interface MatchQueryOptions {
 	perPage?: number;
 	search?: string;
 	excludeOnePlayer?: boolean;
+	scoutingFilter?: ScoutingFilter | null;
+	tournamentId?: number;
 }
 
 export const RoundRepository = {
@@ -47,11 +50,65 @@ export const RoundRepository = {
 	},
 
 	async findMatchesPaginated(roundId: number, options: MatchQueryOptions = {}, scope: DeckScope) {
-		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false } = options;
+		const { page = 1, perPage = 10, search = '', excludeOnePlayer = false, scoutingFilter = null, tournamentId: optTournamentId } = options;
 		await connectToMongoDB();
 
 		const currentPage = Math.max(search.trim() ? 1 : page, 1);
 		const limit = Math.max(perPage, 1);
+
+		type RoundMeta = { tournamentId: number; lastFetchedAt: Date | null; updatedAt: Date };
+		const fetchMeta = () =>
+			RoundModel.findOne({ id: roundId }, { tournamentId: 1, lastFetchedAt: 1, updatedAt: 1 })
+				.lean() as Promise<RoundMeta | null>;
+
+		// Fetch meta and player decks in parallel when tournamentId is provided by the caller
+		let meta: RoundMeta | null;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let rawDecks: any;
+
+		if (optTournamentId) {
+			[meta, rawDecks] = await Promise.all([
+				fetchMeta(),
+				TournamentPlayersDeckRepository.findByScope(optTournamentId, scope),
+			]);
+		} else {
+			meta = await fetchMeta();
+			if (!meta) return null;
+			rawDecks = await TournamentPlayersDeckRepository.findByScope(meta.tournamentId, scope);
+		}
+
+		if (!meta) return null;
+		const { lastFetchedAt, updatedAt } = meta;
+
+		// full: exactly 1 deck with 2 inks · partial: 2+ decks OR 1 deck with 1 ink · none: 0 inks
+		const players: Array<{ playerId: number; decks: string[][] }> = rawDecks?.players ?? [];
+		const fullPlayerIds: number[] = players
+			.filter((p) => p.decks.length === 1 && p.decks[0].length === 2)
+			.map((p) => p.playerId);
+		const partialPlayerIds: number[] = players
+			.filter((p) => p.decks.length >= 2 || (p.decks.length === 1 && p.decks[0].length === 1))
+			.map((p) => p.playerId);
+		const knownPlayerIds: number[] = [...fullPlayerIds, ...partialPlayerIds];
+
+		// Build search filter stages — moved into $facet branches so uniquePlayers stats stay global
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const searchStages: any[] = [];
+		if (search.trim()) {
+			const isNumeric = !isNaN(Number(search));
+			if (isNumeric) {
+				searchStages.push({ $match: { 'results.table_number': Number(search) } });
+			} else {
+				const regex = { $regex: search.trim(), $options: 'i' };
+				searchStages.push({
+					$match: {
+						$or: [
+							{ 'results.player_match_relationships.player.best_identifier': regex },
+							{ 'results.player_match_relationships.user_event_status.best_identifier': regex },
+						],
+					},
+				});
+			}
+		}
 
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const pipeline: any[] = [
@@ -67,27 +124,62 @@ export const RoundRepository = {
 			});
 		}
 
-		if (search.trim()) {
-			const isNumeric = !isNaN(Number(search));
-			if (isNumeric) {
-				pipeline.push({ $match: { 'results.table_number': Number(search) } });
-			} else {
-				const regex = { $regex: search.trim(), $options: 'i' };
-				pipeline.push({
-					$match: {
-						$or: [
-							{ 'results.player_match_relationships.player.best_identifier': regex },
-							{ 'results.player_match_relationships.user_event_status.best_identifier': regex },
-						],
-					},
-				});
-			}
-		}
+		// Compute per-match player presence flags for each scouting category
+		pipeline.push({
+			$addFields: {
+				_hasFullPlayer: {
+					$gt: [{
+						$size: {
+							$filter: {
+								input: { $ifNull: ['$results.player_match_relationships', []] },
+								as: 'pmr',
+								cond: { $in: ['$$pmr.player.id', fullPlayerIds] },
+							},
+						},
+					}, 0],
+				},
+				_hasPartialPlayer: {
+					$gt: [{
+						$size: {
+							$filter: {
+								input: { $ifNull: ['$results.player_match_relationships', []] },
+								as: 'pmr',
+								cond: { $in: ['$$pmr.player.id', partialPlayerIds] },
+							},
+						},
+					}, 0],
+				},
+				_hasNonePlayer: {
+					$gt: [{
+						$size: {
+							$filter: {
+								input: { $ifNull: ['$results.player_match_relationships', []] },
+								as: 'pmr',
+								cond: { $not: [{ $in: ['$$pmr.player.id', knownPlayerIds] }] },
+							},
+						},
+					}, 0],
+				},
+			},
+		});
+
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		let scoutingFilterStages: any[] = [];
+		if (scoutingFilter === 'full') scoutingFilterStages = [{ $match: { _hasFullPlayer: true } }];
+		else if (scoutingFilter === 'partial') scoutingFilterStages = [{ $match: { _hasPartialPlayer: true } }];
+		else if (scoutingFilter === 'none') scoutingFilterStages = [{ $match: { _hasNonePlayer: true } }];
 
 		pipeline.push({
 			$facet: {
-				total: [{ $count: 'count' }],
+				// Collect unique player IDs across the whole round (no search/filter) for player-based stats
+				uniquePlayers: [
+					{ $unwind: '$results.player_match_relationships' },
+					{ $group: { _id: '$results.player_match_relationships.player.id' } },
+				],
+				total: [...searchStages, ...scoutingFilterStages, { $count: 'count' }],
 				data: [
+					...searchStages,
+					...scoutingFilterStages,
 					{ $skip: (currentPage - 1) * limit },
 					{ $limit: limit },
 					{ $replaceRoot: { newRoot: '$results' } },
@@ -95,34 +187,32 @@ export const RoundRepository = {
 			},
 		});
 
-		const [aggResult, meta] = await Promise.all([
-			RoundModel.aggregate(pipeline),
-			RoundModel.findOne(
-				{ id: roundId },
-				{ tournamentId: 1, lastFetchedAt: 1, updatedAt: 1 },
-			).lean(),
-		]);
+		const aggResult = await RoundModel.aggregate(pipeline);
 
-		if (!meta) return null;
-
-		const { tournamentId, lastFetchedAt, updatedAt } = meta as {
-			tournamentId: number;
-			lastFetchedAt: Date | null;
-			updatedAt: Date;
-		};
-
-		const { total: totalArr, data } = (aggResult[0] ?? { total: [], data: [] }) as {
+		const { uniquePlayers: uniquePlayersArr, total: totalArr, data } = (aggResult[0] ?? { uniquePlayers: [], total: [], data: [] }) as {
+			uniquePlayers: Array<{ _id: number }>;
 			total: Array<{ count: number }>;
 			data: Match[];
 		};
+
 		const total = totalArr[0]?.count ?? 0;
 		const totalPages = Math.ceil(total / limit);
+
+		// Compute player-based scoutingStats using the same categorization as the filter
+		const fullSet = new Set<number>(fullPlayerIds);
+		const partialSet = new Set<number>(partialPlayerIds);
+		const uniquePlayerIds = uniquePlayersArr.map((p) => p._id);
+		const scoutingStats: ScoutingStats = {
+			full: uniquePlayerIds.filter((id) => fullSet.has(id)).length,
+			partial: uniquePlayerIds.filter((id) => partialSet.has(id)).length,
+			none: uniquePlayerIds.filter((id) => !fullSet.has(id) && !partialSet.has(id)).length,
+			total: uniquePlayerIds.length,
+		};
 
 		const playerIdsInPage = data.flatMap((match) =>
 			(match.player_match_relationships ?? []).map((pmr) => pmr.player?.id).filter(Boolean),
 		);
 
-		const rawDecks = await TournamentPlayersDeckRepository.findByScope(tournamentId, scope);
 		const playersDecks = rawDecks as PlayersDecksMap | null;
 		const filteredPlayersDecks =
 			playersDecks && playersDecks.players
@@ -138,6 +228,7 @@ export const RoundRepository = {
 			pagination: { page: currentPage, perPage: limit, total, totalPages },
 			lastFetchedAt: lastFetchedAt ?? null,
 			updatedAt,
+			scoutingStats,
 		};
 	},
 

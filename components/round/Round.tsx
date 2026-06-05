@@ -10,6 +10,8 @@ import RoundSearch from '@components/round/RoundSearch';
 import { PlayerCommentHistory } from '@components/ui/PlayerCommentHistory';
 import { PlayerHistoryDrawer } from '@components/match/PlayerHistoryDrawer';
 import { useRound } from '@/src/hooks/useRound';
+import { ScoutingProgressBar } from '@components/round/ScoutingProgressBar';
+import type { ScoutingFilter } from '@/src/types/round';
 
 interface RoundProps {
 	roundId: string | number;
@@ -25,12 +27,18 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const [page, setPage] = useState(parseInt(String(initialPage), 10) || 1);
 	const [perPage, setPerPage] = useState(parseInt(String(initialPerPage), 10) || 10);
 	const [search, setSearch] = useState(String(initialSearch || ''));
+	const [scoutingFilter, setScoutingFilter] = useState<ScoutingFilter | null>(null);
 	const [commentTarget, setCommentTarget] = useState<{ playerId: number; playerName: string } | null>(null);
 	const [historyTarget, setHistoryTarget] = useState<{ playerId: number; playerName: string } | null>(null);
 	const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 	const router = useRouter();
 	const pathname = usePathname();
 	const { tournamentId } = useParams<{ tournamentId: string }>();
+
+	const handleSetScoutingFilter = (filter: ScoutingFilter | null) => {
+		setScoutingFilter(filter);
+		setPage(1);
+	};
 
 	const {
 		matchs,
@@ -45,7 +53,8 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		getMatchPlayerInks,
 		refreshRound,
 		pagination,
-	} = useRound(Number(roundId), Number(tournamentId), { page, perPage, search, excludeOnePlayerMatches: true, groupId });
+		scoutingStats,
+	} = useRound(Number(roundId), Number(tournamentId), { page, perPage, search, excludeOnePlayerMatches: true, groupId, scoutingFilter });
 
 	const paginationControls = useMemo(() => (
 		<div className="flex items-center justify-between gap-2 my-4 flex-wrap">
@@ -130,6 +139,14 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	return (
 		<>
 			<RoundHeader lastFetchedAt={lastFetchedAt} onRefresh={refreshRound} />
+
+			{scoutingStats && scoutingStats.total > 0 && (
+				<ScoutingProgressBar
+					stats={scoutingStats}
+					activeFilter={scoutingFilter}
+					onFilter={handleSetScoutingFilter}
+				/>
+			)}
 
 			<div className="mb-4 max-w-sm">
 				<RoundSearch value={search} onChange={setSearch} />

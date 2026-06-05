@@ -20,6 +20,8 @@ export async function GET(request: NextRequest, { params }: Params) {
 			perPage: Number(sp.get('perPage') ?? 10),
 			search: sp.get('search') ?? '',
 			excludeOnePlayerMatches: sp.get('excludeOnePlayerMatches') === 'true',
+			scoutingFilter: (sp.get('scoutingFilter') as 'full' | 'partial' | 'none' | null) ?? null,
+			tournamentId: sp.get('tournamentId') ? Number(sp.get('tournamentId')) : undefined,
 		}, scope);
 
 		return ApiResponse.ok(data);
