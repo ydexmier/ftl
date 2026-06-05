@@ -14,6 +14,8 @@ export interface FetchRoundOptions {
 	search?: string;
 	mode?: string;
 	excludeOnePlayerMatches?: boolean;
+	scoutingFilter?: 'full' | 'partial' | 'none' | null;
+	tournamentId?: number;
 }
 
 function extractPlayersFromResults(results: unknown[]): PlayerInfo[] {
@@ -102,6 +104,8 @@ export const RoundService = {
 			perPage: options.perPage,
 			search: options.search,
 			excludeOnePlayer: options.excludeOnePlayerMatches,
+			scoutingFilter: options.scoutingFilter,
+			tournamentId: options.tournamentId,
 		}, scope);
 		if (!data) throw new Error('ROUND_NOT_FOUND');
 		return data;

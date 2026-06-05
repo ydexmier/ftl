@@ -34,10 +34,20 @@ export interface PaginationMeta {
 	totalPages: number;
 }
 
+export type ScoutingFilter = 'full' | 'partial' | 'none';
+
+export interface ScoutingStats {
+	full: number;
+	partial: number;
+	none: number;
+	total: number;
+}
+
 export interface PaginatedMatches {
 	results: Match[];
 	pagination: PaginationMeta;
 	playersDecks: PlayersDecksMap | null;
 	lastFetchedAt?: string | null;
 	updatedAt?: string;
+	scoutingStats?: ScoutingStats;
 }
