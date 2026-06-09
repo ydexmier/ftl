@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiTokenRepository } from '@/src/repositories/db/ApiTokenRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { validateApiTokenName } from '@/src/lib/validation';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -32,12 +33,11 @@ export async function POST(request: NextRequest, { params }: Params) {
   const tournamentId = Number(id);
   if (isNaN(tournamentId)) return ApiResponse.badRequest('ID de tournoi invalide');
 
-  const body = await request.json();
-  const name = typeof body?.name === 'string' ? body.name.trim() : '';
-  if (!name || name.length > 100) return ApiResponse.badRequest('Nom requis (max 100 caractères)');
+  const v = validateApiTokenName(await request.json());
+  if (!v.ok) return ApiResponse.badRequest(v.error);
 
   const { token, rawToken } = await ApiTokenRepository.create({
-    name,
+    name: v.data.name,
     scopeType: 'user',
     tournamentId,
     userId: auth.userId,
