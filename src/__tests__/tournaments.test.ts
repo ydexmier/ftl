@@ -106,15 +106,33 @@ describe('GET /api/tournaments/[id]', () => {
 });
 
 describe('DELETE /api/tournaments/[id]', () => {
-  it('retourne 404 pour un id inconnu', async () => {
+  it('retourne 401 sans cookie', async () => {
     const req = makeRequest('DELETE', '/api/tournaments/999');
+    const res = await deleteTournament(req, params('999'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si rôle USER', async () => {
+    const user = await createTestUser({ username: 'del_user1', email: 'del_user1@example.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const req = makeRequest('DELETE', '/api/tournaments/999', undefined, cookie);
+    const res = await deleteTournament(req, params('999'));
+    expect(res.status).toBe(403);
+  });
+
+  it('retourne 404 pour un id inconnu avec rôle ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'del_admin1', email: 'del_admin1@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const req = makeRequest('DELETE', '/api/tournaments/999', undefined, cookie);
     const res = await deleteTournament(req, params('999'));
     expect(res.status).toBe(404);
   });
 
-  it('supprime le tournoi et retourne 200', async () => {
+  it('supprime le tournoi et retourne 200 avec rôle ADMIN', async () => {
+    const admin = await createAdminUser({ username: 'del_admin2', email: 'del_admin2@example.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const t = await seedTournament();
-    const req = makeRequest('DELETE', `/api/tournaments/${t.id}`);
+    const req = makeRequest('DELETE', `/api/tournaments/${t.id}`, undefined, cookie);
     const res = await deleteTournament(req, params(String(t.id)));
     expect(res.status).toBe(200);
     const gone = await TournamentModel.findOne({ id: t.id });
