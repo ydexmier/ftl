@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GET as listTournaments, POST as upsertTournament } from '../../app/api/tournaments/route';
+import { GET as listTournaments } from '../../app/api/tournaments/route';
 import { GET as getTournament, DELETE as deleteTournament } from '../../app/api/tournaments/[id]/route';
 import { POST as fetchTournament } from '../../app/api/admin/fetchTournament/route';
 import { POST as fetchTournamentUser } from '../../app/api/tournaments/fetch/route';
@@ -7,7 +7,6 @@ import { DELETE as adminDeleteTournament } from '../../app/api/admin/tournaments
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
 import { makeRequest, createAdminUser, createTestUser, createAuthCookie } from '../test/helpers';
-import { NextRequest } from 'next/server';
 
 function makeMatch(id: number) {
   return {
@@ -71,7 +70,6 @@ describe('GET /api/tournaments', () => {
   it('retourne 200 avec la liste des tournois', async () => {
     await seedTournament();
     await seedTournament();
-    const req = new NextRequest('http://localhost:3000/api/tournaments');
     const res = await listTournaments();
     const data = await res.json();
     expect(res.status).toBe(200);
