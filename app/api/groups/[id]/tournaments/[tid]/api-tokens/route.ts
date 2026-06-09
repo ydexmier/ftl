@@ -3,7 +3,6 @@ import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { GroupRepository } from '@/src/repositories/db/GroupRepository';
 import { ApiTokenRepository } from '@/src/repositories/db/ApiTokenRepository';
 import { ApiResponse } from '@/src/lib/api/responses';
-import connectToMongoDB from '@/src/lib/db';
 
 type Params = { params: Promise<{ id: string; tid: string }> };
 
@@ -14,8 +13,6 @@ export async function GET(request: NextRequest, { params }: Params) {
   const { id: groupId, tid } = await params;
   const tournamentId = Number(tid);
   if (isNaN(tournamentId)) return ApiResponse.badRequest('ID de tournoi invalide');
-
-  await connectToMongoDB();
 
   const isAdmin = await GroupRepository.isAdmin(groupId, auth.userId);
   if (!isAdmin) return ApiResponse.forbidden();
@@ -38,8 +35,6 @@ export async function POST(request: NextRequest, { params }: Params) {
   const { id: groupId, tid } = await params;
   const tournamentId = Number(tid);
   if (isNaN(tournamentId)) return ApiResponse.badRequest('ID de tournoi invalide');
-
-  await connectToMongoDB();
 
   const isAdmin = await GroupRepository.isAdmin(groupId, auth.userId);
   if (!isAdmin) return ApiResponse.forbidden();
