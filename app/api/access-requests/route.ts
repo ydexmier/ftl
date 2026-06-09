@@ -5,10 +5,7 @@ import { UserRepository } from '@/src/repositories/db/UserRepository';
 import { verifyHcaptcha } from '@/src/lib/hcaptcha';
 import { validateAccessRequestBody } from '@/src/lib/validation';
 import { checkRateLimit } from '@/src/lib/auth/rateLimit';
-
-function getIp(req: NextRequest) {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-}
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function POST(req: NextRequest) {
   const ip = getIp(req);

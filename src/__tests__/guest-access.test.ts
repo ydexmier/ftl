@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { POST as validateGuest } from '../../app/api/guest/validate/route';
+import { resetRateLimit } from '@/src/lib/auth/rateLimit';
 import { ScoutingService } from '@/src/services/ScoutingService';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
 import { GroupMagicLinkRepository } from '@/src/repositories/db/GroupMagicLinkRepository';
@@ -12,10 +13,13 @@ function nextToken() {
   return `test-magic-token-${_counter}-${Date.now()}`;
 }
 
-function makeGuestRequest(body: unknown) {
+function makeGuestRequest(body: unknown, ip?: string) {
   return new Request('http://localhost:3000/api/guest/validate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(ip ? { 'x-forwarded-for': ip } : {}),
+    },
     body: JSON.stringify(body),
   }) as unknown as Parameters<typeof validateGuest>[0];
 }
@@ -23,6 +27,8 @@ function makeGuestRequest(body: unknown) {
 // ─── POST /api/guest/validate ─────────────────────────────────────────────────
 
 describe('POST /api/guest/validate', () => {
+  beforeEach(() => resetRateLimit('guest-validate:unknown'));
+
   it('retourne 400 si le token est absent', async () => {
     const res = await validateGuest(makeGuestRequest({ username: 'alice', email: 'alice@test.com', password: 'Password1!abcd' }));
     expect(res.status).toBe(400);
@@ -90,6 +96,18 @@ describe('POST /api/guest/validate', () => {
       password: 'Password1!abcd',
     }));
     expect(res.status).toBe(409);
+  });
+
+  it('retourne 429 après trop de tentatives depuis la même IP', async () => {
+    const ip = 'ip-guest-validate-rate-limit';
+    let lastStatus = 0;
+    for (let i = 0; i < 10; i++) {
+      const res = await validateGuest(makeGuestRequest({ token: 'irrelevant' }, ip));
+      lastStatus = res.status;
+      if (lastStatus === 429) break;
+    }
+    resetRateLimit(`guest-validate:${ip}`);
+    expect(lastStatus).toBe(429);
   });
 
   it('retourne 409 si l\'email est déjà utilisé', async () => {
