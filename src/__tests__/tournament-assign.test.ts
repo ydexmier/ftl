@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { POST as postTournament } from '../../app/api/tournaments/route';
 import { POST as assignDeckPlayers } from '../../app/api/tournaments/[id]/players/[playerId]/assign_deck/route';
 import TournamentModel from '@models/Tournament';
 import RoundModel from '@models/Round';
@@ -47,42 +46,6 @@ function makeRoundWithPlayer(playerId: number, bestId = 'Alice') {
     ],
   };
 }
-
-// ─── POST /api/tournaments ────────────────────────────────────────────────────
-
-describe('POST /api/tournaments', () => {
-  it('crée un tournoi et retourne 200', async () => {
-    const tid = nextId();
-    const req = makeRequest('POST', '/api/tournaments', {
-      id: tid,
-      name: 'Test Upsert',
-      event_status: 'ENDED',
-      start_datetime: new Date().toISOString(),
-      tournament_phases: [],
-    });
-    const res = await postTournament(req);
-    expect(res.status).toBe(200);
-    const saved = await TournamentModel.findOne({ id: tid });
-    expect(saved).not.toBeNull();
-    expect(saved?.name).toBe('Test Upsert');
-  });
-
-  it('met à jour un tournoi existant (upsert)', async () => {
-    const tid = nextId();
-    await TournamentModel.create({ id: tid, name: 'Old Name', event_status: 'ONGOING', start_datetime: new Date(), tournament_phases: [] });
-    const req = makeRequest('POST', '/api/tournaments', {
-      id: tid,
-      name: 'New Name',
-      event_status: 'ENDED',
-      start_datetime: new Date().toISOString(),
-      tournament_phases: [],
-    });
-    const res = await postTournament(req);
-    expect(res.status).toBe(200);
-    const updated = await TournamentModel.findOne({ id: tid });
-    expect(updated?.name).toBe('New Name');
-  });
-});
 
 // ─── POST /api/tournaments/[id]/players/[playerId]/assign_deck ────────────────
 

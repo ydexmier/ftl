@@ -1,5 +1,4 @@
 import { NextRequest } from 'next/server';
-import connectToMongoDB from '@/src/lib/db';
 import { ApiTokenRepository } from '@/src/repositories/db/ApiTokenRepository';
 import { TournamentPlayersDeckRepository } from '@/src/repositories/db/TournamentPlayersDeckRepository';
 import { PlayerCommentRepository } from '@/src/repositories/db/PlayerCommentRepository';
@@ -15,8 +14,6 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   const rawToken = authHeader.slice(7).trim();
   if (!rawToken) return ApiResponse.unauthorized('Token manquant');
-
-  await connectToMongoDB();
 
   const apiToken = await ApiTokenRepository.findByRawToken(rawToken);
   if (!apiToken) return ApiResponse.unauthorized('Token invalide ou révoqué');

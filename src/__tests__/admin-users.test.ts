@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { GET as listUsers, POST as createUser } from '../../app/api/admin/users/route';
 import { GET as getUser, PATCH as updateUser, DELETE as deleteUser } from '../../app/api/admin/users/[id]/route';
+import { GET as getMemo, PUT as putMemo, DELETE as deleteMemo } from '../../app/api/admin/users/[id]/memo/route';
 import UserModel from '@models/User';
 import SessionModel from '@models/Session';
 import { createTestUser, createAdminUser, createAuthCookie, makeRequest } from '../test/helpers';
@@ -281,5 +282,97 @@ describe('DELETE /api/admin/users/[id]', () => {
     expect(deleted).toBeNull();
     const sessionsAfter = await SessionModel.countDocuments({ userId: target._id });
     expect(sessionsAfter).toBe(0);
+  });
+});
+
+// ─── GET + PUT + DELETE /api/admin/users/[id]/memo ────────────────────────────
+
+describe('GET /api/admin/users/[id]/memo', () => {
+  it('retourne 401 sans cookie', async () => {
+    const res = await getMemo(makeRequest('GET', '/api/admin/users/1/memo'), params('1'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 403 si rôle USER', async () => {
+    const user = await createTestUser({ username: 'memo_user1', email: 'memo_user1@test.com' });
+    const cookie = await createAuthCookie(user._id, 'USER');
+    const res = await getMemo(makeRequest('GET', `/api/admin/users/${user._id}/memo`, undefined, cookie), params(String(user._id)));
+    expect(res.status).toBe(403);
+  });
+
+  it('retourne null si aucun mémo', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin1', email: 'memo_admin1@test.com' });
+    const target = await createTestUser({ username: 'memo_target1', email: 'memo_target1@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const res = await getMemo(makeRequest('GET', `/api/admin/users/${target._id}/memo`, undefined, cookie), params(String(target._id)));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.content).toBeNull();
+  });
+});
+
+describe('PUT /api/admin/users/[id]/memo', () => {
+  it('retourne 401 sans cookie', async () => {
+    const res = await putMemo(makeRequest('PUT', '/api/admin/users/1/memo', { content: 'test' }), params('1'));
+    expect(res.status).toBe(401);
+  });
+
+  it('retourne 400 si contenu vide', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin2', email: 'memo_admin2@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const res = await putMemo(makeRequest('PUT', '/api/admin/users/1/memo', { content: '   ' }, cookie), params('1'));
+    expect(res.status).toBe(400);
+  });
+
+  it('retourne 400 si contenu > 2000 caractères', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin3', email: 'memo_admin3@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const res = await putMemo(makeRequest('PUT', '/api/admin/users/1/memo', { content: 'a'.repeat(2001) }, cookie), params('1'));
+    expect(res.status).toBe(400);
+  });
+
+  it('crée le mémo et GET le retourne', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin4', email: 'memo_admin4@test.com' });
+    const target = await createTestUser({ username: 'memo_target2', email: 'memo_target2@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = String(target._id);
+
+    const putRes = await putMemo(makeRequest('PUT', `/api/admin/users/${tid}/memo`, { content: 'Joue agressif' }, cookie), params(tid));
+    expect(putRes.status).toBe(200);
+
+    const getRes = await getMemo(makeRequest('GET', `/api/admin/users/${tid}/memo`, undefined, cookie), params(tid));
+    const data = await getRes.json();
+    expect(data.content).toBe('Joue agressif');
+  });
+
+  it('met à jour le mémo existant (upsert)', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin5', email: 'memo_admin5@test.com' });
+    const target = await createTestUser({ username: 'memo_target3', email: 'memo_target3@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = String(target._id);
+
+    await putMemo(makeRequest('PUT', `/api/admin/users/${tid}/memo`, { content: 'Première note' }, cookie), params(tid));
+    await putMemo(makeRequest('PUT', `/api/admin/users/${tid}/memo`, { content: 'Note mise à jour' }, cookie), params(tid));
+
+    const getRes = await getMemo(makeRequest('GET', `/api/admin/users/${tid}/memo`, undefined, cookie), params(tid));
+    const data = await getRes.json();
+    expect(data.content).toBe('Note mise à jour');
+  });
+});
+
+describe('DELETE /api/admin/users/[id]/memo', () => {
+  it('supprime le mémo et GET retourne null', async () => {
+    const admin = await createAdminUser({ username: 'memo_admin6', email: 'memo_admin6@test.com' });
+    const target = await createTestUser({ username: 'memo_target4', email: 'memo_target4@test.com' });
+    const cookie = await createAuthCookie(admin._id, 'ADMIN');
+    const tid = String(target._id);
+
+    await putMemo(makeRequest('PUT', `/api/admin/users/${tid}/memo`, { content: 'À supprimer' }, cookie), params(tid));
+    const delRes = await deleteMemo(makeRequest('DELETE', `/api/admin/users/${tid}/memo`, undefined, cookie), params(tid));
+    expect(delRes.status).toBe(200);
+
+    const getRes = await getMemo(makeRequest('GET', `/api/admin/users/${tid}/memo`, undefined, cookie), params(tid));
+    const data = await getRes.json();
+    expect(data.content).toBeNull();
   });
 });
