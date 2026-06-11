@@ -5,6 +5,7 @@ import { GroupTournamentRepository } from '@/src/repositories/db/GroupTournament
 import { RavensburgerClient } from '@/src/repositories/external/RavensburgerClient';
 import { FETCH_ALL_ASYNC } from '@/src/lib/constants';
 import type { DeckScope } from '@/src/repositories/db/TournamentPlayersDeckRepository';
+import type { ScoutingFilter } from '@/src/types/round';
 
 const useAsyncFetch = process.env.NEXT_PUBLIC_USE_ASYNC_FETCH === 'true';
 
@@ -14,7 +15,7 @@ export interface FetchRoundOptions {
 	search?: string;
 	mode?: string;
 	excludeOnePlayerMatches?: boolean;
-	scoutingFilter?: 'full' | 'partial' | 'none' | null;
+	scoutingFilter?: ScoutingFilter[];
 	tournamentId?: number;
 }
 
