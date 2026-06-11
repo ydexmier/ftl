@@ -16,7 +16,7 @@ interface RoundOptions {
 	search?: string;
 	excludeOnePlayerMatches?: boolean;
 	groupId?: string | null;
-	scoutingFilter?: ScoutingFilter | null;
+	scoutingFilter?: ScoutingFilter[];
 }
 
 interface ValidateAssignDeckPayload {
@@ -40,12 +40,12 @@ async function fetchRoundFromAPI(
 
 export function useRound(roundId: number, tournamentId: number, options: RoundOptions = {}) {
 	const [matchToShow, setMatchToShow] = useState<Match | null>(null);
-	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, groupId = null, scoutingFilter = null } = options;
+	const { page = 1, perPage = 10, search = '', excludeOnePlayerMatches = false, groupId = null, scoutingFilter = [] } = options;
 	const debouncedSearch = useDebounce(search, 300);
 	const { assignDecks } = useDeckAssignment(roundId, groupId);
 
 	const { data: round, loading, error, setData, refetch } = useFetch<PaginatedMatches>(
-		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}&tournamentId=${tournamentId}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}${scoutingFilter ? `&scoutingFilter=${scoutingFilter}` : ''}`,
+		`/api/rounds/${roundId}/matchs?search=${encodeURIComponent(debouncedSearch)}&page=${page}&perPage=${perPage}&excludeOnePlayerMatches=${excludeOnePlayerMatches}&tournamentId=${tournamentId}${groupId ? `&groupId=${encodeURIComponent(groupId)}` : ''}${scoutingFilter.length > 0 ? `&scoutingFilter=${scoutingFilter.join(',')}` : ''}`,
 	);
 
 	const {

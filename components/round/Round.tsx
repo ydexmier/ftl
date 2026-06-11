@@ -27,7 +27,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const [page, setPage] = useState(parseInt(String(initialPage), 10) || 1);
 	const [perPage, setPerPage] = useState(parseInt(String(initialPerPage), 10) || 10);
 	const [search, setSearch] = useState(String(initialSearch || ''));
-	const [scoutingFilter, setScoutingFilter] = useState<ScoutingFilter | null>(null);
+	const [scoutingFilter, setScoutingFilter] = useState<ScoutingFilter[]>([]);
 	const [commentTarget, setCommentTarget] = useState<{ playerId: number; playerName: string } | null>(null);
 	const [historyTarget, setHistoryTarget] = useState<{ playerId: number; playerName: string } | null>(null);
 	const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
@@ -35,8 +35,8 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const pathname = usePathname();
 	const { tournamentId } = useParams<{ tournamentId: string }>();
 
-	const handleSetScoutingFilter = (filter: ScoutingFilter | null) => {
-		setScoutingFilter(filter);
+	const handleSetScoutingFilter = (filters: ScoutingFilter[]) => {
+		setScoutingFilter(filters);
 		setPage(1);
 	};
 
@@ -143,7 +143,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 			{scoutingStats && scoutingStats.total > 0 && (
 				<ScoutingProgressBar
 					stats={scoutingStats}
-					activeFilter={scoutingFilter}
+					activeFilters={scoutingFilter}
 					onFilter={handleSetScoutingFilter}
 				/>
 			)}
