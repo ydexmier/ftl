@@ -55,25 +55,25 @@ export function PlayerHistory({ entries, loading, error }: PlayerHistoryProps) {
             </span>
 
             {/* Opponent + deck */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 min-w-0">
+            <div className="flex flex-1 items-center gap-2 min-w-0">
+              {entry.opponentDecks.length > 0 && (
+                <div className="flex items-center gap-1 shrink-0 self-start mt-0.5">
+                  {entry.opponentDecks.map((deck, i) => (
+                    <div key={i} className="flex items-center gap-1">
+                      {i > 0 && <span className="text-xs text-muted-foreground">OU</span>}
+                      <Ink type={deck} width={22} />
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
                   {entry.result === 'BYE' ? 'BYE' : (entry.opponentName ?? '—')}
                 </p>
-                {entry.opponentDecks.length > 0 && (
-                  <div className="flex items-center gap-1 shrink-0">
-                    {entry.opponentDecks.map((deck, i) => (
-                      <div key={i} className="flex items-center gap-1">
-                        {i > 0 && <span className="text-xs text-muted-foreground">OU</span>}
-                        <Ink type={deck} width={22} />
-                      </div>
-                    ))}
-                  </div>
+                {entry.result !== 'BYE' && entry.opponentPseudo && (
+                  <p className="text-xs text-muted-foreground truncate">{entry.opponentPseudo}</p>
                 )}
               </div>
-              {entry.result !== 'BYE' && entry.opponentPseudo && (
-                <p className="text-xs text-muted-foreground truncate">{entry.opponentPseudo}</p>
-              )}
             </div>
 
             {/* Result + score */}
