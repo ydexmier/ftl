@@ -59,6 +59,9 @@ export function PlayerHistory({ entries, loading, error }: PlayerHistoryProps) {
               <p className="text-sm font-medium text-foreground truncate">
                 {entry.result === 'BYE' ? 'BYE' : (entry.opponentName ?? '—')}
               </p>
+              {entry.result !== 'BYE' && entry.opponentPseudo && (
+                <p className="text-xs text-muted-foreground truncate">{entry.opponentPseudo}</p>
+              )}
               {entry.opponentDecks.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {entry.opponentDecks.map((deck, i) => (
