@@ -20,6 +20,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 				<input
 					ref={ref}
 					id={inputId}
+					spellCheck={false}
+					autoCorrect="off"
+					autoCapitalize="off"
+					autoComplete="off"
 					className={cn(
 						'h-9 rounded-md border border-white/25 bg-card px-3 py-1 text-sm text-foreground placeholder:text-muted-foreground',
 						'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
