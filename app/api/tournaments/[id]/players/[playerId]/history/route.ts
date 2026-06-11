@@ -63,9 +63,11 @@ export async function GET(
   ]);
 
   const playerDecksMap = new Map<number, string[][]>();
+  const playerPseudoMap = new Map<number, string>();
   if (decksData?.players) {
     for (const p of decksData.players) {
       playerDecksMap.set(p.playerId, p.decks);
+      if (p.event_best_identifier) playerPseudoMap.set(p.playerId, p.event_best_identifier);
     }
   }
 
@@ -92,6 +94,7 @@ export async function GET(
       roundNumber: i + 1,
       opponentId,
       opponentName,
+      opponentPseudo: opponentId ? (playerPseudoMap.get(opponentId) ?? null) : null,
       opponentDecks: opponentId ? (playerDecksMap.get(opponentId) ?? []) : [],
       result,
       gamesWon,
