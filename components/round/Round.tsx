@@ -9,9 +9,12 @@ import RoundHeader from '@components/round/RoundHeader';
 import RoundSearch from '@components/round/RoundSearch';
 import { PlayerCommentHistory } from '@components/ui/PlayerCommentHistory';
 import { PlayerHistoryDrawer } from '@components/match/PlayerHistoryDrawer';
+import { DeckConfirmModal } from '@components/match/DeckConfirmModal';
 import { useRound } from '@/src/hooks/useRound';
 import { ScoutingProgressBar } from '@components/round/ScoutingProgressBar';
 import type { ScoutingFilter } from '@/src/types/round';
+import type { Match } from '@/src/types/match';
+import type { Deck } from '@/src/types/ink';
 
 interface RoundProps {
 	roundId: string | number;
@@ -30,6 +33,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 	const [scoutingFilter, setScoutingFilter] = useState<ScoutingFilter[]>([]);
 	const [commentTarget, setCommentTarget] = useState<{ playerId: number; playerName: string } | null>(null);
 	const [historyTarget, setHistoryTarget] = useState<{ playerId: number; playerName: string } | null>(null);
+	const [deckConfirmTarget, setDeckConfirmTarget] = useState<{ match: Match; playerId: number; playerName: string; deck: string[] } | null>(null);
 	const [commentCounts, setCommentCounts] = useState<Record<number, number>>({});
 	const router = useRouter();
 	const pathname = usePathname();
@@ -49,12 +53,28 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		openMatchModal,
 		closeMatchModal,
 		onValidateAssignDeck,
+		quickAssignDeck,
 		getPlayerDecksInk,
 		getMatchPlayerInks,
 		refreshRound,
 		pagination,
 		scoutingStats,
 	} = useRound(Number(roundId), Number(tournamentId), { page, perPage, search, excludeOnePlayerMatches: true, groupId, scoutingFilter });
+
+	const handleDeckConfirm = async () => {
+		if (!deckConfirmTarget) return;
+		const { match, playerId, deck } = deckConfirmTarget;
+		const p1pmr = match.player_match_relationships.find(
+			(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
+		)!;
+		const p2pmr = match.player_match_relationships.find((p) => p.player_order === 2) ?? null;
+		const isPlayer1 = p1pmr.player.id === playerId;
+		await quickAssignDeck(match.id, [
+			{ playerId: p1pmr.player.id, decks: (isPlayer1 ? [deck] : getPlayerDecksInk(p1pmr.player.id)) as Deck[] },
+			{ playerId: p2pmr?.player.id ?? 0, decks: (!isPlayer1 && p2pmr ? [deck] : (p2pmr ? getPlayerDecksInk(p2pmr.player.id) : [])) as Deck[] },
+		]);
+		setDeckConfirmTarget(null);
+	};
 
 	const paginationControls = useMemo(() => (
 		<div className="flex items-center justify-between gap-2 my-4 flex-wrap">
@@ -188,6 +208,7 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 								}
 								onCommentClick={(playerId, playerName) => setCommentTarget({ playerId, playerName })}
 								onHistoryClick={(playerId, playerName) => setHistoryTarget({ playerId, playerName })}
+								onDeckSelect={(playerId, playerName, deck) => setDeckConfirmTarget({ match, playerId, playerName, deck })}
 								player1CommentCount={commentCounts[match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss)?.player.id ?? 0] ?? 0}
 								player2CommentCount={!match.match_is_bye && !match.match_is_loss ? (commentCounts[match.player_match_relationships.find((p) => p.player_order === 2)?.player.id ?? 0] ?? 0) : 0}
 							/>
@@ -203,6 +224,14 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 				combinationsInitial={matchToShow && getMatchPlayerInks(matchToShow)}
 				onValidate={onValidateAssignDeck as (data: unknown) => Promise<void>}
 				onClose={closeMatchModal}
+			/>
+
+			<DeckConfirmModal
+				open={!!deckConfirmTarget}
+				onClose={() => setDeckConfirmTarget(null)}
+				playerName={deckConfirmTarget?.playerName ?? ''}
+				deck={deckConfirmTarget?.deck ?? []}
+				onConfirm={handleDeckConfirm}
 			/>
 
 			<PlayerHistoryDrawer

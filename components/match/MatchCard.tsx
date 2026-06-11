@@ -2,6 +2,7 @@ import { Badge } from '@components/ui/Badge';
 import Ink from '@components/ui/Ink';
 import { MessageSquare, History } from 'lucide-react';
 import { getStatusFromMatch, showScoreFromMatch } from '@/src/domain/rules/matchRules';
+import { useScrollGuard } from '@/src/hooks/useScrollGuard';
 import type { Match, MatchStatusResult } from '@/src/types/match';
 
 type InkDeck = string[];
@@ -15,23 +16,54 @@ interface MatchCardProps {
 	className?: string;
 	onCommentClick?: (playerId: number, playerName: string) => void;
 	onHistoryClick?: (playerId: number, playerName: string) => void;
+	onDeckSelect?: (playerId: number, playerName: string, deck: string[]) => void;
 	player1CommentCount?: number;
 	player2CommentCount?: number;
 }
 
-const DeckDisplay = ({ playerId, decks }: { playerId: number; decks: InkCombination }) => (
-	<div className="flex flex-wrap gap-2 justify-center">
-		{decks?.map((deck, deckIndex) => (
-			<div key={`${playerId}_${deckIndex}`} className="flex items-center gap-1">
-				{deckIndex > 0 && <span className="text-xs text-muted-foreground">OU</span>}
-				<div className="flex">
-					{deck.map((ink) => <Ink key={`${playerId}_${ink}`} type={ink} width={40} />)}
-					{deck.length === 1 && <Ink type="" width={40} />}
+const DeckDisplay = ({
+	playerId,
+	decks,
+	onSelect,
+}: {
+	playerId: number;
+	decks: InkCombination;
+	onSelect?: (deck: string[]) => void;
+}) => {
+	const scrollGuard = useScrollGuard();
+	const selectable = !!onSelect && decks.length > 1;
+
+	return (
+		<div className="flex flex-wrap gap-2 justify-center">
+			{decks?.map((deck, deckIndex) => (
+				<div key={`${playerId}_${deckIndex}`} className="flex items-center gap-1">
+					{deckIndex > 0 && <span className="text-xs text-muted-foreground">OU</span>}
+					{selectable ? (
+						<button
+							type="button"
+							onTouchStart={scrollGuard.onTouchStart}
+							onTouchEnd={scrollGuard.onTouchEnd}
+							onClick={(e) => {
+								e.stopPropagation();
+								scrollGuard.guard(() => onSelect(deck));
+							}}
+							className="flex rounded-md hover:ring-2 hover:ring-primary/60 hover:bg-white/5 transition-all"
+							title="Sélectionner ce deck"
+						>
+							{deck.map((ink) => <Ink key={`${playerId}_${ink}`} type={ink} width={40} />)}
+							{deck.length === 1 && <Ink type="" width={40} />}
+						</button>
+					) : (
+						<div className="flex">
+							{deck.map((ink) => <Ink key={`${playerId}_${ink}`} type={ink} width={40} />)}
+							{deck.length === 1 && <Ink type="" width={40} />}
+						</div>
+					)}
 				</div>
-			</div>
-		))}
-	</div>
-);
+			))}
+		</div>
+	);
+};
 
 const PlayerActions = ({
 	playerId,
@@ -75,7 +107,7 @@ const PlayerActions = ({
 	);
 };
 
-const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onCommentClick, onHistoryClick, player1CommentCount = 0, player2CommentCount = 0 }: MatchCardProps) => {
+const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onCommentClick, onHistoryClick, onDeckSelect, player1CommentCount = 0, player2CommentCount = 0 }: MatchCardProps) => {
 	const status: MatchStatusResult = getStatusFromMatch(match);
 	const player1 = match.player_match_relationships.find(
 		(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
@@ -110,7 +142,11 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onComm
 					<Badge variant="outline" label={player1?.user_event_status.best_identifier ?? ''} size="sm" />
 				</div>
 				{player1Deck && (
-					<DeckDisplay playerId={player1?.player.id ?? 0} decks={player1Deck} />
+					<DeckDisplay
+						playerId={player1?.player.id ?? 0}
+						decks={player1Deck}
+						onSelect={player1 && onDeckSelect ? (deck) => onDeckSelect(player1.player.id, player1.player.best_identifier, deck) : undefined}
+					/>
 				)}
 				{player1 && (
 					<PlayerActions
@@ -142,7 +178,11 @@ const MatchCard = ({ match, player1Deck, player2Deck, onClick, className, onComm
 						<Badge variant="outline" label={player2.user_event_status.best_identifier} size="sm" />
 					</div>
 					{player2Deck && (
-						<DeckDisplay playerId={player2.player.id} decks={player2Deck as InkCombination} />
+						<DeckDisplay
+							playerId={player2.player.id}
+							decks={player2Deck as InkCombination}
+							onSelect={onDeckSelect ? (deck) => onDeckSelect(player2.player.id, player2.player.best_identifier, deck) : undefined}
+						/>
 					)}
 					<PlayerActions
 						playerId={player2.player.id}

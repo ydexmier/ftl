@@ -78,6 +78,16 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		}
 	};
 
+	const quickAssignDeck = async (matchId: number, assignments: DeckAssignment[]) => {
+		const data = await assignDecks(matchId, assignments);
+		setData((prev) =>
+			prev
+				? { ...prev, playersDecks: mergePlayersDecks(prev.playersDecks ?? { players: [] }, data.playersDecks) }
+				: prev,
+		);
+		refetch();
+	};
+
 	const refreshRound = useCallback(async () => {
 		await fetchRoundFromAPI(tournamentId, roundId, {
 			page,
@@ -99,6 +109,7 @@ export function useRound(roundId: number, tournamentId: number, options: RoundOp
 		openMatchModal,
 		closeMatchModal,
 		onValidateAssignDeck,
+		quickAssignDeck,
 		getPlayerDecksInk: (playerId: number) => getPlayerDecksInk({ players: playersDecks.players }, playerId),
 		getMatchPlayerInks: (match: Match) => getMatchPlayerInks(match, { players: playersDecks.players }),
 		refreshRound,
