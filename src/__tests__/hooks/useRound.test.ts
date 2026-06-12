@@ -131,7 +131,7 @@ describe('useRound — mutation optimiste (onValidateAssignDeck)', () => {
     });
   });
 
-  it('conserve l\'état précédent si l\'assignation échoue', async () => {
+  it('propage l\'erreur et conserve l\'état précédent si l\'assignation échoue', async () => {
     vi.spyOn(global, 'fetch')
       .mockResolvedValueOnce(jsonResponse(basePaginatedMatches))
       .mockResolvedValueOnce(jsonResponse({ error: 'Conflit' }, 409));
@@ -142,13 +142,20 @@ describe('useRound — mutation optimiste (onValidateAssignDeck)', () => {
     const match = result.current.matchs[0];
     await act(async () => { result.current.openMatchModal(match)(); });
 
+    let caughtError: unknown;
     await act(async () => {
-      await result.current.onValidateAssignDeck({
-        combination1: { playerId: 10, decks: [['Amber']] },
-        combination2: { playerId: 20, decks: [] },
-      });
+      try {
+        await result.current.onValidateAssignDeck({
+          combination1: { playerId: 10, decks: [['Amber']] },
+          combination2: { playerId: 20, decks: [] },
+        });
+      } catch (e) {
+        caughtError = e;
+      }
     });
 
+    // L'erreur est propagée (le modal peut ré-activer le bouton)
+    expect(caughtError).toBeDefined();
     // L'état des decks reste vide (pas de mise à jour si l'API échoue)
     expect(result.current.getPlayerDecksInk(10)).toEqual([]);
   });
