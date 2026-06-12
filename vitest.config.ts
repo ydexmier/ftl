@@ -9,6 +9,10 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     exclude: ['**/node_modules/**', '**/e2e/**'],
     testTimeout: 15000,
+    pool: 'forks',
+    poolOptions: {
+      forks: { singleFork: true },
+    },
     coverage: {
       provider: 'v8',
       include: ['app/api/**/*.ts', 'src/lib/**/*.ts'],
