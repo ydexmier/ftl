@@ -7,10 +7,7 @@ import { checkRateLimit, recordFailedAttempt, resetRateLimit } from '@/src/lib/a
 import { signCookie } from '@/src/lib/auth/cookieSign';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateLoginBody } from '@/src/lib/validation';
-
-function getIp(req: NextRequest) {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-}
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function POST(request: NextRequest) {
   const ip = getIp(request), ua = request.headers.get('user-agent') ?? '';

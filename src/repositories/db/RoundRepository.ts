@@ -21,7 +21,7 @@ export interface MatchQueryOptions {
 	perPage?: number;
 	search?: string;
 	excludeOnePlayer?: boolean;
-	scoutingFilter?: ScoutingFilter | null;
+	scoutingFilter?: ScoutingFilter[];
 	tournamentId?: number;
 }
 
@@ -163,11 +163,15 @@ export const RoundRepository = {
 			},
 		});
 
+		const fieldMap: Record<ScoutingFilter, string> = { full: '_hasFullPlayer', partial: '_hasPartialPlayer', none: '_hasNonePlayer' };
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		let scoutingFilterStages: any[] = [];
-		if (scoutingFilter === 'full') scoutingFilterStages = [{ $match: { _hasFullPlayer: true } }];
-		else if (scoutingFilter === 'partial') scoutingFilterStages = [{ $match: { _hasPartialPlayer: true } }];
-		else if (scoutingFilter === 'none') scoutingFilterStages = [{ $match: { _hasNonePlayer: true } }];
+		const activeFilters = scoutingFilter ?? [];
+		if (activeFilters.length === 1) {
+			scoutingFilterStages = [{ $match: { [fieldMap[activeFilters[0]]]: true } }];
+		} else if (activeFilters.length > 1) {
+			scoutingFilterStages = [{ $match: { $or: activeFilters.map((f) => ({ [fieldMap[f]]: true })) } }];
+		}
 
 		pipeline.push({
 			$facet: {

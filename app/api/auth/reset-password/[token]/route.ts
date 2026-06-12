@@ -6,6 +6,7 @@ import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password'
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateResetPasswordBody } from '@/src/lib/validation';
 import { checkRateLimit } from '@/src/lib/auth/rateLimit';
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function GET(
   _request: NextRequest,
@@ -24,8 +25,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const rl = checkRateLimit(`reset-password:${ip}`);
+  const rl = checkRateLimit(`reset-password:${getIp(request)}`);
   if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans 15 minutes.');
 
   const { token } = await params;

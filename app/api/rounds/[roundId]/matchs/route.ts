@@ -3,6 +3,7 @@ import { RoundRepository } from '@/src/repositories/db/RoundRepository';
 import { RoundService } from '@/src/services/RoundService';
 import { getAuthSession } from '@/src/lib/auth/getAuthSession';
 import { ApiResponse } from '@/src/lib/api/responses';
+import type { ScoutingFilter } from '@/src/types/round';
 
 type Params = { params: Promise<{ roundId: string }> };
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest, { params }: Params) {
 			perPage: Number(sp.get('perPage') ?? 10),
 			search: sp.get('search') ?? '',
 			excludeOnePlayerMatches: sp.get('excludeOnePlayerMatches') === 'true',
-			scoutingFilter: (sp.get('scoutingFilter') as 'full' | 'partial' | 'none' | null) ?? null,
+			scoutingFilter: (sp.get('scoutingFilter')?.split(',').filter((v): v is ScoutingFilter => ['full', 'partial', 'none'].includes(v))) ?? [],
 			tournamentId: sp.get('tournamentId') ? Number(sp.get('tournamentId')) : undefined,
 		}, scope);
 

@@ -6,8 +6,13 @@ import { hashPassword, validatePasswordStrength } from '@/src/lib/auth/password'
 import { createSession, SESSION_COOKIE_MAX_AGE } from '@/src/lib/auth/session';
 import { signCookie } from '@/src/lib/auth/cookieSign';
 import { ApiResponse } from '@/src/lib/api/responses';
+import { checkRateLimit } from '@/src/lib/auth/rateLimit';
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function POST(request: NextRequest) {
+  const rl = checkRateLimit(`guest-validate:${getIp(request)}`);
+  if (!rl.allowed) return ApiResponse.tooManyRequests(`Trop de tentatives. Réessayez dans ${Math.ceil((rl.retryAfter ?? 900) / 60)} minute(s).`);
+
   const { token, username, email, password } = await request.json();
 
   if (!token) return ApiResponse.badRequest('token requis');
@@ -57,9 +62,8 @@ export async function POST(request: NextRequest) {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
     const ua = request.headers.get('user-agent') ?? '';
-    const sessionId = await createSession(userId, 'USER', ip, ua);
+    const sessionId = await createSession(userId, 'USER', getIp(request), ua);
     const cookieValue = await signCookie(sessionId, 'USER');
 
     const response = NextResponse.json({

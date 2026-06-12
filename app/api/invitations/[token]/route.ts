@@ -5,6 +5,7 @@ import { InvitationRepository } from '@/src/repositories/db/InvitationRepository
 import { InvitationService } from '@/src/services/InvitationService';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { checkRateLimit } from '@/src/lib/auth/rateLimit';
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function GET(
   _request: NextRequest,
@@ -33,8 +34,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ token: string }> },
 ) {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-  const rl = checkRateLimit(`register-invite:${ip}`);
+  const rl = checkRateLimit(`register-invite:${getIp(request)}`);
   if (!rl.allowed) return ApiResponse.tooManyRequests('Trop de tentatives. Réessayez dans 15 minutes.');
 
   const { token } = await params;

@@ -79,6 +79,15 @@ export function validateFeedbackBody(body: unknown): ValidationResult<{
   return ok({ type: b.type as FeedbackType, title, description, page: b.page });
 }
 
+export function validateApiTokenName(body: unknown): ValidationResult<{ name: string }> {
+  const name = typeof (body as Record<string, unknown>)?.name === 'string'
+    ? ((body as Record<string, unknown>).name as string).trim()
+    : '';
+  if (!name) return err('Nom requis (max 100 caractères)');
+  if (name.length > 100) return err('Nom requis (max 100 caractères)');
+  return ok({ name });
+}
+
 // ─── Admin schemas ────────────────────────────────────────────────────────────
 
 const USER_ROLES = ['USER', 'ADMIN', 'SUPERUSER'] as const;

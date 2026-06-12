@@ -5,10 +5,7 @@ import { sendPasswordResetEmail } from '@/src/lib/email';
 import { ApiResponse } from '@/src/lib/api/responses';
 import { validateForgotPasswordBody } from '@/src/lib/validation';
 import { checkRateLimit } from '@/src/lib/auth/rateLimit';
-
-function getIp(req: NextRequest) {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
-}
+import { getIp } from '@/src/lib/auth/getIp';
 
 export async function POST(request: NextRequest) {
   const rl = checkRateLimit(`forgot-password:${getIp(request)}`);

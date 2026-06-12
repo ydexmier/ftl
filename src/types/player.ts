@@ -46,6 +46,7 @@ export interface PlayerHistoryEntry {
 	roundNumber: number;
 	opponentId: number | null;
 	opponentName: string | null;
+	opponentPseudo: string | null;
 	opponentDecks: string[][];
 	result: PlayerHistoryResult;
 	gamesWon: number | null;

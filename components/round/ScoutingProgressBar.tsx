@@ -5,11 +5,11 @@ import type { ScoutingFilter, ScoutingStats } from '@/src/types/round';
 
 interface ScoutingProgressBarProps {
 	stats: ScoutingStats;
-	activeFilter: ScoutingFilter | null;
-	onFilter: (filter: ScoutingFilter | null) => void;
+	activeFilters: ScoutingFilter[];
+	onFilter: (filters: ScoutingFilter[]) => void;
 }
 
-export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingProgressBarProps) {
+export function ScoutingProgressBar({ stats, activeFilters, onFilter }: ScoutingProgressBarProps) {
 	if (stats.total === 0) return null;
 
 	const fullPct = (stats.full / stats.total) * 100;
@@ -17,15 +17,21 @@ export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingP
 	const nonePct = (stats.none / stats.total) * 100;
 	const completedPct = Math.round(fullPct);
 
-	const toggle = (f: ScoutingFilter) => onFilter(activeFilter === f ? null : f);
+	const toggle = (f: ScoutingFilter) => {
+		if (activeFilters.includes(f)) {
+			onFilter(activeFilters.filter((x) => x !== f));
+		} else {
+			onFilter([...activeFilters, f]);
+		}
+	};
 
 	const segmentCls = (f: ScoutingFilter, color: string) => {
-		const dimmed = activeFilter !== null && activeFilter !== f;
+		const dimmed = activeFilters.length > 0 && !activeFilters.includes(f);
 		return `h-full ${color} cursor-pointer transition-opacity duration-150 ${dimmed ? 'opacity-20' : 'hover:opacity-75'}`;
 	};
 
 	const legendCls = (f: ScoutingFilter) => {
-		const dimmed = activeFilter !== null && activeFilter !== f;
+		const dimmed = activeFilters.length > 0 && !activeFilters.includes(f);
 		return `flex items-center gap-1.5 cursor-pointer transition-opacity duration-150 ${dimmed ? 'opacity-35' : 'hover:opacity-70'}`;
 	};
 
@@ -43,7 +49,7 @@ export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingP
 						style={{ width: `${fullPct}%`, minWidth: '4px' }}
 						onClick={() => toggle('full')}
 						className={segmentCls('full', 'bg-green-500')}
-						aria-pressed={activeFilter === 'full'}
+						aria-pressed={activeFilters.includes('full')}
 						title={`${stats.full} matchs complètement scoutés — cliquer pour filtrer`}
 					/>
 				)}
@@ -53,7 +59,7 @@ export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingP
 						style={{ width: `${partialPct}%`, minWidth: '4px' }}
 						onClick={() => toggle('partial')}
 						className={segmentCls('partial', 'bg-amber-400')}
-						aria-pressed={activeFilter === 'partial'}
+						aria-pressed={activeFilters.includes('partial')}
 						title={`${stats.partial} matchs partiellement scoutés — cliquer pour filtrer`}
 					/>
 				)}
@@ -63,7 +69,7 @@ export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingP
 						style={{ width: `${nonePct}%`, minWidth: '4px' }}
 						onClick={() => toggle('none')}
 						className={segmentCls('none', 'bg-white/20')}
-						aria-pressed={activeFilter === 'none'}
+						aria-pressed={activeFilters.includes('none')}
 						title={`${stats.none} matchs non scoutés — cliquer pour filtrer`}
 					/>
 				)}
@@ -92,10 +98,10 @@ export function ScoutingProgressBar({ stats, activeFilter, onFilter }: ScoutingP
 					</button>
 				)}
 				<span className="text-xs text-muted-foreground ml-auto">{completedPct}% complété</span>
-				{activeFilter && (
+				{activeFilters.length > 0 && (
 					<button
 						type="button"
-						onClick={() => onFilter(null)}
+						onClick={() => onFilter([])}
 						className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
 					>
 						<X className="w-3 h-3" />
