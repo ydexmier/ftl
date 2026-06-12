@@ -9,6 +9,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     exclude: ['**/node_modules/**', '**/e2e/**'],
     testTimeout: 15000,
+    fileParallelism: false,
     coverage: {
       provider: 'v8',
       include: ['app/api/**/*.ts', 'src/lib/**/*.ts'],
