@@ -27,6 +27,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 	const [state, dispatch] = useMatchState();
 	const [comments, setComments] = useState({ combination1: '', combination2: '' });
 	const [blinking, setBlinking] = useState({ combination1: false, combination2: false });
+	const [isValidating, setIsValidating] = useState(false);
 
 	const triggerBlink = (combo: 'combination1' | 'combination2') => {
 		setBlinking((prev) => ({ ...prev, [combo]: true }));
@@ -46,12 +47,13 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 	};
 
 	const handleCancel = () => {
+		if (isValidating) return;
 		dispatch({ type: 'RESET' });
 		setComments({ combination1: '', combination2: '' });
 		onClose();
 	};
 
-	const handleValidate = () => {
+	const handleValidate = async () => {
 		const { combination1, combination2 } = state;
 		const dataToSend: Record<string, unknown> = {};
 		if ([combination1, combination2].every((d) => !d.playerId)) {
@@ -80,8 +82,13 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 				comment: comments.combination2.trim() || undefined,
 			};
 		}
-		onValidate(dataToSend);
-		setComments({ combination1: '', combination2: '' });
+		setIsValidating(true);
+		try {
+			await onValidate(dataToSend);
+		} catch {
+			// Erreur API : on ré-active le bouton, la modale reste ouverte
+			setIsValidating(false);
+		}
 	};
 
 	const getPlayerNameById = (id: number | null) => {
@@ -196,6 +203,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		if (!open) {
 			dispatch({ type: 'RESET' });
 			setComments({ combination1: '', combination2: '' });
+			setIsValidating(false);
 		}
 	}, [open]);
 
@@ -207,7 +215,7 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 		<div
 			data-testid="match-modal"
 			className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
-			onClick={handleCancel}
+			onClick={isValidating ? undefined : handleCancel}
 		>
 			<div
 				className="w-full sm:max-w-md sm:mx-4 bg-card border border-border rounded-t-2xl sm:rounded-xl flex flex-col shadow-xl max-h-[90svh] sm:max-h-[90vh]"
@@ -338,8 +346,8 @@ const MatchModal = ({ match, open, onClose, onValidate, combinationsInitial }: M
 
 				{/* Footer sticky */}
 				<div className="shrink-0 border-t border-border px-4 sm:px-6 py-3 sm:py-4 flex flex-row gap-2">
-					<Button variant="outline" onClick={handleCancel} className="flex-1 sm:flex-none sm:w-auto">Annuler</Button>
-					<Button variant="success" onClick={handleValidate} className="flex-1 sm:flex-none sm:w-auto">Valider</Button>
+					<Button variant="outline" onClick={handleCancel} disabled={isValidating} className="flex-1 sm:flex-none sm:w-auto">Annuler</Button>
+					<Button variant="success" loading={isValidating} onClick={handleValidate} className="flex-1 sm:flex-none sm:w-auto">Valider</Button>
 				</div>
 			</div>
 		</div>
