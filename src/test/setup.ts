@@ -21,11 +21,16 @@ vi.mock('@/src/lib/db', () => ({
   default: vi.fn().mockResolvedValue(undefined),
 }));
 
-let mongod: MongoMemoryServer;
+let mongod: MongoMemoryServer | undefined;
 
 beforeAll(async () => {
-  mongod = await MongoMemoryServer.create();
-  await mongoose.connect(mongod.getUri());
+  try {
+    mongod = await MongoMemoryServer.create();
+    await mongoose.connect(mongod.getUri());
+  } catch (error) {
+    console.error('Failed to start MongoMemoryServer:', error);
+    throw error;
+  }
 });
 
 afterAll(async () => {
