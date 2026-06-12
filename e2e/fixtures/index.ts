@@ -57,4 +57,6 @@ export async function loginAs(page: Page, username: string, password: string) {
   await page.getByRole('button', { name: 'Se connecter' }).click();
   // Attend la sortie de /login
   await page.waitForURL((url) => !url.pathname.startsWith('/login'), { timeout: 10_000 });
+  // Marque tous les tours Driver.js comme vus pour éviter qu'ils bloquent les interactions
+  await dismissTours(page);
 }
