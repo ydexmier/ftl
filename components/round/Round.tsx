@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 
+import { Undo2, X } from 'lucide-react';
 import { Spinner } from '@components/ui/Spinner';
 import MatchCard from '@components/match/MatchCard';
 import MatchModal from '@components/match/MatchModal';
@@ -53,7 +54,10 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 		openMatchModal,
 		closeMatchModal,
 		onValidateAssignDeck,
-		quickAssignDeck,
+			quickAssignDeck,
+			fadingMatchIds,
+			placeholderMatches,
+			dismissPlaceholder,
 		getPlayerDecksInk,
 		getMatchPlayerInks,
 		refreshRound,
@@ -189,30 +193,63 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 				<>
 					{paginationControls}
 					<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-						{matchs.map((match) => (
-							<MatchCard
-								key={match.id}
-								match={match}
-								onClick={openMatchModal(match)}
-								player1Deck={getPlayerDecksInk(
-									match.player_match_relationships.find(
-										(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
-									)!.player.id,
-								)}
-								player2Deck={
-									!match.match_is_bye &&
-									!match.match_is_loss &&
-									getPlayerDecksInk(
-										match.player_match_relationships.find((p) => p.player_order === 2)!.player.id,
-									)
-								}
-								onCommentClick={(playerId, playerName) => setCommentTarget({ playerId, playerName })}
-								onHistoryClick={(playerId, playerName) => setHistoryTarget({ playerId, playerName })}
-								onDeckSelect={(playerId, playerName, deck) => setDeckConfirmTarget({ match, playerId, playerName, deck })}
-								player1CommentCount={commentCounts[match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss)?.player.id ?? 0] ?? 0}
-								player2CommentCount={!match.match_is_bye && !match.match_is_loss ? (commentCounts[match.player_match_relationships.find((p) => p.player_order === 2)?.player.id ?? 0] ?? 0) : 0}
-							/>
-						))}
+						{matchs.map((match) => {
+							const placeholder = placeholderMatches.get(match.id);
+							if (placeholder) {
+								return (
+									<div
+										key={`placeholder-${match.id}`}
+										className="relative flex flex-col rounded-xl border border-dashed border-border bg-card/30 min-h-40"
+									>
+										<button
+											type="button"
+											onClick={openMatchModal(placeholder.match)}
+											className="flex-1 flex flex-col items-center justify-center gap-2 p-6 text-sm text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors rounded-xl cursor-pointer w-full"
+										>
+											<Undo2 className="h-5 w-5" />
+											<span>Restaurer table {match.table_number}</span>
+										</button>
+										<button
+											type="button"
+											onClick={() => dismissPlaceholder(match.id)}
+											className="absolute top-2 right-2 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+											aria-label="Ignorer"
+										>
+											<X className="h-3.5 w-3.5" />
+										</button>
+									</div>
+								);
+							}
+							return (
+								<div
+									key={match.id}
+									className="transition-opacity duration-[2500ms] ease-linear"
+									style={{ opacity: fadingMatchIds.has(match.id) ? 0 : 1 }}
+								>
+									<MatchCard
+										match={match}
+										onClick={openMatchModal(match)}
+										player1Deck={getPlayerDecksInk(
+											match.player_match_relationships.find(
+												(p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss,
+											)!.player.id,
+										)}
+										player2Deck={
+											!match.match_is_bye &&
+											!match.match_is_loss &&
+											getPlayerDecksInk(
+												match.player_match_relationships.find((p) => p.player_order === 2)!.player.id,
+											)
+										}
+										onCommentClick={(playerId, playerName) => setCommentTarget({ playerId, playerName })}
+										onHistoryClick={(playerId, playerName) => setHistoryTarget({ playerId, playerName })}
+										onDeckSelect={(playerId, playerName, deck) => setDeckConfirmTarget({ match, playerId, playerName, deck })}
+										player1CommentCount={commentCounts[match.player_match_relationships.find((p) => p.player_order === 1 || match.match_is_bye || match.match_is_loss)?.player.id ?? 0] ?? 0}
+										player2CommentCount={!match.match_is_bye && !match.match_is_loss ? (commentCounts[match.player_match_relationships.find((p) => p.player_order === 2)?.player.id ?? 0] ?? 0) : 0}
+									/>
+								</div>
+							);
+						})}
 					</div>
 					{paginationControls}
 				</>
@@ -221,7 +258,10 @@ const Round = ({ roundId, page: initialPage, perPage: initialPerPage, search: in
 			<MatchModal
 				match={matchToShow}
 				open={!!matchToShow}
-				combinationsInitial={matchToShow && getMatchPlayerInks(matchToShow)}
+				combinationsInitial={
+					// Si le match vient d'un placeholder, utilise les combinations snapshotées
+					matchToShow && (placeholderMatches.get(matchToShow.id)?.combinations ?? getMatchPlayerInks(matchToShow))
+				}
 				onValidate={onValidateAssignDeck as (data: unknown) => Promise<void>}
 				onClose={closeMatchModal}
 			/>
