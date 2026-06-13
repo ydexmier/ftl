@@ -1,12 +1,14 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AlertTriangle, HelpCircle } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, HelpCircle, Users } from 'lucide-react';
 
 import { getRoundName } from '@/src/domain/rules/roundRules';
 import Round from '@components/round/Round';
 import DeckbuildingRound from '@components/round/DeckbuildingRound';
 import { useTournament } from '@/src/hooks/useTournament';
+import { useFetch } from '@/src/hooks/useFetch';
 import FetchButton from '@components/ui/FetchButton';
 import { Spinner } from '@components/ui/Spinner';
 import { ConflictResolutionModal, type ConflictGroup } from '@components/tournament/ConflictResolutionModal';
@@ -21,6 +23,11 @@ import type { Tournament as TournamentType } from '@/src/types/tournament';
 import type { RoundType } from '@/src/types/round';
 
 interface AdminGroup {
+	groupId: string;
+	groupName: string;
+}
+
+interface MemberGroup {
 	groupId: string;
 	groupName: string;
 }
@@ -71,6 +78,10 @@ export default function Tournament({ id }: TournamentProps) {
 	const [showUncertaintyModal, setShowUncertaintyModal] = useState(false);
 
 	const { tournament, loading, error, refreshTournament } = useTournament(Number(id));
+	const { data: memberGroupsData } = useFetch<{ groups: MemberGroup[] }>(
+		`/api/tournaments/${id}/member-groups`,
+	);
+	const memberGroups = (memberGroupsData?.groups ?? []).filter((g) => g.groupId !== groupId);
 	const { lastFetchedAt } = (tournament as (TournamentType & { lastFetchedAt?: string }) | null) ?? {};
 
 	const fetchUserConflicts = useCallback(async () => {
@@ -296,6 +307,17 @@ export default function Tournament({ id }: TournamentProps) {
 						</button>
 					)}
 				</div>
+
+				{memberGroups.length > 0 && memberGroups.map((g) => (
+					<Link
+						key={g.groupId}
+						href={`/tournaments/${id}?groupId=${g.groupId}`}
+						className="flex items-center gap-2 rounded-md border border-orange-700 bg-orange-900/20 px-3 py-2 text-sm text-orange-300 hover:bg-orange-900/40 transition-colors"
+					>
+						<Users className="h-4 w-4 shrink-0 text-orange-400" />
+						<span>Ce tournoi est aussi dans le groupe <strong className="text-orange-200">{g.groupName}</strong> — voir le scouting du groupe</span>
+					</Link>
+				))}
 
 				{hasPendingMerge && (
 					<div className="flex items-center gap-3 rounded-md border border-blue-700 bg-blue-900/20 px-3 py-2 text-sm text-blue-300">
