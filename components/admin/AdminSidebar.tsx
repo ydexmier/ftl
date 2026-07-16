@@ -2,13 +2,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Trophy, Shield, Users, Mail, MessageSquare, ClipboardList, Menu, X, LogOut, UsersRound } from 'lucide-react';
+import { LayoutDashboard, Trophy, Shield, Users, Mail, ClipboardList, Menu, X, LogOut, UsersRound } from 'lucide-react';
 import { cn } from '@components/ui/cn';
 
 interface BadgeCounts {
 	invitations: number;
 	accessRequests: number;
-	feedback: number;
 }
 
 type BadgeKey = keyof BadgeCounts;
@@ -20,7 +19,6 @@ const NAV: { href: string; label: string; icon: React.ElementType; badgeKey?: Ba
 	{ href: '/admin/groups', label: 'Groupes', icon: UsersRound },
 	{ href: '/admin/invitations', label: 'Invitations', icon: Mail, badgeKey: 'invitations' },
 	{ href: '/admin/access-requests', label: 'Demandes d\'accès', icon: ClipboardList, badgeKey: 'accessRequests' },
-	{ href: '/admin/feedback', label: 'Feedback', icon: MessageSquare, badgeKey: 'feedback' },
 	{ href: '/admin/audit-logs', label: 'Audit Logs', icon: Shield },
 ];
 
@@ -96,7 +94,7 @@ function SidebarContent({
 	);
 }
 
-const EMPTY_COUNTS: BadgeCounts = { invitations: 0, accessRequests: 0, feedback: 0 };
+const EMPTY_COUNTS: BadgeCounts = { invitations: 0, accessRequests: 0 };
 
 export function AdminSidebar() {
 	const [mobileOpen, setMobileOpen] = useState(false);
