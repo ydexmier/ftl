@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Swords, LogOut, UserCircle, Menu, X } from 'lucide-react';
+import { Swords, LogOut, UserCircle } from 'lucide-react';
 import { cn } from './cn';
-import { FeedbackWidget } from './FeedbackWidget';
+import { BottomNav } from './BottomNav';
 
 interface BadgeCounts {
   groupInvitations: number;
@@ -29,7 +29,6 @@ function NavBadge({ count }: { count: number }) {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [counts, setCounts] = useState<BadgeCounts>(EMPTY_COUNTS);
 
   useEffect(() => {
@@ -104,7 +103,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <Link
             href="/profile"
             data-tour="nav-profile"
-            className="text-muted-foreground hover:text-foreground hover:bg-accent p-2.5 rounded-md transition-colors"
+            className="hidden sm:flex items-center text-muted-foreground hover:text-foreground hover:bg-accent p-2.5 rounded-md transition-colors"
             aria-label="Mon profil"
           >
             <UserCircle className="h-5 w-5" />
@@ -112,79 +111,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
           <button
             onClick={logout}
-            className="hidden sm:flex text-muted-foreground hover:text-destructive hover:bg-accent p-2.5 rounded-md transition-colors"
+            className="flex text-muted-foreground hover:text-destructive hover:bg-accent p-2.5 rounded-md transition-colors"
             aria-label="Déconnexion"
           >
             <LogOut className="h-5 w-5" />
           </button>
-
-          {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileMenuOpen(o => !o)}
-            className="sm:hidden p-2.5 rounded-md hover:bg-accent transition-colors"
-            aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-          >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
-
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-border bg-background/95">
-            <nav className="flex flex-col px-4 py-2">
-              <Link
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'text-sm font-medium px-3 py-3 rounded-md transition-colors',
-                  pathname === '/'
-                    ? 'text-foreground bg-accent'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                )}
-              >
-                Accueil
-              </Link>
-              <Link
-                href="/tournaments"
-                onClick={() => setMobileMenuOpen(false)}
-                className={cn(
-                  'text-sm font-medium px-3 py-3 rounded-md transition-colors',
-                  pathname === '/tournaments'
-                    ? 'text-foreground bg-accent'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                )}
-              >
-                Tournois
-              </Link>
-              {!isGuest && (
-                <Link
-                  href="/groups"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={cn(
-                    'flex items-center text-sm font-medium px-3 py-3 rounded-md transition-colors',
-                    pathname === '/groups'
-                      ? 'text-foreground bg-accent'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent',
-                  )}
-                >
-                  Groupes
-                  <NavBadge count={groupsCount} />
-                </Link>
-              )}
-              <button
-                onClick={() => { setMobileMenuOpen(false); logout(); }}
-                className="flex items-center gap-2 text-sm font-medium px-3 py-3 rounded-md text-muted-foreground hover:text-destructive hover:bg-accent transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-                Déconnexion
-              </button>
-            </nav>
-          </div>
-        )}
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-4 sm:py-6">{children}</main>
-      <FeedbackWidget />
+      <main className="max-w-7xl mx-auto px-4 pt-4 pb-24 sm:py-6">{children}</main>
+      <BottomNav isGuest={isGuest} groupsBadge={groupsCount} />
     </>
   );
 }

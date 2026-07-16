@@ -60,24 +60,6 @@ export function validateAccessRequestBody(body: unknown): ValidationResult<{
   return ok({ email, reason, captchaToken: b.captchaToken });
 }
 
-const FEEDBACK_TYPES = ['bug', 'improvement'] as const;
-type FeedbackType = (typeof FEEDBACK_TYPES)[number];
-
-export function validateFeedbackBody(body: unknown): ValidationResult<{
-  type: FeedbackType;
-  title: string;
-  description: string;
-  page: string;
-}> {
-  const b = body as Record<string, unknown>;
-  if (!FEEDBACK_TYPES.includes(b?.type as FeedbackType)) return err('Type invalide');
-  const title = typeof b.title === 'string' ? b.title.trim() : '';
-  if (!title || title.length > 200) return err('Titre invalide (200 caractères max)');
-  const description = typeof b.description === 'string' ? b.description.trim() : '';
-  if (!description || description.length > 2000) return err('Description invalide (2000 caractères max)');
-  if (!b?.page || typeof b.page !== 'string') return err('Page manquante');
-  return ok({ type: b.type as FeedbackType, title, description, page: b.page });
-}
 
 export function validateApiTokenName(body: unknown): ValidationResult<{ name: string }> {
   const name = typeof (body as Record<string, unknown>)?.name === 'string'
@@ -92,9 +74,6 @@ export function validateApiTokenName(body: unknown): ValidationResult<{ name: st
 
 const USER_ROLES = ['USER', 'ADMIN', 'SUPERUSER'] as const;
 type UserRole = (typeof USER_ROLES)[number];
-
-const FEEDBACK_STATUSES = ['open', 'in-progress', 'done', 'closed'] as const;
-type FeedbackStatus = (typeof FEEDBACK_STATUSES)[number];
 
 export function validateAdminUserCreate(body: unknown): ValidationResult<{
   username: string;
@@ -165,13 +144,6 @@ export function validateAdminGroupBody(body: unknown): ValidationResult<{
   const infoMessage = typeof b.infoMessage === 'string' ? b.infoMessage.trim() : '';
   if (infoMessage.length > 500) return err('Le message ne peut pas dépasser 500 caractères');
   return ok({ name, description, infoMessage });
-}
-
-export function validateAdminFeedbackStatus(body: unknown): ValidationResult<{ status: FeedbackStatus }> {
-  const b = body as Record<string, unknown>;
-  if (!FEEDBACK_STATUSES.includes(b?.status as FeedbackStatus))
-    return err('Statut invalide');
-  return ok({ status: b.status as FeedbackStatus });
 }
 
 export function validateAdminInvitationEmails(body: unknown): ValidationResult<{

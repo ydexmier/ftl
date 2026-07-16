@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { GET as getBadgeCounts } from '../../app/api/admin/badge-counts/route';
 import InvitationModel from '@models/Invitation';
 import AccessRequestModel from '@models/AccessRequest';
-import FeedbackModel from '@models/Feedback';
 import { createTestUser, createAdminUser, createAuthCookie, makeRequest } from '../test/helpers';
 
 // ─── GET /api/admin/badge-counts ─────────────────────────────────────────────
@@ -29,7 +28,7 @@ describe('GET /api/admin/badge-counts', () => {
     const res = await getBadgeCounts(req);
     expect(res.status).toBe(200);
     const data = await res.json();
-    expect(data).toEqual({ invitations: 0, accessRequests: 0, feedback: 0 });
+    expect(data).toEqual({ invitations: 0, accessRequests: 0 });
   });
 
   it('compte uniquement les invitations PENDING', async () => {
@@ -64,24 +63,8 @@ describe('GET /api/admin/badge-counts', () => {
     expect(data.accessRequests).toBe(3);
   });
 
-  it('compte uniquement les feedbacks en statut open', async () => {
+  it('retourne les 2 compteurs avec les bonnes valeurs simultanément', async () => {
     const admin = await createAdminUser({ username: 'bc_admin4', email: 'bc_admin4@test.com' });
-    await FeedbackModel.create([
-      { type: 'bug', title: 'B1', description: 'D', page: '/', status: 'open' },
-      { type: 'bug', title: 'B2', description: 'D', page: '/', status: 'open' },
-      { type: 'improvement', title: 'B3', description: 'D', page: '/', status: 'in-progress' },
-      { type: 'bug', title: 'B4', description: 'D', page: '/', status: 'done' },
-      { type: 'bug', title: 'B5', description: 'D', page: '/', status: 'closed' },
-    ]);
-    const cookie = await createAuthCookie(admin._id, 'ADMIN');
-    const req = makeRequest('GET', '/api/admin/badge-counts', undefined, cookie);
-    const res = await getBadgeCounts(req);
-    const data = await res.json();
-    expect(data.feedback).toBe(2);
-  });
-
-  it('retourne les 3 compteurs avec les bonnes valeurs simultanément', async () => {
-    const admin = await createAdminUser({ username: 'bc_admin5', email: 'bc_admin5@test.com' });
     await InvitationModel.create([
       { email: 'x1@test.com', token: crypto.randomUUID(), invitedBy: admin._id, expiresAt: new Date(Date.now() + 86400000), status: 'PENDING' },
     ]);
@@ -89,15 +72,10 @@ describe('GET /api/admin/badge-counts', () => {
       { email: 'y1@test.com', status: 'PENDING' },
       { email: 'y2@test.com', status: 'PENDING' },
     ]);
-    await FeedbackModel.create([
-      { type: 'bug', title: 'F1', description: 'D', page: '/', status: 'open' },
-      { type: 'bug', title: 'F2', description: 'D', page: '/', status: 'open' },
-      { type: 'bug', title: 'F3', description: 'D', page: '/', status: 'open' },
-    ]);
     const cookie = await createAuthCookie(admin._id, 'ADMIN');
     const req = makeRequest('GET', '/api/admin/badge-counts', undefined, cookie);
     const res = await getBadgeCounts(req);
     const data = await res.json();
-    expect(data).toEqual({ invitations: 1, accessRequests: 2, feedback: 3 });
+    expect(data).toEqual({ invitations: 1, accessRequests: 2 });
   });
 });
