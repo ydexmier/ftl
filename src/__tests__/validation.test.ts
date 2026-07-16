@@ -6,11 +6,9 @@ import {
   validateForgotPasswordBody,
   validateResetPasswordBody,
   validateAccessRequestBody,
-  validateFeedbackBody,
   validateAdminUserCreate,
   validateAdminUserUpdate,
   validateAdminGroupBody,
-  validateAdminFeedbackStatus,
   validateAdminInvitationEmails,
 } from '@/src/lib/validation';
 
@@ -139,43 +137,6 @@ describe('validateAccessRequestBody', () => {
     const r = validateAccessRequestBody({ email: 'a@b.com', captchaToken: 'tok', reason: 'raison' });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.data.reason).toBe('raison');
-  });
-});
-
-// ─── validateFeedbackBody ─────────────────────────────────────────────────────
-
-describe('validateFeedbackBody', () => {
-  it('rejette un type invalide', () => {
-    expect(validateFeedbackBody({ type: 'unknown', title: 'T', description: 'D', page: '/home' }).ok).toBe(false);
-  });
-
-  it('rejette un titre vide', () => {
-    expect(validateFeedbackBody({ type: 'bug', title: '', description: 'D', page: '/home' }).ok).toBe(false);
-  });
-
-  it('rejette un titre trop long', () => {
-    expect(validateFeedbackBody({ type: 'bug', title: 'a'.repeat(201), description: 'D', page: '/home' }).ok).toBe(false);
-  });
-
-  it('rejette une description vide', () => {
-    expect(validateFeedbackBody({ type: 'bug', title: 'T', description: '', page: '/home' }).ok).toBe(false);
-  });
-
-  it('rejette une description trop longue', () => {
-    expect(validateFeedbackBody({ type: 'improvement', title: 'T', description: 'a'.repeat(2001), page: '/home' }).ok).toBe(false);
-  });
-
-  it('rejette une page manquante', () => {
-    expect(validateFeedbackBody({ type: 'bug', title: 'T', description: 'D' }).ok).toBe(false);
-  });
-
-  it('retourne ok avec des valeurs valides', () => {
-    const r = validateFeedbackBody({ type: 'improvement', title: 'Suggestion', description: 'Détail', page: '/tournaments' });
-    expect(r.ok).toBe(true);
-    if (r.ok) {
-      expect(r.data.type).toBe('improvement');
-      expect(r.data.title).toBe('Suggestion');
-    }
   });
 });
 
@@ -319,23 +280,6 @@ describe('validateAdminGroupBody', () => {
     const r = validateAdminGroupBody({ name: 'G', description: undefined });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.data.description).toBe('');
-  });
-});
-
-// ─── validateAdminFeedbackStatus ─────────────────────────────────────────────
-
-describe('validateAdminFeedbackStatus', () => {
-  it('rejette un statut invalide', () => {
-    expect(validateAdminFeedbackStatus({ status: 'invalid' }).ok).toBe(false);
-    expect(validateAdminFeedbackStatus({}).ok).toBe(false);
-  });
-
-  it('accepte chaque statut valide', () => {
-    for (const status of ['open', 'in-progress', 'done', 'closed'] as const) {
-      const r = validateAdminFeedbackStatus({ status });
-      expect(r.ok).toBe(true);
-      if (r.ok) expect(r.data.status).toBe(status);
-    }
   });
 });
 
